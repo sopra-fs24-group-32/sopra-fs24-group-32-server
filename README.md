@@ -1,4 +1,4 @@
-# SoPra RESTful Service FS24
+# GPTuessr
 
 ## Getting started with Spring Boot
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
