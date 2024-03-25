@@ -17,6 +17,48 @@ public class UserGetDTO {
   private String email;
   private String picture;
 
+  private String email;
+
+  private Boolean isHost;
+
+  private String password;
+
+  private String token;
+
+  public String getToken(){
+      return token;
+  }
+
+  public void setToken(String token){
+      this.token = token;
+  }
+
+  public String getEmail(){
+      return email;
+  }
+
+  public void setEmail(String email){
+      this.email = email;
+  }
+
+  public Boolean getIsHost(){
+      return isHost;
+  }
+
+  public void setIsHost(Boolean isHost){
+      this.isHost = isHost;
+  }
+
+  public String getPassword(){
+      return password;
+  }
+
+  public void setPassword(String password){
+      this.password = password;
+  }
+
+
+
   public Long getId() {
     return id;
   }

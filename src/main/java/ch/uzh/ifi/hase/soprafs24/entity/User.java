@@ -32,7 +32,7 @@ public class User implements Serializable {
   private Long id;
 
   @Column(nullable = false)
-  private boolean isLoggedIn;
+  private String name;
 
   @Column(nullable = false, unique = true)
   private String username;
@@ -42,6 +42,15 @@ public class User implements Serializable {
 
   @Column(nullable = false)
   private UserStatus status;
+
+ @Column(nullable = false)
+ private String email;
+
+ @Column(nullable = false)
+ private Boolean isHost;
+
+ @Column(nullable = false)
+ private String password;
 
   @Column
   @CreationTimestamp
