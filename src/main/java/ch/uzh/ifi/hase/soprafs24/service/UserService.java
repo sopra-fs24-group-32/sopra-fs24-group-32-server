@@ -2,7 +2,9 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+// import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import io.github.cdimascio.dotenv.Dotenv;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
+
+import com.mongodb.client.MongoClient;
+
+import com.mongodb.client.MongoClients;
+
+import com.mongodb.client.MongoCollection;
+
+import com.mongodb.client.MongoDatabase;
+
+import com.mongodb.client.result.InsertManyResult;
+
+import com.mongodb.MongoException;
+import org.bson.Document;
 
 /**
  * User Service
@@ -28,25 +43,34 @@ public class UserService {
 
   private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-  private final UserRepository userRepository;
+  // private final UserRepository userRepository;
 
-  @Autowired
-  public UserService(@Qualifier("userRepository") UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
+  // @Autowired
+  // public UserService(@Qualifier("userRepository") UserRepository userRepository) {
+  //   this.userRepository = userRepository;
+  // }
 
-  public List<User> getUsers() {
-    return this.userRepository.findAll();
-  }
+  // public List<User> getUsers() {
+  //   return this.userRepository.findAll();
+  // }
 
   public User createUser(User newUser) {
-    newUser.setToken(UUID.randomUUID().toString());
+    Dotenv dotenv = Dotenv.load();
+    String connectionString = dotenv.get("MONGO_DB_URL");
+    MongoClient mongoClient = MongoClients.create(connectionString);
+    MongoDatabase database = mongoClient.getDatabase("usersdb");
+
+    newUser.setUserToken(UUID.randomUUID().toString());
     newUser.setStatus(UserStatus.OFFLINE);
-    checkIfUserExists(newUser);
-    // saves the given entity but data is only persisted in the database once
-    // flush() is called
-    newUser = userRepository.save(newUser);
-    userRepository.flush();
+
+    MongoCollection<Document> collection = database.getCollection("users");
+    Document user = new Document("username", newUser.getUsername())
+        .append("Email", newUser.getEmail())
+        .append("Picture", newUser.getPicture())
+        .append("Birthday", newUser.getBirthDay())
+        .append("CreationDate", newUser.getCreateDate())
+        .append("userToken", newUser.getUserToken());
+    collection.insertOne(user);
 
     log.debug("Created Information for User: {}", newUser);
     return newUser;
@@ -58,22 +82,22 @@ public class UserService {
    * defined in the User entity. The method will do nothing if the input is unique
    * and throw an error otherwise.
    *
-   * @param userToBeCreated
-   * @throws org.springframework.web.server.ResponseStatusException
-   * @see User
-   */
-  private void checkIfUserExists(User userToBeCreated) {
-    User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
-    User userByName = userRepository.findByName(userToBeCreated.getName());
+  //  * @param userToBeCreated
+  //  * @throws org.springframework.web.server.ResponseStatusException
+  //  * @see User
+  //  */
+  // private void checkIfUserExists(User userToBeCreated) {
+  //   User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
+  //   User userByName = userRepository.findByName(userToBeCreated.getName());
 
-    String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
-    if (userByUsername != null && userByName != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          String.format(baseErrorMessage, "username and the name", "are"));
-    } else if (userByUsername != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
-    } else if (userByName != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "name", "is"));
-    }
-  }
+  //   String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
+  //   if (userByUsername != null && userByName != null) {
+  //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+  //         String.format(baseErrorMessage, "username and the name", "are"));
+  //   } else if (userByUsername != null) {
+  //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+  //   } else if (userByName != null) {
+  //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "name", "is"));
+  //   }
+  // }
 }
