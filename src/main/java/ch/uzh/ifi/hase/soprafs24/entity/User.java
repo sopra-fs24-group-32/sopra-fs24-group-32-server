@@ -1,7 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -21,7 +20,7 @@ import java.util.Objects;
  * - unique = true -> this value must be unqiue across the database -> composes
  * the primary key
  */
-@Document(collection = "users")
+@Entity
 @Table(name = "USER")
 public class User implements Serializable {
 

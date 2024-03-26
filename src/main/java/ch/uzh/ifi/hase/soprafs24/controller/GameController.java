@@ -20,30 +20,17 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Game createGame(@RequestBody UserPostDTO userPostDTO) {
+    public String createGame(@RequestBody UserPostDTO userPostDTO) {
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
         String userToken = userInput.getUserToken();
-        Game game = gameService.createGame(userToken);
-        if (game != null) {
-            return game;
+        String lobbyId = gameService.createGame(userToken);
+        if (lobbyId != null) {
+            System.out.println("Game lobby successfully created with Id: " + lobbyId);
+            return lobbyId;
         } else {
             // Assuming a null game means the userToken was invalid or another issue occurred
             System.out.println("Error creating game: No user matches token");
             return null;
-        }
-    }
-
-    public class UserTokenRequest {
-        private String userToken;
-    
-        // Getter
-        public String getUserToken() {
-            return userToken;
-        }
-    
-        // Setter
-        public void setUserToken(String userToken) {
-            this.userToken = userToken;
         }
     }
     

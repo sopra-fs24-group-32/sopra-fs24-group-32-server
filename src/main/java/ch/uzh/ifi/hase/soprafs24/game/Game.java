@@ -1,6 +1,9 @@
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
+import ch.uzh.ifi.hase.soprafs24.game.round.Round;
+import ch.uzh.ifi.hase.soprafs24.game.score.Score;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,26 +11,30 @@ import java.util.List;
 public class Game {
     
     private List<Player> players;
-    private String lobbyId;
+    private Score scores;
+    private int amtOfRounds;
+    private float timeLimit;
+    private Round round;
+    
 
-    public Game(long id) {
-        this.players = new ArrayList<>();
-        this.lobbyId = "roomId" + id;
+    // public Game(long id) {
+    //     this.players = new ArrayList<>();
+    //     this.lobbyId = "roomId" + id;
+    // }
+
+    public Game(List<Player> players, int numOfRounds, float timeLimit) {
+        this.players = players;
+        this.amtOfRounds = numOfRounds;
+        this.timeLimit = timeLimit;
+        this.scores = new Score();
     }
 
-    public void addPlayer(Player player) {
-        players.add(player);
-    }
+    public void startGame() {
 
-    public List<Player> getPlayers() {
-        return players;
-    }
-
-    public void removePlayer(Player player) {
-        players.remove(player);
-    }
-    public String getLobbyId() {
-        return lobbyId;
+        for (int i = 0; i < amtOfRounds; i++) {
+            round = new Round(players);
+            round.startNewRound(timeLimit, players, scores);
+        }
     }
 
 }

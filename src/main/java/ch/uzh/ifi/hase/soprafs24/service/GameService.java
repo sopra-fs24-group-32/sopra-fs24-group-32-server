@@ -1,67 +1,48 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import org.bson.Document;
 import org.springframework.stereotype.Service;
-import ch.uzh.ifi.hase.soprafs24.game.Game;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
-import static com.mongodb.client.model.Filters.eq;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
 public class GameService {
-    
-    Dotenv dotenv = Dotenv.load();
-    String connectionString = dotenv.get("MONGO_DB_URL");
-    MongoClient mongoClient = MongoClients.create(connectionString);
-    MongoDatabase databaseGame = mongoClient.getDatabase("game");
-    MongoDatabase databaseUsers = mongoClient.getDatabase("usersdb");
-    MongoCollection<Document> collectionLobby = databaseGame.getCollection("lobby");
-    MongoCollection<Document> collectionUsers = databaseUsers.getCollection("users");
 
-    private static final Map<Long, Game> games = new HashMap<>();
-    private long nextId = 1;
+    private static final Map<Long, Lobby> lobbies = new HashMap<>();
+    private UserService userService;
+    private long nextId = 1;    
 
-    public String fetchUserToken(MongoCollection<Document> collectionUser, String userToken) {
-        Document user = collectionUser.find(eq("userToken", userToken))
-                .first();
-
-        try {
-            // user = collectionUsers.find(eq("userToken", userToken)).first();
-            if (user != null) {
-                return user.getString("userToken");
-        }} catch (Exception e) {
-            System.out.println("Invalid User Token Error:" + e);
+    public boolean fetchUserToken(List<User> users, String userToken) {
+        for (User user : users) {
+            if (user.getUserToken().equals(userToken)) {
+                return true;
+            }
         }
-        return null;
-    } // fetchUserToken
+        return false;
+    }
 
-    public Game createGame(String userToken) {
-        
+    public String createGame(String userToken) {
+        List<User> users = userService.getAllUsers();
         try {
             long id = nextId++;
-            Game game = new Game(id);
-            String userTokenVerified = fetchUserToken(collectionUsers, userToken);
-            if (userTokenVerified != null) {
+            boolean userTokenVerified = fetchUserToken(users, userToken);
+            if (userTokenVerified) {
                 System.out.println("User Token Verified: " + userTokenVerified);
-                Document lobbyCreated = new Document("lobbyId", game.getLobbyId());
-                collectionLobby.insertOne(lobbyCreated);
-                games.put(id, game);
-                return game;
+                Lobby lobbyCreated = new Lobby(id);
+                lobbies.put(id, lobbyCreated);
+                
+                return lobbyCreated.getLobbyId();
             } else {
+                System.out.println("Error creating game: No user matches token");
                 return null;
             }
         } catch (Exception e) {
                 // Handle exception
-            throw new RuntimeException("Error creating game: No user matches token" + e);
+            throw new RuntimeException("Something went wrong creating game: " + e);
             }
         } 
 }
