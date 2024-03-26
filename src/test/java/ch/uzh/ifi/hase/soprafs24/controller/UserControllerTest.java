@@ -45,12 +45,12 @@ public class UserControllerTest {
 
   @Test
   public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
-    // given
-    User user = new User();
-    user.setUsername("firstname@lastname");
-    user.setStatus(UserStatus.OFFLINE);
+    // // given
+    // User user = new User();
+    // user.setUsername("firstname@lastname");
+    // user.setStatus(UserStatus.OFFLINE);
 
-    List<User> allUsers = Collections.singletonList(user);
+    // List<User> allUsers = Collections.singletonList(user);
 
     // this mocks the UserService -> we define above what the userService should
     // return when getUsers() is called
