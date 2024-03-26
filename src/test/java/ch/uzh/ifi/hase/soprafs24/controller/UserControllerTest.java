@@ -44,7 +44,7 @@ public class UserControllerTest {
   private UserService userService;
 
   @Test
-  public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
+  public void givenUsers_whenGetUsers_thenReturnJsonArray() {
     // // given
     // User user = new User();
     // user.setUsername("firstname@lastname");
