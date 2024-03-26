@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @DataJpaTest
 public class UserRepositoryIntegrationTest {
 
-  @Autowired
-  private TestEntityManager entityManager;
+  // @Autowired
+  // private TestEntityManager entityManager;
 
   // @Autowired
   // private UserRepository userRepository;

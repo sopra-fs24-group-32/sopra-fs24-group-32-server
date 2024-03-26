@@ -37,11 +37,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  // @Autowired
+  // private MockMvc mockMvc;
 
-  @MockBean
-  private UserService userService;
+  // @MockBean
+  // private UserService userService;
 
   @Test
   public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {

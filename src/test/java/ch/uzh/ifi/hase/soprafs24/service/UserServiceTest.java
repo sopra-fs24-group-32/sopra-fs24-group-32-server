@@ -18,10 +18,10 @@ public class UserServiceTest {
   // @Mock
   // private UserRepository userRepository;
 
-  @InjectMocks
-  private UserService userService;
+  // @InjectMocks
+  // private UserService userService;
 
-  private User testUser;
+  // private User testUser;
 
   // @BeforeEach
   // public void setup() {
