@@ -5,7 +5,7 @@ public class Player {
     private String username;
     private int score = 0;
 
-    public Player(String name, Long id, String username) {
+    public Player(Long id, String username) {
         this.username = username;
         this.id = id;
     }
