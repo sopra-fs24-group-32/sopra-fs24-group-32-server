@@ -40,8 +40,7 @@ public class UserService {
   }
 
   public User createUser(User newUser) {
-    newUser.setUserToken(UUID.randomUUID().toString());
-    System.out.println("Token---------------------------------------"+newUser.getUserToken());
+    
     // newUser.setStatus(UserStatus.OFFLINE);
     checkIfUserExists(newUser);
     // saves the given entity but data is only persisted in the database once
@@ -49,8 +48,11 @@ public class UserService {
     
     newUser.setStatus(UserStatus.ONLINE);
     newUser.setIsLoggedIn(true);
+    newUser.setUserToken(UUID.randomUUID().toString());
     newUser = userRepository.save(newUser);
     userRepository.flush();
+
+    System.out.println("Token----------------------: " + newUser.getUserToken());
 
     log.debug("Created Information for User: {}", newUser);
     return newUser;

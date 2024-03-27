@@ -6,16 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.*;
 
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.game.score.Score;
 
 public class Round {
+
     private String inputPhrase;
     private Clock timer;
     private Map<Player, Map<String, Duration>> guessedInputs;
     private List<Player> players;
     private Player pictureGenerator;
+    @OneToMany
     private List<Player> remainingGenerators;
     // private ChatGPT chatGPT;
     private Score scores;

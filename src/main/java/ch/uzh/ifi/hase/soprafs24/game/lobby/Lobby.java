@@ -3,33 +3,74 @@ package ch.uzh.ifi.hase.soprafs24.game.lobby;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+
+@Entity
+@Table(name = "lobby")
 public class Lobby {
     
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private int maxAmtPlayers;
-    private List<Player> players;
-    private Game game;
+    
     private User owner;
+    @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
     private String invitationCodes;
+
+    @OneToMany
+    private List<Player> players = new ArrayList<>();
+
+    @Column(nullable = false)
     private int amtOfRounds;
+
+    @Column(nullable = false)
     private float timeLimit;
 
-
-    public Lobby(long id) {
+    public Lobby(){}
+    public Lobby(long id, float timeLimit, int amtOfRounds) {
         this.lobbyId = "roomId" + id;
-        this.players = new ArrayList<>();
+        this.timeLimit = timeLimit;
+        this.amtOfRounds = amtOfRounds;
     }
 
     public String getLobbyId() {
         return lobbyId;
     }
 
-    public void startGame(List<Player> players, int amtOfRounds, float timeLimit) {
+    public void setAmtOfRounds(int amtOfRounds) {
+        this.amtOfRounds = amtOfRounds;
+    }
+
+    public void setTimeLimit(float timeLimit) {
+        this.timeLimit = timeLimit;
+    }
+
+    public float getTimeLimit() {
+        return timeLimit;
+    }
+
+    public int getAmtOfRounds() {
+        return amtOfRounds;
+    }
+
+    public void startGame() {
         if (atLeastTwoPlayers() && timeLimit <= 5) {
-            this.game = new Game(players, amtOfRounds, timeLimit);
+            Game game = new Game();
+            game.startGame();
         } else {
             throw new IllegalArgumentException("Not enough players to start the game or guessing time is too short.");
         }

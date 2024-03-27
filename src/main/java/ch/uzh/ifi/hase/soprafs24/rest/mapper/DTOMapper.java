@@ -1,6 +1,9 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import org.mapstruct.*;
@@ -21,6 +24,10 @@ import org.mapstruct.factory.Mappers;
 public interface DTOMapper {
 
   DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
+
+  @Mapping(source = "timeLimit", target = "timeLimit")
+  @Mapping(source = "amtOfRounds", target = "amtOfRounds")
+  Game convertGamePostDTOtoEntity(GamePostDTO gamePostDTO);
 
   
   @Mapping(source = "username", target = "username")

@@ -4,27 +4,47 @@ import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.game.round.Round;
 import ch.uzh.ifi.hase.soprafs24.game.score.Score;
 
-import java.util.ArrayList;
 import java.util.List;
 
-
 public class Game {
-    
+
     private List<Player> players;
     private Score scores;
     private int amtOfRounds;
     private float timeLimit;
     private Round round;
-    
+    private String userToken;
 
-    // public Game(long id) {
-    //     this.players = new ArrayList<>();
-    //     this.lobbyId = "roomId" + id;
-    // }
-
-    public Game(List<Player> players, int numOfRounds, float timeLimit) {
+    public void setTimeLimit(float timeLimit) {
+        this.timeLimit = timeLimit;
+    }
+    public void setAmtOfRounds(int amtOfRounds) {
+        this.amtOfRounds = amtOfRounds;
+    }
+    public void setPlayers(List<Player> players) {
         this.players = players;
-        this.amtOfRounds = numOfRounds;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public float getTimeLimit() {
+        return timeLimit;
+    }
+
+    public int getAmtOfRounds() {
+        return amtOfRounds;
+    }
+
+    public int getNumofRouds() {
+        return amtOfRounds;
+    }
+
+    public Game() {}
+        public Game(List<Player> players, int amtOfRounds, float timeLimit){
+        this.players = players;
+        this.amtOfRounds = amtOfRounds;
         this.timeLimit = timeLimit;
         this.scores = new Score();
     }
@@ -35,6 +55,15 @@ public class Game {
             round = new Round(players);
             round.startNewRound(timeLimit, players, scores);
         }
+    }
+
+
+    public void setUserToken(String userToken) {
+        this.userToken = userToken;
+    }
+
+    public String getUserToken() {
+        return userToken;
     }
 
 }

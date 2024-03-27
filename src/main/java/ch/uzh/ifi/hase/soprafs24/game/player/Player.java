@@ -1,13 +1,30 @@
 package ch.uzh.ifi.hase.soprafs24.game.player;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "player")
 public class Player {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String username;
+    @Column(nullable = false)
     private int score = 0;
 
-    public Player(Long id, String username) {
+    public Player() {
+    }
+    public Player(String username, int score) {
         this.username = username;
-        this.id = id;
+        this.score = score;
     }
 
     public int getScore() {
