@@ -45,7 +45,7 @@ public class GameController {
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
         Lobby lobby = gameService.joinGame(lobbyId, userInput);
         if (lobby != null) {
-            System.out.println("Game lobby successfully joined with Id: " + lobby.getLobbyId());
+            System.out.println("Successfully joined game lobby with Id: " + lobby.getLobbyId());
             return lobby;
         } else {
             System.out.println("Error joining game: No user matches token");
