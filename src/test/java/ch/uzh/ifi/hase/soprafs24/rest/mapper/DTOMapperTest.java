@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import org.junit.jupiter.api.Test;
@@ -47,4 +48,46 @@ public class DTOMapperTest {
     assertEquals(user.getUsername(), userGetDTO.getUsername());
     assertEquals(user.getStatus(), userGetDTO.getStatus());
   }
+
+  @Test
+    public void testGetAndSetTimeLimit() {
+        // Arrange
+        float expectedTimeLimit = 10.0f;
+        GamePostDTO dto = new GamePostDTO();
+
+        // Act
+        dto.setTimeLimit(expectedTimeLimit);
+        float actualTimeLimit = dto.getTimeLimit();
+
+        // Assert
+        assertEquals(expectedTimeLimit, actualTimeLimit);
+    }
+
+    @Test
+    public void testGetAndSetAmtOfRounds() {
+        // Arrange
+        int expectedAmtOfRounds = 5;
+        GamePostDTO dto = new GamePostDTO();
+
+        // Act
+        dto.setAmtOfRounds(expectedAmtOfRounds);
+        int actualAmtOfRounds = dto.getAmtOfRounds();
+
+        // Assert
+        assertEquals(expectedAmtOfRounds, actualAmtOfRounds);
+    }
+
+    @Test
+    public void testGetAndSetMaxAmtPlayers() {
+        // Arrange
+        int expectedMaxAmtPlayers = 4;
+        GamePostDTO dto = new GamePostDTO();
+
+        // Act
+        dto.setMaxAmtPlayers(expectedMaxAmtPlayers);
+        int actualMaxAmtPlayers = dto.getMaxAmtPlayers();
+
+        // Assert
+        assertEquals(expectedMaxAmtPlayers, actualMaxAmtPlayers);
+    }
 }
