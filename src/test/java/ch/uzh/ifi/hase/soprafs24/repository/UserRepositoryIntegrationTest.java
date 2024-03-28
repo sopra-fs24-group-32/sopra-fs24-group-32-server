@@ -13,31 +13,32 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @DataJpaTest
 public class UserRepositoryIntegrationTest {
 
-  // @Autowired
-  // private TestEntityManager entityManager;
+  @Autowired
+  private TestEntityManager entityManager;
 
-  // @Autowired
-  // private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
   @Test
-  public void findByName_success() {
+  public void findByUsername_success() {
     // given
-    // User user = new User();
-    // user.setUsername("firstname@lastname");
-    // user.setStatus(UserStatus.OFFLINE);
-    // user.setUserToken("1");
+    User user = new User();
+    // user.setName("Firstname Lastname");
+    user.setUsername("testUsername");
+    user.setStatus(UserStatus.OFFLINE);
+    user.setPassword("testPassword");
+    user.setUserToken("1");
 
-    // entityManager.persist(user);
-    // entityManager.flush();
+    entityManager.persist(user);
+    entityManager.flush();
 
     // when
-    // User found = userRepository.findByName(user.getName());
+    User found = userRepository.findByUsername(user.getUsername());
 
-    // // then
-    // assertNotNull(found.getId());
-    // assertEquals(found.getName(), user.getName());
-    // assertEquals(found.getUsername(), user.getUsername());
-    // assertEquals(found.getToken(), user.getToken());
-    // assertEquals(found.getStatus(), user.getStatus());
+    // then
+    assertNotNull(found.getId());
+    assertEquals(found.getUsername(), user.getUsername());
+    assertEquals(found.getUserToken(), user.getUserToken());
+    assertEquals(found.getStatus(), user.getStatus());
   }
 }
