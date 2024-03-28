@@ -48,22 +48,30 @@ public class GameService {
         return null; // Return null if lobby is not found
     }
 
-    public Lobby createGame(GamePostDTO gamePostDTO) {
-        User findUser = userService.findByUsername(gamePostDTO.getUsername());
-        String userToken = findUser.getUserToken();
+    public User fetchUserToken(List<User> users, String userToken) {
+        for (User user : users) {
+            if (user.getUserToken().equals(userToken)) {
+                return user;
+            } 
+        }
+        // Return empty user if no user is found
+        return new User();
+    }
+
+    public Lobby createGame(String userToken) {
+        List<User> users = getAllUsers();
+        User verifiedUser = fetchUserToken(users, userToken);
         try {
-            if (userToken != null) {
+            if (verifiedUser.getUserToken() != null) {
                 long id = nextId++;
-                float timeLimit = gamePostDTO.getTimeLimit();
-                int amtOfRounds = gamePostDTO.getAmtOfRounds();
                 Player host = new Player();
-                host.setUsername(findUser.getUsername());
-    
-                Lobby lobbyCreated = new Lobby(id, timeLimit, amtOfRounds);
+                host.setUsername(verifiedUser.getUsername());
+                Lobby lobbyCreated = new Lobby(id);
                 lobbyCreated.addPlayer(host);
                 lobbies.put(id, lobbyCreated);
                 return lobbyCreated;
             } else {
+                System.out.println("No user matches token");
                 return null;
             }
         } catch (Exception e) {
@@ -75,10 +83,7 @@ public class GameService {
     public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
         try {
             Lobby reqLobby = findByLobbyId(lobbyId);
-            String username = gamePostDTO.getUsername();
-            String hostUsername = reqLobby.getAllPlayers().get(0).getUsername();
-
-            if (reqLobby != null && hostUsername.equals(username)) {
+            if (reqLobby != null) {
                 if (gamePostDTO.getTimeLimit() != 0){
                     reqLobby.setTimeLimit(gamePostDTO.getTimeLimit());
                 }
@@ -98,17 +103,16 @@ public class GameService {
         }
     }
 
-    public Lobby joinGame(String lobbyId, User user) {
+    public Lobby joinGame(String lobbyId, String userToken) {
 
-        User findUser = userService.findByUsername(user.getUsername());
-
-        String userToken = findUser.getUserToken();
+        List<User> users = getAllUsers();
+        User verifiedUser = fetchUserToken(users, userToken);
 
         try {
             Lobby reqLobby = findByLobbyId(lobbyId);
-            if (userToken !=null && reqLobby != null) {
+            if (verifiedUser.getUserToken() !=null && reqLobby != null) {
                 Player player = new Player();
-                player.setUsername(findUser.getUsername());
+                player.setUsername(verifiedUser.getUsername());
                 reqLobby.addPlayer(player);
                 String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
                 long index = Long.parseLong(parts[1]);

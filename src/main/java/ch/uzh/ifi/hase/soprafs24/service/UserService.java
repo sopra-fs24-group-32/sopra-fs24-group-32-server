@@ -51,6 +51,9 @@ public class UserService {
     newUser.setUserToken(UUID.randomUUID().toString());
     userRepository.save(newUser);
     userRepository.flush();
+    
+    // print user token to console
+    System.out.println("User token---------------------------------: " + newUser.getUserToken());
 
     log.debug("Created Information for User: {}", newUser);
     return newUser;

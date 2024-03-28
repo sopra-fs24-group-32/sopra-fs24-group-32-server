@@ -40,12 +40,10 @@ public class Lobby {
     private float timeLimit;
 
     public Lobby(){}
-    public Lobby(long id, float timeLimit, int amtOfRounds) {
+    public Lobby(long id) {
         this.lobbyId = "roomId" + id;
-        this.timeLimit = timeLimit;
-        this.amtOfRounds = amtOfRounds;
     }
-
+    
     public String getLobbyId() {
         return lobbyId;
     }

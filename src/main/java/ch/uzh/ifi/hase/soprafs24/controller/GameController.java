@@ -25,8 +25,9 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Lobby createGame(@RequestBody GamePostDTO gamePostDTO) {
-        Lobby lobby = gameService.createGame(gamePostDTO);
+    public Lobby createGame(@RequestBody UserPostDTO userPostDTO) {
+        User user = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+        Lobby lobby = gameService.createGame(user.getUserToken());
         String lobbyId = lobby.getLobbyId();
         if (lobbyId != null) {
             System.out.println("Game lobby successfully created with Id: " + lobbyId);
@@ -42,8 +43,8 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Lobby joinGame(@PathVariable String lobbyId, @RequestBody UserPostDTO userPostDTO) {
-        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-        Lobby lobby = gameService.joinGame(lobbyId, userInput);
+        User user = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+        Lobby lobby = gameService.joinGame(lobbyId, user.getUserToken());
         if (lobby != null) {
             System.out.println("Successfully joined game lobby with Id: " + lobby.getLobbyId());
             return lobby;
