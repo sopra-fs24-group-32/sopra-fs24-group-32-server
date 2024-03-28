@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
@@ -9,6 +10,7 @@ import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,9 +50,12 @@ public class GameService {
         return null; // Return null if lobby is not found
     }
 
-    public Lobby createGame(GamePostDTO gamePostDTO) {
-        User findUser = userService.findByUsername(gamePostDTO.getUsername());
-        String userToken = findUser.getUserToken();
+    //create a lobby
+    public Lobby createLobby(String userToken) {
+
+        User lobbyOwner = userService.findByToken(userToken);
+        return new Lobby(nextId++, lobbyOwner);
+        /*
         try {
             if (userToken != null) {
                 long id = nextId++;
@@ -68,8 +73,10 @@ public class GameService {
             }
         } catch (Exception e) {
             throw new RuntimeException("Something went wrong creating game: " + e);
-            }
-        } 
+        }
+
+         */
+    }
 
 
     public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {

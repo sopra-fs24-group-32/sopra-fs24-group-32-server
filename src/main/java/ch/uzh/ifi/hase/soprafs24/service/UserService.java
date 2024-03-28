@@ -67,6 +67,14 @@ public class UserService {
     return findUser;
   }
 
+  public User findByToken(String userToken){
+      User user = userRepository.findByToken(userToken);
+      if(user == null){
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+      }
+      return user;
+  }
+
   public User updateUser(int id, User user) throws Exception {
     User reqUser = this.getUserById(id);
     if (!user.getUsername().isBlank()){

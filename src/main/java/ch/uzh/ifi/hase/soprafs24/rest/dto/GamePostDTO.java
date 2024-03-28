@@ -8,16 +8,9 @@ public class GamePostDTO {
     
     private float timeLimit;
     private int amtOfRounds;
-    private List<Player> players;
+    private int maxAmtPlayers;
+
     private String username;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUserToken(String username) {
-        this.username = username;
-    }
 
     public float getTimeLimit() {
         return timeLimit;
@@ -35,11 +28,19 @@ public class GamePostDTO {
         this.amtOfRounds = amtOfRounds;
     }
 
-    public List<Player> getPlayers() {
-        return players;
+    public int getMaxAmtPlayers() {
+        return maxAmtPlayers;
     }
 
-    public void setPlayers(List<Player> players) {
-        this.players = players;
+    public void setMaxAmtPlayers(int maxAmtPlayers) {
+        this.maxAmtPlayers = maxAmtPlayers;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

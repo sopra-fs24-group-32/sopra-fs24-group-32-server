@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class GameController {
@@ -25,17 +26,23 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Lobby createGame(@RequestBody GamePostDTO gamePostDTO) {
-        Lobby lobby = gameService.createGame(gamePostDTO);
-        String lobbyId = lobby.getLobbyId();
-        if (lobbyId != null) {
-            System.out.println("Game lobby successfully created with Id: " + lobbyId);
-            return lobby;
-        } else {
-            // Assuming a null game means the userToken was invalid or another issue occurred
-            System.out.println("Error creating game: No user matches token");
-            return null;
+    public Lobby createGame(@RequestBody String userToken) throws Exception {
+        if(userToken == null || userToken.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
+        Lobby lobby = gameService.createLobby(userToken);
+
+        if(lobby == null){
+            throw new Exception("newly created lobby is null");
+        }
+        return lobby;
+    }
+
+    @PutMapping("lobby/update/{lobbyId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void updateLobby(GamePostDTO gamePostDTO){
+
     }
 
     @PostMapping("/lobby/join/{lobbyId}")

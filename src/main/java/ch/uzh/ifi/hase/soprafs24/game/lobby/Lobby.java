@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.game.lobby;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +26,14 @@ public class Lobby {
     private Long id;
 
     private int maxAmtPlayers;
+    private Game game;
+    private User lobbyOwner;
+    private String invitationCode;
+
+
     
     @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
-    private String invitationCodes;
-
     @OneToMany
     private List<Player> players = new ArrayList<>();
 
@@ -40,10 +44,10 @@ public class Lobby {
     private float timeLimit;
 
     public Lobby(){}
-    public Lobby(long id, float timeLimit, int amtOfRounds) {
+    public Lobby(long id, User lobbyOwner) {
         this.lobbyId = "roomId" + id;
-        this.timeLimit = timeLimit;
-        this.amtOfRounds = amtOfRounds;
+        this.lobbyOwner = lobbyOwner;
+        this.invitationCode = generateNewInvitationCode();
     }
 
     public String getLobbyId() {
@@ -103,12 +107,42 @@ public class Lobby {
     }
 
     private String generateNewInvitationCode() {
-        // Implementation not provided
-        return null;
+        int length = 10;
+        boolean useLetters = true;
+        boolean useNumbers = false;
+        return RandomStringUtils.random(length, useLetters, useNumbers);
     }
 
     public void endSession() {
         // Additional cleanup logic can be added here
     }
 
+    public String getInvitationCodes() {
+        return invitationCode;
+    }
+
+
+    public User getOwner() {
+        return lobbyOwner;
+    }
+
+    public void setOwner(User lobbyOwner) {
+        this.lobbyOwner = lobbyOwner;
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public int getMaxAmtPlayers() {
+        return maxAmtPlayers;
+    }
+
+    public void setMaxAmtPlayers(int maxAmtPlayers) {
+        this.maxAmtPlayers = maxAmtPlayers;
+    }
 }
