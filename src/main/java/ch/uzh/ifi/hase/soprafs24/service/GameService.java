@@ -62,8 +62,6 @@ public class GameService {
                 Lobby lobbyCreated = new Lobby(id, timeLimit, amtOfRounds);
                 lobbyCreated.addPlayer(host);
                 lobbies.put(id, lobbyCreated);
-                // gameRepository.save(lobbyCreated);
-                // gameRepository.flush();
                 return lobbyCreated;
             } else {
                 return null;
@@ -90,8 +88,6 @@ public class GameService {
                 String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
                 long index = Long.parseLong(parts[1]);
                 lobbies.put(index, reqLobby);
-                // gameRepository.save(reqLobby);
-                // gameRepository.flush();
                 return reqLobby;
             } else {
                 System.out.println("You are not the host, thus you cannot update the game or lobbyId not found");
@@ -117,8 +113,6 @@ public class GameService {
                 String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
                 long index = Long.parseLong(parts[1]);
                 lobbies.put(index, reqLobby);
-                // gameRepository.save(reqLobby);
-                // gameRepository.flush();
                 return reqLobby;
             } else {
                 System.out.println("User token not verified or lobbyId:" + lobbyId + "not found");
