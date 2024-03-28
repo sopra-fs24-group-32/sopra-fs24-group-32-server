@@ -44,7 +44,6 @@ public class GameService {
     }
 
     public Lobby findByLobbyId(String lobbyId) {
-        // String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
         for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
             if (entry.getValue().getLobbyId().equals(lobbyId)) {
                 return entry.getValue();
@@ -66,7 +65,7 @@ public class GameService {
     
                 Lobby lobbyCreated = new Lobby(id, timeLimit, amtOfRounds);
                 lobbyCreated.addPlayer(host);
-                lobbyCreated.setUserToken(userToken);
+                lobbyCreated.setHostToken(userToken);
                 lobbies.put(id, lobbyCreated);
                 // gameRepository.save(lobbyCreated);
                 // gameRepository.flush();
@@ -84,7 +83,7 @@ public class GameService {
         try {
             Lobby reqLobby = findByLobbyId(lobbyId);
             String userToken = userService.findByUsername(gamePostDTO.getUsername()).getUserToken();
-            String hostToken = reqLobby.getUserToken();
+            String hostToken = reqLobby.getHostToken();
 
             if (reqLobby != null && userToken.equals(hostToken)) {
                 if (gamePostDTO.getTimeLimit() != 0){
