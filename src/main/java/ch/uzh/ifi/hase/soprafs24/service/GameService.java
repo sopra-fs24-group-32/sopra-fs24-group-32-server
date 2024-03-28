@@ -20,16 +20,19 @@ import java.util.Map;
 public class GameService {
 
     private final UserRepository userRepository;
+    private final UserService userService;
     private final GameRepository gameRepository;
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
     @Autowired
     public GameService(@Qualifier("userRepository") UserRepository userRepository,
-                        @Qualifier("gameRepository") GameRepository gameRepository
+                        @Qualifier("gameRepository") GameRepository gameRepository,
+                        @Qualifier("userService") UserService userService
                         ){
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
+        this.userService = userService;
     }
 
     public List<User> getAllUsers() {
@@ -51,7 +54,7 @@ public class GameService {
     }
 
     public Lobby createGame(GamePostDTO gamePostDTO) {
-        User findUser = findByUsername(gamePostDTO.getUsername());
+        User findUser = userService.findByUsername(gamePostDTO.getUsername());
         String userToken = findUser.getUserToken();
         try {
             if (userToken != null) {
@@ -63,6 +66,7 @@ public class GameService {
     
                 Lobby lobbyCreated = new Lobby(id, timeLimit, amtOfRounds);
                 lobbyCreated.addPlayer(host);
+                lobbyCreated.setUserToken(userToken);
                 lobbies.put(id, lobbyCreated);
                 // gameRepository.save(lobbyCreated);
                 // gameRepository.flush();
@@ -77,24 +81,36 @@ public class GameService {
 
 
     public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
-        Lobby reqLobby = findByLobbyId(lobbyId);
-        if (gamePostDTO.getTimeLimit() != 0){
-            reqLobby.setTimeLimit(gamePostDTO.getTimeLimit());
+        try {
+            Lobby reqLobby = findByLobbyId(lobbyId);
+            String userToken = userService.findByUsername(gamePostDTO.getUsername()).getUserToken();
+            String hostToken = reqLobby.getUserToken();
+
+            if (reqLobby != null && userToken.equals(hostToken)) {
+                if (gamePostDTO.getTimeLimit() != 0){
+                    reqLobby.setTimeLimit(gamePostDTO.getTimeLimit());
+                }
+                if (gamePostDTO.getAmtOfRounds() != 0){
+                    reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
+                }
+                String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
+                long index = Long.parseLong(parts[1]);
+                lobbies.put(index, reqLobby);
+                // gameRepository.save(reqLobby);
+                // gameRepository.flush();
+                return reqLobby;
+            } else {
+                System.out.println("You are not the host, thus you cannot update the game or lobbyId not found");
+                return null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Something went wrong updating game: " + e);
         }
-        if (gamePostDTO.getAmtOfRounds() != 0){
-            reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
-        }
-        String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
-        long index = Long.parseLong(parts[1]);
-        lobbies.put(index, reqLobby);
-        // gameRepository.save(reqLobby);
-        // gameRepository.flush();
-        return reqLobby;
     }
 
     public Lobby joinGame(String lobbyId, User user) {
 
-        User findUser = findByUsername(user.getUsername());
+        User findUser = userService.findByUsername(user.getUsername());
 
         String userToken = findUser.getUserToken();
 
@@ -119,18 +135,6 @@ public class GameService {
             throw new RuntimeException("Something went wrong joining game: " + e);
         }     
     }
-
-
-    public User findByUsername(String username) {
-        List<User> users = userRepository.findAll();
-        User findUser = new User();
-        for (int i=0; i<users.size(); i++){
-          if (users.get(i).getUsername().equals(username)){
-            findUser = users.get(i);
-          }
-        }
-        return findUser;
-      }
     
 }
         

@@ -14,6 +14,7 @@ public class Game {
     private float timeLimit;
     private Round round;
     private String username;
+    
 
     public void setTimeLimit(float timeLimit) {
         this.timeLimit = timeLimit;
@@ -42,7 +43,7 @@ public class Game {
     }
 
     public Game() {}
-        public Game(List<Player> players, int amtOfRounds, float timeLimit){
+    public Game(List<Player> players, float timeLimit, int amtOfRounds){
         this.players = players;
         this.amtOfRounds = amtOfRounds;
         this.timeLimit = timeLimit;
@@ -53,7 +54,7 @@ public class Game {
 
         for (int i = 0; i < amtOfRounds; i++) {
             round = new Round(players);
-            round.startNewRound(timeLimit, players, scores);
+            round.startNewRound(players, timeLimit, scores);
         }
     }
 

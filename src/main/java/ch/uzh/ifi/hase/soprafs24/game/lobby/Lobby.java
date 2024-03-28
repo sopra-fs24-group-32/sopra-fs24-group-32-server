@@ -26,10 +26,10 @@ public class Lobby {
 
     private int maxAmtPlayers;
     
-    private User owner;
     @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
     private String invitationCodes;
+    private String userToken;
 
     @OneToMany
     private List<Player> players = new ArrayList<>();
@@ -68,8 +68,8 @@ public class Lobby {
     }
 
     public void startGame() {
-        if (atLeastTwoPlayers() && timeLimit <= 5) {
-            Game game = new Game();
+        if (atLeastTwoPlayers() && timeLimit >= 5) {
+            Game game = new Game(players, timeLimit, amtOfRounds);
             game.startGame();
         } else {
             throw new IllegalArgumentException("Not enough players to start the game or guessing time is too short.");
@@ -110,5 +110,13 @@ public class Lobby {
 
     public void endSession() {
         // Additional cleanup logic can be added here
+    }
+
+    public void setUserToken(String userToken) {
+        this.userToken = userToken;
+    }
+
+    public String getUserToken() {
+        return userToken;
     }
 }

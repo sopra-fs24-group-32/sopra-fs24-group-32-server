@@ -9,6 +9,9 @@ import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 public class Score {
     private Map<Player, Integer> scoreMap;
 
+    public Score(Map<Player, Integer> scoreMap) {
+        this.scoreMap = scoreMap;
+    }
     public Score() {
         this.scoreMap = new HashMap<>();
     }
