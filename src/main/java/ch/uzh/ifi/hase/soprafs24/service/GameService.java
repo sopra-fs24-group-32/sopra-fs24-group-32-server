@@ -1,7 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ import java.util.Map;
 @Service
 public class GameService {
 
-    private final Logger log = LoggerFactory.getLogger(GameService.class);
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
@@ -74,7 +71,6 @@ public class GameService {
                 return null;
             }
         } catch (Exception e) {
-                // Handle exception
             throw new RuntimeException("Something went wrong creating game: " + e);
             }
         } 
