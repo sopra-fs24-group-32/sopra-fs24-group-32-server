@@ -29,7 +29,6 @@ public class Lobby {
     @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
     private String invitationCodes;
-    private String hostToken;
 
     @OneToMany
     private List<Player> players = new ArrayList<>();
@@ -112,11 +111,4 @@ public class Lobby {
         // Additional cleanup logic can be added here
     }
 
-    public void setHostToken(String hostToken) {
-        this.hostToken = hostToken;
-    }
-
-    public String getHostToken() {
-        return hostToken;
-    }
 }

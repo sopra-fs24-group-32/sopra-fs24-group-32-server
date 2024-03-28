@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
-import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 
@@ -21,17 +20,14 @@ public class GameService {
 
     private final UserRepository userRepository;
     private final UserService userService;
-    private final GameRepository gameRepository;
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
     @Autowired
     public GameService(@Qualifier("userRepository") UserRepository userRepository,
-                        @Qualifier("gameRepository") GameRepository gameRepository,
                         @Qualifier("userService") UserService userService
                         ){
         this.userRepository = userRepository;
-        this.gameRepository = gameRepository;
         this.userService = userService;
     }
 
@@ -65,7 +61,6 @@ public class GameService {
     
                 Lobby lobbyCreated = new Lobby(id, timeLimit, amtOfRounds);
                 lobbyCreated.addPlayer(host);
-                lobbyCreated.setHostToken(userToken);
                 lobbies.put(id, lobbyCreated);
                 // gameRepository.save(lobbyCreated);
                 // gameRepository.flush();
@@ -82,10 +77,10 @@ public class GameService {
     public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
         try {
             Lobby reqLobby = findByLobbyId(lobbyId);
-            String userToken = userService.findByUsername(gamePostDTO.getUsername()).getUserToken();
-            String hostToken = reqLobby.getHostToken();
+            String username = gamePostDTO.getUsername();
+            String hostUsername = reqLobby.getAllPlayers().get(0).getUsername();
 
-            if (reqLobby != null && userToken.equals(hostToken)) {
+            if (reqLobby != null && hostUsername.equals(username)) {
                 if (gamePostDTO.getTimeLimit() != 0){
                     reqLobby.setTimeLimit(gamePostDTO.getTimeLimit());
                 }
