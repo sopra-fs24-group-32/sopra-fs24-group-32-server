@@ -13,7 +13,7 @@ public class Game {
     private int amtOfRounds;
     private float timeLimit;
     private Round round;
-    private String userToken;
+    private String username;
 
     public void setTimeLimit(float timeLimit) {
         this.timeLimit = timeLimit;
@@ -58,12 +58,12 @@ public class Game {
     }
 
 
-    public void setUserToken(String userToken) {
-        this.userToken = userToken;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getUserToken() {
-        return userToken;
+    public String getUsername() {
+        return username;
     }
 
 }

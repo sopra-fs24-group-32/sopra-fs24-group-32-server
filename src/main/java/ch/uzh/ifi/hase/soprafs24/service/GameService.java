@@ -8,11 +8,10 @@ import org.springframework.stereotype.Service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
+import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,39 +43,32 @@ public class GameService {
         return lobbies;
     }
 
-    public Lobby findByLobbyId(long lobbyId) {
-        Lobby findLobby = new Lobby();
-        for (int i=0; i<lobbies.size(); i++){
-          if (lobbies.get(i).getLobbyId().equals("roomId"+lobbyId)){
-            findLobby = lobbies.get(i);
-          }
-        }
-        return findLobby;
-      }
-
-    public boolean fetchUserToken(List<User> users, String userToken) {
-        for (User user : users) {
-            if (user.getUserToken().equals(userToken)) {
-                return true;
+    public Lobby findByLobbyId(String lobbyId) {
+        // String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
+        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+            if (entry.getValue().getLobbyId().equals(lobbyId)) {
+                return entry.getValue();
             }
         }
-        return false;
+        return null; // Return null if lobby is not found
     }
 
     public Lobby createGame(GamePostDTO gamePostDTO) {
-        String userToken = gamePostDTO.getUserToken();
-        List<User> users = getAllUsers();
+        User findUser = findByUsername(gamePostDTO.getUsername());
+        String userToken = findUser.getUserToken();
         try {
-            long id = nextId++;
-            boolean userTokenVerified = fetchUserToken(users, userToken);
-            if (userTokenVerified) {
+            if (userToken != null) {
+                long id = nextId++;
                 float timeLimit = gamePostDTO.getTimeLimit();
                 int amtOfRounds = gamePostDTO.getAmtOfRounds();
+                Player host = new Player();
+                host.setUsername(findUser.getUsername());
+    
                 Lobby lobbyCreated = new Lobby(id, timeLimit, amtOfRounds);
+                lobbyCreated.addPlayer(host);
                 lobbies.put(id, lobbyCreated);
-                log.debug("Created Game Lobby Information: {}", lobbyCreated);
-                gameRepository.save(lobbyCreated);
-                gameRepository.flush();
+                // gameRepository.save(lobbyCreated);
+                // gameRepository.flush();
                 return lobbyCreated;
             } else {
                 return null;
@@ -86,5 +78,63 @@ public class GameService {
             throw new RuntimeException("Something went wrong creating game: " + e);
             }
         } 
+
+
+    public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
+        Lobby reqLobby = findByLobbyId(lobbyId);
+        if (gamePostDTO.getTimeLimit() != 0){
+            reqLobby.setTimeLimit(gamePostDTO.getTimeLimit());
+        }
+        if (gamePostDTO.getAmtOfRounds() != 0){
+            reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
+        }
+        String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
+        long index = Long.parseLong(parts[1]);
+        lobbies.put(index, reqLobby);
+        // gameRepository.save(reqLobby);
+        // gameRepository.flush();
+        return reqLobby;
+    }
+
+    public Lobby joinGame(String lobbyId, User user) {
+
+        User findUser = findByUsername(user.getUsername());
+
+        String userToken = findUser.getUserToken();
+
+        try {
+            Lobby reqLobby = findByLobbyId(lobbyId);
+            if (userToken !=null && reqLobby != null) {
+                Player player = new Player();
+                player.setUsername(findUser.getUsername());
+                reqLobby.addPlayer(player);
+                String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
+                long index = Long.parseLong(parts[1]);
+                lobbies.put(index, reqLobby);
+                // gameRepository.save(reqLobby);
+                // gameRepository.flush();
+                return reqLobby;
+            } else {
+                System.out.println("User token not verified or lobbyId:" + lobbyId + "not found");
+                return null;
+            }
+        } catch (Exception e) {
+            // Handle exception
+            throw new RuntimeException("Something went wrong joining game: " + e);
+        }     
+    }
+
+
+    public User findByUsername(String username) {
+        List<User> users = userRepository.findAll();
+        User findUser = new User();
+        for (int i=0; i<users.size(); i++){
+          if (users.get(i).getUsername().equals(username)){
+            findUser = users.get(i);
+          }
+        }
+        return findUser;
+      }
+    
 }
         

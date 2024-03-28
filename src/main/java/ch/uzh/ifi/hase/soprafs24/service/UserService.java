@@ -49,10 +49,8 @@ public class UserService {
     newUser.setStatus(UserStatus.ONLINE);
     newUser.setIsLoggedIn(true);
     newUser.setUserToken(UUID.randomUUID().toString());
-    newUser = userRepository.save(newUser);
+    userRepository.save(newUser);
     userRepository.flush();
-
-    System.out.println("Token----------------------: " + newUser.getUserToken());
 
     log.debug("Created Information for User: {}", newUser);
     return newUser;

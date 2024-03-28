@@ -9,14 +9,14 @@ public class GamePostDTO {
     private float timeLimit;
     private int amtOfRounds;
     private List<Player> players;
-    private String userToken;
+    private String username;
 
-    public String getUserToken() {
-        return userToken;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserToken(String userToken) {
-        this.userToken = userToken;
+    public void setUserToken(String username) {
+        this.username = username;
     }
 
     public float getTimeLimit() {

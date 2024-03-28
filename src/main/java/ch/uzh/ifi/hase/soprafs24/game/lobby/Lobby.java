@@ -77,7 +77,13 @@ public class Lobby {
     }
 
     public void addPlayer(Player player) {
-        players.add(player);
+        boolean playerExists = players.stream().anyMatch(p -> p.getUsername().equals(player.getUsername()));
+        if (!playerExists) {
+            players.add(player);
+        } else {
+            System.out.println("Player already exists in the lobby.");
+        }
+
     }
 
     public List<Player> getAllPlayers() {
@@ -86,6 +92,11 @@ public class Lobby {
 
     public void removePlayer(Player player) {
         players.remove(player);
+    }
+
+    public List<Player> kickedPlayers() {
+        // Implementation not provided: Sprint 2
+        return null;
     }
 
     public boolean atLeastTwoPlayers() {

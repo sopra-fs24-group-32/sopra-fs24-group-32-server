@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+
 @Entity
 @Table(name = "player")
 public class Player {
@@ -15,15 +16,14 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
     @Column(nullable = false)
     private int score = 0;
 
     public Player() {
     }
-    public Player(String username, int score) {
-        this.username = username;
+    public Player(int score) {
         this.score = score;
     }
 
@@ -31,16 +31,16 @@ public class Player {
         return score;
     }
 
-    public void addScore(int points) {
+    public void setScore(int points) {
         score += points;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public Long getId() {
-        return id;
-    }
+    // public void setId(Long id) {
+    //     this.id = id;
+    // }
+    // public Long getId() {
+    //     return id;
+    // }
 
     public void setUsername(String username) {
         this.username = username;
