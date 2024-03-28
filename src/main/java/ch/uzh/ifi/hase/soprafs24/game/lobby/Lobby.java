@@ -2,7 +2,8 @@ package ch.uzh.ifi.hase.soprafs24.game.lobby;
 
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
+import java.security.SecureRandom;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +25,15 @@ public class Lobby {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private int maxAmtPlayers;
+    // private Game game;
+    private String lobbyOwner;
+    private String invitationCode;
+
     
     @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
-    private String invitationCodes;
-
     @OneToMany
     private List<Player> players = new ArrayList<>();
 
@@ -40,8 +44,10 @@ public class Lobby {
     private float timeLimit;
 
     public Lobby(){}
-    public Lobby(long id) {
+    public Lobby(long id, String lobbyOwner) {
         this.lobbyId = "roomId" + id;
+        this.lobbyOwner = lobbyOwner;
+        this.invitationCode = generateNewInvitationCode();
     }
     
     public String getLobbyId() {
@@ -100,13 +106,49 @@ public class Lobby {
         return players.size() >= 2;
     }
 
-    private String generateNewInvitationCode() {
-        // Implementation not provided
-        return null;
+    public String generateNewInvitationCode() {
+        
+        String LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        SecureRandom RANDOM = new SecureRandom();
+        int length = 10;
+
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(LETTERS.charAt(RANDOM.nextInt(LETTERS.length())));
+        }
+        return sb.toString();
     }
 
     public void endSession() {
         // Additional cleanup logic can be added here
     }
 
+    public String getInvitationCodes() {
+        return invitationCode;
+    }
+
+
+    public String getOwner() {
+        return lobbyOwner;
+    }
+
+    public void setOwner(String lobbyOwner) {
+        this.lobbyOwner = lobbyOwner;
+    }
+
+    // public Game getGame() {
+    //     return game;
+    // }
+
+    // public void setGame(Game game) {
+    //     this.game = game;
+    // }
+
+    public int getMaxAmtPlayers() {
+        return maxAmtPlayers;
+    }
+
+    public void setMaxAmtPlayers(int maxAmtPlayers) {
+        this.maxAmtPlayers = maxAmtPlayers;
+    }
 }

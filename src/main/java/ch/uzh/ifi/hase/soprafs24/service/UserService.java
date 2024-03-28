@@ -70,6 +70,16 @@ public class UserService {
     return findUser;
   }
 
+  public User findByToken(String userToken){
+      List<User> users = userRepository.findAll();
+      for (int i=0; i<users.size(); i++){
+          if (users.get(i).getUserToken().equals(userToken)){
+              return users.get(i);
+          }
+      }
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+  }
+
   public User updateUser(int id, User user) throws Exception {
     User reqUser = this.getUserById(id);
     if (!user.getUsername().isBlank()){

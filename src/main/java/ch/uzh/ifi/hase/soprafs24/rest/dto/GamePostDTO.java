@@ -1,14 +1,12 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
-import java.util.List;
-
-import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 
 public class GamePostDTO {
     
     private float timeLimit;
     private int amtOfRounds;
-    private List<Player> players;
+    private int maxAmtPlayers;
+
 
     public float getTimeLimit() {
         return timeLimit;
@@ -26,11 +24,11 @@ public class GamePostDTO {
         this.amtOfRounds = amtOfRounds;
     }
 
-    public List<Player> getPlayers() {
-        return players;
+    public int getMaxAmtPlayers() {
+        return maxAmtPlayers;
     }
 
-    public void setPlayers(List<Player> players) {
-        this.players = players;
+    public void setMaxAmtPlayers(int maxAmtPlayers) {
+        this.maxAmtPlayers = maxAmtPlayers;
     }
 }

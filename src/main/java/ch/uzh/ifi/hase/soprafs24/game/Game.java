@@ -12,9 +12,17 @@ public class Game {
     private Score scores;
     private int amtOfRounds;
     private float timeLimit;
+    private int maxAmtPlayers;
     private Round round;
     private String username;
     
+    public void setMaxAmtPlayers(int maxAmtPlayers) {
+        this.maxAmtPlayers = maxAmtPlayers;
+    }
+
+    public int getMaxAmtPlayers() {
+        return maxAmtPlayers;
+    }
 
     public void setTimeLimit(float timeLimit) {
         this.timeLimit = timeLimit;

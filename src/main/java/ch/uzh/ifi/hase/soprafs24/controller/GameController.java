@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class GameController {
@@ -25,33 +26,42 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Lobby createGame(@RequestBody UserPostDTO userPostDTO) {
-        User user = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-        Lobby lobby = gameService.createGame(user.getUserToken());
-        String lobbyId = lobby.getLobbyId();
-        if (lobbyId != null) {
-            System.out.println("Game lobby successfully created with Id: " + lobbyId);
-            return lobby;
-        } else {
-            // Assuming a null game means the userToken was invalid or another issue occurred
-            System.out.println("Error creating game: No user matches token");
-            return null;
+    public Lobby createGame(@RequestBody UserPostDTO userPostDTO) throws Exception {
+        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+        String userToken = userInput.getUserToken();
+        if(userToken == null || userToken.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
+        Lobby lobby = gameService.createLobby(userToken);
+
+        if(lobby == null){
+            throw new Exception("newly created lobby is null");
+        }
+        return lobby;
     }
+
+    // @PutMapping("lobby/update/{lobbyId}")
+    // @ResponseStatus(HttpStatus.NO_CONTENT)
+    // @ResponseBody
+    // public void updateLobby(GamePostDTO gamePostDTO){
+
+    // }
 
     @PostMapping("/lobby/join/{lobbyId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Lobby joinGame(@PathVariable String lobbyId, @RequestBody UserPostDTO userPostDTO) {
-        User user = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-        Lobby lobby = gameService.joinGame(lobbyId, user.getUserToken());
-        if (lobby != null) {
-            System.out.println("Successfully joined game lobby with Id: " + lobby.getLobbyId());
-            return lobby;
-        } else {
-            System.out.println("Error joining game: No user matches token");
-            return null;
+    public Lobby joinGame(@PathVariable String lobbyId, @RequestBody UserPostDTO userPostDTO) throws Exception{
+        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+        if (userInput.getUserToken() == null || userInput.getUserToken().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
+        Lobby lobby = gameService.joinGame(lobbyId, userInput.getUserToken());
+
+        if (lobby == null) {
+            throw new Exception("Lobby not found");
+        }
+        return lobby;
     }
 
 
@@ -65,30 +75,26 @@ public class GameController {
     @GetMapping("/lobby/{lobbyId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Lobby getLobby(@PathVariable String lobbyId) {
+    public Lobby getLobby(@PathVariable String lobbyId) throws Exception{
         Lobby lobby = gameService.findByLobbyId(lobbyId);
-        if (lobby != null) {
-            System.out.println("Game lobby successfully found with Id: " + lobby.getLobbyId());
-            return lobby;
-        } else {
-            System.out.println("Error finding game: No lobby matches Id");
-            return null;
+
+        if (lobby == null) {
+            throw new Exception("Lobby not found");
         }
+
+        return lobby;
     }
 
 
     @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) {
+    public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
         Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
-        if (lobby != null) {
-            System.out.println("Game lobby successfully updated with Id: " + lobby.getLobbyId());
-            return lobby;
-        } else {
-            // Assuming a null game means the userToken was invalid or another issue occurred
-            System.out.println("Error updating game: No user matches token");
-            return null;
+
+        if (lobby == null) {
+            throw new Exception("Lobby Id: " + lobbyId + " not found");
         }
+        return lobby;
     }
 }

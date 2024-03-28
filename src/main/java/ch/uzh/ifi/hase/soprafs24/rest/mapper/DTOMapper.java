@@ -27,6 +27,7 @@ public interface DTOMapper {
 
   @Mapping(source = "timeLimit", target = "timeLimit")
   @Mapping(source = "amtOfRounds", target = "amtOfRounds")
+  @Mapping(source = "maxAmtPlayers", target = "maxAmtPlayers")
   Game convertGamePostDTOtoEntity(GamePostDTO gamePostDTO);
 
   
