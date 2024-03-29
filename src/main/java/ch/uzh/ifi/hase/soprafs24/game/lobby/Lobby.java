@@ -34,6 +34,7 @@ public class Lobby {
     // private Game game;
     private String lobbyOwner;
     private String invitationCode;
+    private boolean gameHasStarted = false;
 
     
     @Column(nullable = false, name = "lobbyId")
@@ -157,5 +158,13 @@ public class Lobby {
 
     public void setMaxAmtPlayers(int maxAmtPlayers) {
         this.maxAmtPlayers = maxAmtPlayers;
+    }
+
+    public boolean isGameHasStarted() {
+        return gameHasStarted;
+    }
+
+    public void setGameHasStarted(boolean gameHasStarted) {
+        this.gameHasStarted = gameHasStarted;
     }
 }
