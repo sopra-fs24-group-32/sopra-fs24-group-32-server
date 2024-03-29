@@ -97,7 +97,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id" + lobbyId + "does not exist");
         }
 
-        if(lobby.isGameHasStarted()){
+        if(lobby.gameHasStarted()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
         }
 
