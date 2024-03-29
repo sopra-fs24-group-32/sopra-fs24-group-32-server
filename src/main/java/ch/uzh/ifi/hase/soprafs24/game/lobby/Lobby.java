@@ -47,11 +47,24 @@ public class Lobby {
     public Lobby(long id, String lobbyOwner) {
         this.lobbyId = "roomId" + id;
         this.lobbyOwner = lobbyOwner;
+        this.id = id;
         this.invitationCode = generateNewInvitationCode();
     }
     
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getLobbyId() {
         return lobbyId;
+    }
+
+    public void setLobbyId(String lobbyId) {
+        this.lobbyId = lobbyId;
     }
 
     public void setAmtOfRounds(int amtOfRounds) {
@@ -106,7 +119,7 @@ public class Lobby {
         return players.size() >= 2;
     }
 
-    public String generateNewInvitationCode() {
+    private String generateNewInvitationCode() {
         
         String LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         SecureRandom RANDOM = new SecureRandom();

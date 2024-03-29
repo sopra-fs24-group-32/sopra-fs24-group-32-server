@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
@@ -10,7 +9,6 @@ import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,9 +74,7 @@ public class GameService {
             if (gamePostDTO.getMaxAmtPlayers() != 0){
                 reqLobby.setMaxAmtPlayers(gamePostDTO.getMaxAmtPlayers());
             }
-            String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
-            long index = Long.parseLong(parts[1]);
-            lobbies.put(index, reqLobby);
+            lobbies.put(reqLobby.getId(), reqLobby);
             return reqLobby;
         } 
         return reqLobby;
@@ -92,9 +88,7 @@ public class GameService {
             Player player = new Player();
             player.setUsername(verifiedUser.getUsername());
             reqLobby.addPlayer(player);
-            String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
-            long index = Long.parseLong(parts[1]);
-            lobbies.put(index, reqLobby);
+            lobbies.put(reqLobby.getId(), reqLobby);
             return reqLobby;
             }
         return reqLobby;       
