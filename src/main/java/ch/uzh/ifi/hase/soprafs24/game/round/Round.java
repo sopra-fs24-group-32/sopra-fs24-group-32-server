@@ -9,7 +9,8 @@ import java.util.Collections;
 
 import javax.persistence.*;
 
-import ch.uzh.ifi.hase.soprafs24.game.player.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.score.Score;
 
 public class Round {

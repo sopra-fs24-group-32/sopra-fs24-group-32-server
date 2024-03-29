@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -7,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
-import ch.uzh.ifi.hase.soprafs24.game.player.Player;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import org.springframework.web.server.ResponseStatusException;
@@ -51,7 +51,7 @@ public class GameService {
     }
 
     //create a lobby
-    public Lobby createLobby(String userToken) {
+    public Lobby createLobby(String userToken) throws Exception {
         
         User lobbyOwner = userService.findByToken(userToken);
         long id = nextId++;
@@ -84,20 +84,21 @@ public class GameService {
         return reqLobby;
     }
 
-    public Lobby joinGame(String lobbyId, String userToken) {
+    public void joinLobby(String lobbyId, String userToken) throws Exception {
 
-        User verifiedUser = userService.findByToken(userToken);
-        Lobby reqLobby = findByLobbyId(lobbyId);
-        if (verifiedUser.getUserToken() !=null && reqLobby != null) {
-            Player player = new Player();
-            player.setUsername(verifiedUser.getUsername());
-            reqLobby.addPlayer(player);
-            String[] parts = lobbyId.split("(?<=\\D)(?=\\d)");
-            long index = Long.parseLong(parts[1]);
-            lobbies.put(index, reqLobby);
-            return reqLobby;
-            }
-        return reqLobby;       
+        User user = userService.findByToken(userToken);
+        Lobby lobby = findByLobbyId(lobbyId);
+
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent token does not exists");
+        }
+
+        if(lobby == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id" + lobbyId + "does not exist");
+        }
+
+        Player newPlayer = (Player) user;
+        lobby.addPlayer(newPlayer);
     }
     
 }

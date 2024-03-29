@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.game;
 
-import ch.uzh.ifi.hase.soprafs24.game.player.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.round.Round;
 import ch.uzh.ifi.hase.soprafs24.game.score.Score;
 

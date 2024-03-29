@@ -3,7 +3,8 @@ package ch.uzh.ifi.hase.soprafs24.game.score;
 import java.util.HashMap;
 import java.util.Map;
 
-import ch.uzh.ifi.hase.soprafs24.game.player.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 
 
 public class Score {
