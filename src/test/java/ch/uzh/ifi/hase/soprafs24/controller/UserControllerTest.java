@@ -2,10 +2,12 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
+import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,23 +22,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Date;
+import java.beans.Transient;
+import java.io.IOException;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,6 +64,9 @@ public class UserControllerTest {
   private UserService userService;
 
   @MockBean
+  private GameService gameService;
+
+  @MockBean
   private UserRepository userRepository;
 
   @InjectMocks
@@ -84,6 +86,41 @@ public class UserControllerTest {
         testUser.setStatus(UserStatus.ONLINE);
 
         testUserGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(testUser);
+    }
+
+    //Test joining a lobby
+    @Test
+    public void joinLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
+      MockHttpServletRequestBuilder postRequestEmpty = post("/lobby/join/{lobbyId}", "")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("random_token");
+
+      MockHttpServletRequestBuilder postRequestNull = post("/lobby/join/{lobbyId}", null)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("random_token");
+
+      mockMvc.perform(postRequestEmpty)
+              .andExpect(status().isNotFound());
+      mockMvc.perform(postRequestNull)
+              .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void joinLobbyAndLobbyIdDoesNotExists() throws Exception{
+      String lobbyId = "1";
+      String userToken = "random";
+
+      doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
+              .when(gameService)
+              .joinLobby(lobbyId, userToken);
+
+      MockHttpServletRequestBuilder postRequest = post("/join/lobby/{lobbyId}", lobbyId)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(userToken);
+
+      mockMvc.perform(postRequest)
+              .andExpect(status().isNotFound());
+
     }
 
   // @Test
