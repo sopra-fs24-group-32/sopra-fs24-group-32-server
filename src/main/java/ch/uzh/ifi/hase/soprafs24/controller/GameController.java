@@ -48,20 +48,20 @@ public class GameController {
     // }
 
     @PostMapping("/lobby/join/{lobbyId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public Lobby joinGame(@PathVariable String lobbyId, @RequestBody UserPostDTO userPostDTO) throws Exception{
+    public void joinGame(@PathVariable String lobbyId, @RequestBody UserPostDTO userPostDTO) throws Exception{
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-
-        if (userInput.getUserToken() == null || userInput.getUserToken().isEmpty()) {
+        String userToken = userInput.getUserToken();
+        if (userToken == null || userToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
-        Lobby lobby = gameService.joinGame(lobbyId, userInput.getUserToken());
 
-        if (lobby == null) {
-            throw new Exception("Lobby not found");
+        if(lobbyId == null || lobbyId.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "lobbyId is null or empty");
         }
-        return lobby;
+
+        gameService.joinLobby(lobbyId, userToken);
     }
 
 

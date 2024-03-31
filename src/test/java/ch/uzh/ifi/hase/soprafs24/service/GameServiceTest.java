@@ -43,7 +43,7 @@ public class GameServiceTest {
 
 
     @Test
-    public void testCreateLobby() {
+    public void testCreateLobby() throws Exception {
 
         User lobbyOwner = new User();
         lobbyOwner.setUserToken("userToken");
@@ -61,7 +61,7 @@ public class GameServiceTest {
 
 
     @Test
-    public void testUpdateGame() {
+    public void testUpdateGame() throws Exception {
         
         User lobbyOwen = new User();
         lobbyOwen.setUserToken("ownerToken");
@@ -90,7 +90,7 @@ public class GameServiceTest {
 
 
     @Test
-    public void testJoinGame() {
+    public void testJoinGame() throws Exception {
 
         User lobbyOwen = new User();
         lobbyOwen.setUserToken("ownerToken");
@@ -105,12 +105,12 @@ public class GameServiceTest {
 
         Lobby lobby = gameService.createLobby("ownerToken");
      
-        Lobby joinedLobby = gameService.joinGame(lobby.getLobbyId(), "userToken");
+        gameService.joinLobby(lobby.getLobbyId(), "userToken");
 
         // Assert
-        assertNotNull(joinedLobby);
-        assertEquals(2, joinedLobby.getAllPlayers().size());
-        assertTrue(joinedLobby.getAllPlayers().stream().anyMatch(player -> player.getUsername().equals("username")));
+        assertNotNull(lobby);
+        assertEquals(2, lobby.getAllPlayers().size());
+        assertTrue(lobby.getAllPlayers().stream().anyMatch(player -> player.getUsername().equals("username")));
     }
     
 }

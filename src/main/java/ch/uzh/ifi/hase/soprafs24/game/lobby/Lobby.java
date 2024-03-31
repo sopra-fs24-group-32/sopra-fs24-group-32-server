@@ -1,7 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.game.lobby;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
-import ch.uzh.ifi.hase.soprafs24.game.player.Player;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.security.SecureRandom;
 
 
@@ -26,10 +29,11 @@ public class Lobby {
     private Long id;
 
     @Column(nullable = false)
-    private int maxAmtPlayers;
+    private int maxAmtPlayers =50;
     // private Game game;
     private String lobbyOwner;
     private String invitationCode;
+    private boolean gameStarted = false;
 
     
     @Column(nullable = false, name = "lobbyId")
@@ -92,14 +96,17 @@ public class Lobby {
         }
     }
 
-    public void addPlayer(Player player) {
-        boolean playerExists = players.stream().anyMatch(p -> p.getUsername().equals(player.getUsername()));
-        if (!playerExists) {
-            players.add(player);
-        } else {
-            System.out.println("Player already exists in the lobby.");
+    public void addPlayer(Player player) throws Exception {
+        if(player == null){
+            throw new Exception("Player cannot be null");
         }
-
+        if(players.contains(player)){
+            throw new Exception("Player already in lobby");
+        }
+        if(players.size() == maxAmtPlayers){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players in lobby already reached");
+        }
+        players.add(player);
     }
 
     public List<Player> getAllPlayers() {
@@ -163,5 +170,13 @@ public class Lobby {
 
     public void setMaxAmtPlayers(int maxAmtPlayers) {
         this.maxAmtPlayers = maxAmtPlayers;
+    }
+
+    public boolean gameHasStarted() {
+        return gameStarted;
+    }
+
+    public void setGameHasStarted(boolean gameHasStarted) {
+        this.gameStarted = gameHasStarted;
     }
 }
