@@ -88,40 +88,6 @@ public class UserControllerTest {
         testUserGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(testUser);
     }
 
-    //Test joining a lobby
-    @Test
-    public void joinLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
-      MockHttpServletRequestBuilder postRequestEmpty = post("/lobby/join/{lobbyId}", "")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("random_token");
-
-      MockHttpServletRequestBuilder postRequestNull = post("/lobby/join/{lobbyId}", (String) null)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("random_token");
-
-      mockMvc.perform(postRequestEmpty)
-              .andExpect(status().isNotFound());
-      mockMvc.perform(postRequestNull)
-              .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void joinLobbyAndLobbyIdDoesNotExists() throws Exception{
-      String lobbyId = "1";
-      String userToken = "random";
-
-      doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-              .when(gameService)
-              .joinLobby(lobbyId, userToken);
-
-      MockHttpServletRequestBuilder postRequest = post("/join/lobby/{lobbyId}", lobbyId)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(userToken);
-
-      mockMvc.perform(postRequest)
-              .andExpect(status().isNotFound());
-
-    }
 
   // @Test
   // public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {

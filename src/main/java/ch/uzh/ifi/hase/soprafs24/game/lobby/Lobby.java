@@ -63,6 +63,14 @@ public class Lobby {
         this.id = id;
     }
 
+    public String getLobbyOwner() {
+        return lobbyOwner;
+    }
+
+    public void setLobbyOwner(String lobbyOwner) {
+        this.lobbyOwner = lobbyOwner;
+    }
+
     public String getLobbyId() {
         return lobbyId;
     }
