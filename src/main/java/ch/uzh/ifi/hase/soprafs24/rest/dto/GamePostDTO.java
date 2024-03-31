@@ -5,7 +5,7 @@ public class GamePostDTO {
     
     private float timeLimit;
     private int amtOfRounds;
-    private int maxAmtPlayers;
+    private int maxAmtPlayers=50;
 
 
     public float getTimeLimit() {

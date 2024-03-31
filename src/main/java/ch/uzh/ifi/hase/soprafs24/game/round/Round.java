@@ -80,23 +80,23 @@ public class Round {
     }
 
 
-    public void chatGPTSimilarityScore(Player player, float similarityScore) {
-        // Implementation of the method
-        // if the similarityScore is >=0.75, then the player gets 6 points
-        // if the similarityScore is between 0.5 and <0.75, then the player gets 4 points
-        // if the similarityScore is between 0.25 and <0.5, then the player gets 2 points
-        // if the similarityScore is between 0 and <0.25, then the player gets 0 point
+    public void chatGPTSimilarityScore(Player player, float similarityScore) throws Exception {
         
-        int maxPoints = 6;
-
-        if (similarityScore >= 0.75) {
-            scores.updateScore(player, maxPoints);
-        } else if (similarityScore >= 0.5) {
-            scores.updateScore(player, 4);
-        } else if (similarityScore >= 0.25) {
-            scores.updateScore(player, 2);
-        } else {
-            scores.updateScore(player, 0);
+        if (similarityScore < 0 || similarityScore > 1) {
+            throw new IllegalArgumentException("Similarity score must be between 0 and 1.");
         }
+        
+        int pointsAwarded;
+        if (similarityScore >= 0.75) {
+            pointsAwarded = 6;
+        } else if (similarityScore >= 0.5) { // Logical AND is replaced with proper syntax
+            pointsAwarded = 4;
+        } else if (similarityScore >= 0.25) {
+            pointsAwarded = 2;
+        } else {
+            pointsAwarded = 0;
+        }
+        
+        player.setPoint(pointsAwarded);
     }
 }
