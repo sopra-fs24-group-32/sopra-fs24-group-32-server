@@ -34,6 +34,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.beans.Transient;
 import java.io.IOException;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -232,32 +234,127 @@ public class GameControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(asJsonString(gamePostDTO)))
                     .andExpect(status().isNotFound());
+                             
         }
 
 
-        // @Test
-        // public void updateLobbyAndLobbyIdExists() throws Exception {
-        //     Lobby lobby = new Lobby(1L, "owner");
-        //     String lobbyId = lobby.getLobbyId();
-        //     Player host = new Player();
-        //     host.setUsername("owner");
-        //     lobby.addPlayer(host);
-        //     lobby.setLobbyId(lobbyId);
-        //     lobby.setAmtOfRounds(15);
-        //     lobby.setTimeLimit(10);
-        //     lobby.setMaxAmtPlayers(50);
+//         @Test
+//         public void updateLobbyAndLobbyIdExists() throws Exception {
+//         Lobby lobby = new Lobby(1L, "owner");
 
-        //     GamePostDTO gamePostDTO = new GamePostDTO();
-        //     gamePostDTO.setAmtOfRounds(15);
-        //     gamePostDTO.setTimeLimit(10);
-        //     gamePostDTO.setMaxAmtPlayers(50);            
-        //     when(gameService.updateGame(lobbyId, gamePostDTO)).thenReturn(lobby);
+//         String lobbyId = "1"; // Assuming the Lobby ID is a String. Adjust based on your actual Lobby class.
+//         Player host = new Player();
+//         host.setUsername("owner");
+//         lobby.addPlayer(host);
+//         lobby.setLobbyId(lobbyId);
+//         lobby.setAmtOfRounds(15);
+//         lobby.setTimeLimit(10);
+//         lobby.setMaxAmtPlayers(50);
+
+//         Lobby initLobby = new Lobby(1L, "owner");
+
+//         GamePostDTO gamePostDTO = new GamePostDTO();
+//         gamePostDTO.setAmtOfRounds(15);
+//         gamePostDTO.setTimeLimit(10);
+//         gamePostDTO.setMaxAmtPlayers(50);
+        
+//         when(gameService.updateGame(lobbyId, gamePostDTO)).thenReturn(lobby);
+
+//         mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+//                 .contentType(MediaType.APPLICATION_JSON)
+//                 .content(asJsonString(gamePostDTO))) // Ensure you have a method to convert objects to JSON string
+//                 .andExpect(status().isOk());
+//     }
+
+
+    @Test
+    public void updateLobbyInvalidTimeLimit() throws Exception {
+        String lobbyId = "1";
+
+        // time limit is too low
+        GamePostDTO gamePostDTOTooLow = new GamePostDTO();
+        gamePostDTOTooLow.setMaxAmtPlayers(50);
+        gamePostDTOTooLow.setTimeLimit(3);
+        gamePostDTOTooLow.setAmtOfRounds(15);
+
+        // time limit is too high
+        GamePostDTO gamePostDTOTooHigh = new GamePostDTO(); 
+        gamePostDTOTooHigh.setMaxAmtPlayers(50);
+        gamePostDTOTooHigh.setTimeLimit(101);
+        gamePostDTOTooHigh.setAmtOfRounds(15);
+
+        given(gameService.updateGame(lobbyId, gamePostDTOTooLow))
+                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
+        
+        given(gameService.updateGame(lobbyId, gamePostDTOTooHigh))
+                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
+        
+        mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(gamePostDTOTooLow)))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(gamePostDTOTooHigh)))
+                .andExpect(status().isNotFound());
+        }
+
+
+        @Test
+        public void updateLobbyInvalidAmtOfRounds() throws Exception {
+            String lobbyId = "1";
+            GamePostDTO gamePostDTO = new GamePostDTO();
+            gamePostDTO.setMaxAmtPlayers(50);
+            gamePostDTO.setTimeLimit(3);
+            gamePostDTO.setAmtOfRounds(0);
+        
+            given(gameService.updateGame(lobbyId, gamePostDTO))
+                    .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero"));
             
-        //     mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
-        //             .contentType(MediaType.APPLICATION_JSON)
-        //             .content(asJsonString(gamePostDTO)))
-        //             .andExpect(status().isOk());
-        // }
+            mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(gamePostDTO)))
+                    .andExpect(status().isNotFound());
+        }
 
+        @Test
+        public void updateLobbyInvalidMaxAmtPlayers() throws Exception {
+            String lobbyId = "1";
+            GamePostDTO gamePostDTO = new GamePostDTO(); // Invalid time limit
+            gamePostDTO.setMaxAmtPlayers(1);
+            gamePostDTO.setTimeLimit(30);
+            gamePostDTO.setAmtOfRounds(15);
+        
+            given(gameService.updateGame(lobbyId, gamePostDTO))
+                    .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players cannot be less than 2"));
+            
+            mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(gamePostDTO)))
+                    .andExpect(status().isNotFound());
+        }
+
+        // @Test
+        // public void updateLobby_Success() throws Exception {
+        //         String lobbyId = "1";
+        //         GamePostDTO gamePostDTO = new GamePostDTO(); // Invalid time limit
+        //         gamePostDTO.setMaxAmtPlayers(100);
+        //         gamePostDTO.setTimeLimit(30);
+        //         gamePostDTO.setAmtOfRounds(15);
+        //         Lobby lobby = new Lobby();
+        //         lobby.setLobbyId(lobbyId);
+        //         lobby.setMaxAmtPlayers(100);
+        //         lobby.setTimeLimit(30);
+        //         lobby.setAmtOfRounds(15);
+        //         lobby.setOwner("owner");
+                
+        //         given(gameService.updateGame(lobbyId, gamePostDTO)).willReturn(lobby);
+                
+        //         mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+        //                 .contentType(MediaType.APPLICATION_JSON)
+        //                 .content(asJsonString(gamePostDTO)))
+        //                 .andExpect(status().isOk());
+        //     }
     
 }
