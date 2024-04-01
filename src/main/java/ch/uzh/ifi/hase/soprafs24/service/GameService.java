@@ -70,12 +70,13 @@ public class GameService {
     public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
 
         Lobby reqLobby = findByLobbyId(lobbyId);
+        float timeLimit = gamePostDTO.getTimeLimit();
         if (reqLobby != null) {
-            if (gamePostDTO.getTimeLimit() >= 5.0){
-                reqLobby.setTimeLimit(gamePostDTO.getTimeLimit());
+            if (timeLimit >= 5.0 && timeLimit <= 100.0){
+                reqLobby.setTimeLimit(timeLimit);
                 
             } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high");
             }
 
             if (gamePostDTO.getAmtOfRounds() > 0){

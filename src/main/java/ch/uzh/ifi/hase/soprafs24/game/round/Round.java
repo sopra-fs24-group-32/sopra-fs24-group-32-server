@@ -3,8 +3,10 @@ package ch.uzh.ifi.hase.soprafs24.game.round;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.persistence.*;
@@ -18,6 +20,7 @@ public class Round {
     private Clock timer;
     private Map<Player, Map<String, Duration>> guessedInputs;
     private List<Player> players;
+    private Iterator<Player> iterator;
     private Player pictureGenerator;
     @OneToMany
     private List<Player> remainingGenerators;
@@ -25,19 +28,30 @@ public class Round {
     private Score scores;
 
     public Round(List<Player> players) {
-        this.players = players;
+        this.players = new ArrayList<>(players);
         this.guessedInputs = new HashMap<>();
     }
 
     public void startNewRound(List<Player> players, float timeLimit, Score scores) {
+        this.players = new ArrayList<>(players);
+        Collections.shuffle(this.players);
+        this.iterator = this.players.iterator();
+        this.scores = scores;
 
-        Collections.shuffle(players);
-        // Implementation of the method
+        Player nextPlayer = nextGenerator();
+        this.pictureGenerator = nextPlayer;
+        // this.remainingGenerators = new ArrayList<>(players);
+        // this.remainingGenerators.remove(nextPlayer);
+
+
+
     }
 
     public Player nextGenerator() {
-        // Implementation of the method
-        return null;
+        if (!iterator.hasNext()) {
+            iterator = players.iterator();
+        }
+        return iterator.next();
     }
 
     public void startTimer() {

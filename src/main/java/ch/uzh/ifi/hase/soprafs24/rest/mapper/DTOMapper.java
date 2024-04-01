@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
@@ -20,7 +19,8 @@ import org.mapstruct.factory.Mappers;
  * Always created one mapper for getting information (GET) and one mapper for
  * creating information (POST).
  */
-@Mapper
+// @Mapper
+@Mapper(componentModel = "spring")
 public interface DTOMapper {
 
   DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
@@ -30,7 +30,6 @@ public interface DTOMapper {
   @Mapping(source = "maxAmtPlayers", target = "maxAmtPlayers")
   Game convertGamePostDTOtoEntity(GamePostDTO gamePostDTO);
 
-  
   @Mapping(source = "username", target = "username")
   @Mapping(source = "password", target = "password")
   @Mapping(source = "isLoggedIn", target = "isLoggedIn")

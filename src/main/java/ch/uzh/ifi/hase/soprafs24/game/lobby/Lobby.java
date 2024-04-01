@@ -33,6 +33,7 @@ public class Lobby {
     // private Game game;
     private String lobbyOwner;
     private String invitationCode;
+    @Column(nullable = false)
     private boolean gameStarted = false;
 
     
