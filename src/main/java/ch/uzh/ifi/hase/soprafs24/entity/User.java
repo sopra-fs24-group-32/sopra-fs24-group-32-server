@@ -58,16 +58,6 @@ public class User implements Serializable {
 
    private String picture;
 
-   private int score;
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
   public User() {}
     public User(String username, String password){
         this.username = username;

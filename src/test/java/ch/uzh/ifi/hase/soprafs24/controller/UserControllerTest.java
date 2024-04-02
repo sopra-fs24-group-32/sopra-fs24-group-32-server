@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
@@ -28,6 +30,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
 
 import java.beans.Transient;
 import java.io.IOException;
@@ -37,6 +41,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -139,6 +144,157 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
 
+  @Test
+    public void joinLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
+      
+       UserPostDTO userPostDTO = new UserPostDTO();
+       userPostDTO.setUserToken("valid_token");
+       userPostDTO.setUsername("owner");
+
+      String requestBody = asJsonString(userPostDTO);
+
+      MockHttpServletRequestBuilder postRequestEmpty = post("/lobby/join/{lobbyId}", "")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(requestBody);
+
+      MockHttpServletRequestBuilder postRequestNull = post("/lobby/join/{lobbyId}", (String) null)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(requestBody);
+
+      mockMvc.perform(postRequestEmpty)
+              .andExpect(status().isNotFound());
+      mockMvc.perform(postRequestNull)
+              .andExpect(status().isNotFound());
+    }
+
+
+    // Test updating a lobby
+        @Test
+        public void updateLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
+            // Prepare an empty GamePostDTO
+            GamePostDTO emptyGamePostDTO = new GamePostDTO();
+            emptyGamePostDTO.setAmtOfRounds(0); // Set an empty amtOfRounds
+            emptyGamePostDTO.setTimeLimit(0); // Set an empty timeLimit
+            emptyGamePostDTO.setMaxAmtPlayers(0); // Set an empty maxAmtPlayers
+            
+            GamePostDTO nullGamePostDTO = new GamePostDTO();
+            nullGamePostDTO.setAmtOfRounds(0); // Set a null amtOfRounds
+            nullGamePostDTO.setTimeLimit(0); // Set a null timeLimit
+            nullGamePostDTO.setMaxAmtPlayers(0); // Set a null maxAmtPlayers
+            
+            given(gameService.updateGame("", emptyGamePostDTO)).willReturn(null);
+            given(gameService.updateGame(null, nullGamePostDTO)).willReturn(null);
+            
+            // Test for the empty lobbyId
+
+                mockMvc.perform(put("/lobby/update/{lobbyId}", "")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(emptyGamePostDTO)))
+                        .andExpect(status().isNotFound());
+
+        // Test for the null lobbyId
+        mockMvc.perform(put("/lobby/update/{lobbyId}", (String) null)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(nullGamePostDTO)))
+                .andExpect(status().isNotFound());
+
+        }
+
+
+        @Test
+        public void updateLobbyInvalidTimeLimit() throws Exception {
+            String lobbyId = "roomId1";
+    
+            // time limit is too low
+            GamePostDTO gamePostDTOTooLow = new GamePostDTO();
+            gamePostDTOTooLow.setMaxAmtPlayers(50);
+            gamePostDTOTooLow.setTimeLimit(3);
+            gamePostDTOTooLow.setAmtOfRounds(15);
+    
+            // time limit is too high
+            GamePostDTO gamePostDTOTooHigh = new GamePostDTO(); 
+            gamePostDTOTooHigh.setMaxAmtPlayers(50);
+            gamePostDTOTooHigh.setTimeLimit(101);
+            gamePostDTOTooHigh.setAmtOfRounds(15);
+    
+            given(gameService.updateGame(lobbyId, gamePostDTOTooLow))
+                    .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
+            
+            given(gameService.updateGame(lobbyId, gamePostDTOTooHigh))
+                    .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
+            
+            mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(gamePostDTOTooLow)))
+                    .andExpect(status().isNotFound());
+    
+            mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(gamePostDTOTooHigh)))
+                    .andExpect(status().isNotFound());
+            }
+    
+    
+            @Test
+            public void updateLobbyInvalidAmtOfRounds() throws Exception {
+                String lobbyId = "1";
+                GamePostDTO gamePostDTO = new GamePostDTO();
+                gamePostDTO.setMaxAmtPlayers(50);
+                gamePostDTO.setTimeLimit(3);
+                gamePostDTO.setAmtOfRounds(0);
+            
+                given(gameService.updateGame(lobbyId, gamePostDTO))
+                        .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero"));
+                
+                mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(gamePostDTO)))
+                        .andExpect(status().isNotFound());
+            }
+    
+            @Test
+            public void updateLobbyInvalidMaxAmtPlayers() throws Exception {
+                String lobbyId = "1";
+                GamePostDTO gamePostDTO = new GamePostDTO(); // Invalid time limit
+                gamePostDTO.setMaxAmtPlayers(1);
+                gamePostDTO.setTimeLimit(30);
+                gamePostDTO.setAmtOfRounds(15);
+            
+                given(gameService.updateGame(lobbyId, gamePostDTO))
+                        .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players cannot be less than 2"));
+                
+                mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(gamePostDTO)))
+                        .andExpect(status().isNotFound());
+            }
+
+
+  @Test
+        public void updateLobbyAndLobbyIdDoesNotExists() throws Exception {
+            Lobby lobby = new Lobby(1L, "owner");
+            String lobbyId = lobby.getLobbyId();
+            Player host = new Player();
+            host.setUsername("owner");
+            lobby.addPlayer(host);
+            lobby.setLobbyId(lobbyId);
+            lobby.setAmtOfRounds(15);
+            lobby.setTimeLimit(10);
+            lobby.setMaxAmtPlayers(50);
+
+            GamePostDTO gamePostDTO = new GamePostDTO();
+            gamePostDTO.setAmtOfRounds(15);
+            gamePostDTO.setTimeLimit(10);
+            gamePostDTO.setMaxAmtPlayers(50);            
+            when(gameService.updateGame(lobbyId, gamePostDTO)).thenReturn(lobby);
+            
+            mockMvc.perform(put("/lobby/update/{lobbyId}", "invalidLobbyId")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(gamePostDTO)))
+                    .andExpect(status().isNotFound());
+                             
+        }
+    
 
   // @Test
   // public void getAllUsers_ReturnsUserList() throws Exception {
