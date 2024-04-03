@@ -50,9 +50,7 @@ public class GameController {
     @PostMapping("/lobby/join/{lobbyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void joinGame(@PathVariable String lobbyId, @RequestBody UserPostDTO userPostDTO) throws Exception{
-        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-        String userToken = userInput.getUserToken();
+    public void joinLobby(@PathVariable String lobbyId, @RequestBody String userToken) throws Exception{
         if (userToken == null || userToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
