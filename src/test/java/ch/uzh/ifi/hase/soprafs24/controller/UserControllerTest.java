@@ -274,6 +274,8 @@ public class UserControllerTest {
         public void updateLobbyAndLobbyIdDoesNotExists() throws Exception {
             Lobby lobby = new Lobby(1L, "owner");
             String lobbyId = lobby.getLobbyId();
+            User owner = new User();
+            owner.setUsername("owner");
             Player host = new Player();
             host.setUsername("owner");
             lobby.addPlayer(host);

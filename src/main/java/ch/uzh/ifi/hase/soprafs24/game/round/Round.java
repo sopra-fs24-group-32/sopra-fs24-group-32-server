@@ -111,6 +111,6 @@ public class Round {
             pointsAwarded = 0;
         }
         
-        player.setPoint(pointsAwarded);
+        player.receivePoints(pointsAwarded);
     }
 }

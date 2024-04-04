@@ -28,9 +28,9 @@ public class Player {
         this.points = points;
     }
     
-    public void setPoint(int points) throws Exception {
+    public void receivePoints(int points) throws Exception {
         if(points < 0){
-            throw new Exception("points cannot be negative");
+            throw new IllegalArgumentException("points cannot be negative");
         }
         points += points;
     }
