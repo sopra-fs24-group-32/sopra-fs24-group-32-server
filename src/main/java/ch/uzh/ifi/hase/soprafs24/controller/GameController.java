@@ -83,7 +83,6 @@ public class GameController {
         return lobby;
     }
 
-
     @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
