@@ -1,9 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +76,7 @@ public class GameServiceTest {
         gamePostDTO.setAmtOfRounds(7);
         gamePostDTO.setMaxAmtPlayers(12);
 
-        Lobby updatedLobby = gameService.updateGame(lobby.getLobbyId(), gamePostDTO);
+        Lobby updatedLobby = gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
 
         // Assert
         assertNotNull(updatedLobby);
@@ -88,6 +85,29 @@ public class GameServiceTest {
         assertEquals(12, updatedLobby.getMaxAmtPlayers());
     }
 
+    @Test
+    public void testUpdateGameIllegalArgument() throws Exception {
+
+        User lobbyOwen = new User();
+        lobbyOwen.setUserToken("ownerToken");
+        lobbyOwen.setUsername("owner");
+
+        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
+
+        Lobby lobby = gameService.createLobby("ownerToken");
+        lobby.setTimeLimit(10.0f);
+        lobby.setAmtOfRounds(5);
+        lobby.setMaxAmtPlayers(10);
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(15.0f);
+        gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
+        gamePostDTO.setMaxAmtPlayers(12);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
+        }, "There must be at least one round.");
+    }
 
     @Test
     public void testJoinGame() throws Exception {
