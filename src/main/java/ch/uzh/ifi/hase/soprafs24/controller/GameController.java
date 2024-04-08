@@ -9,6 +9,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
 import java.util.Map;
 
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,7 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class GameController {
 
     private final GameService gameService;
-    
+    private UserService userService;
+
 
     GameController(GameService gameService) {
         this.gameService = gameService;
@@ -93,5 +95,23 @@ public class GameController {
             throw new Exception("Lobby Id: " + lobbyId + " not found");
         }
         return lobby;
+    }
+
+    @PutMapping("/lobby/update/{lobbyId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public Lobby updateGameSettings(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws Exception {
+
+        Lobby lobby = gameService.findByLobbyId(lobbyId);
+        if (lobby == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+        }
+        //ensure user is the host
+        User user = userService.findByToken(userToken);
+        if (!user.getUsername().equals(lobby.getLobbyOwner())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
+        }
+
+        return gameService.updateGameSettings(lobbyId, gamePostDTO);
     }
 }

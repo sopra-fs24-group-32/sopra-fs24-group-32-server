@@ -96,6 +96,39 @@ public class GameService {
         return reqLobby;
     }
 
+    public Lobby updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
+        Lobby lobby = findByLobbyId(lobbyId);
+
+        //Validate if lobby exists
+        if (lobby == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+        }
+        // Validate the amount of rounds
+        int amtOfRounds = gamePostDTO.getAmtOfRounds();
+        if (amtOfRounds < 1) {
+            throw new IllegalArgumentException("There must be at least one round.");
+        }
+
+        // Validate the time limit
+        float timeLimit = gamePostDTO.getTimeLimit();
+        if (timeLimit < 5 || timeLimit > 100) {
+            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
+        }
+
+        //Validate max amount of players
+        int maxAmtPlayers = gamePostDTO.getMaxAmtPlayers();
+        if (maxAmtPlayers < 2) {
+            throw new IllegalArgumentException("The maximum number of players cannot be less than 2.");
+        }
+
+        lobby.setMaxAmtPlayers(maxAmtPlayers);
+        lobby.setAmtOfRounds(amtOfRounds);
+        lobby.setTimeLimit(timeLimit);
+
+        lobbies.put(lobby.getId(), lobby);
+        return lobby;
+    }
+
     public void joinLobby(String lobbyId, String userToken) throws Exception {
 
         User user = userService.findByToken(userToken);
