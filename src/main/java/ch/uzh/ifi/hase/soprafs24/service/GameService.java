@@ -131,15 +131,26 @@ public class GameService {
 
     public void joinLobby(String lobbyId, String userToken) throws Exception {
 
+        if(lobbyId == null || lobbyId.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent ID does not exist");
+        }
+
+        if(userToken == null || userToken.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+        }
+
         User user = userService.findByToken(userToken);
         Lobby lobby = findByLobbyId(lobbyId);
 
+        /*
+        Currently checked within the userService.findByToken() method -> same exception gets thrown
         if(user == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent token does not exists");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent token does not exist");
         }
+         */
 
         if(lobby == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id" + lobbyId + "does not exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + lobbyId + " does not exist");
         }
 
         if(lobby.gameHasStarted()){
