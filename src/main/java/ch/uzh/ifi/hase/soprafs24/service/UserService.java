@@ -35,16 +35,10 @@ public class UserService {
     this.userRepository = userRepository;
   }
 
-  public List<User> getAllUsers() {
-    return this.userRepository.findAll();
-  }
 
-  public User createUser(User newUser) {
+  public User registerUser(User newUser) {
     
-    // newUser.setStatus(UserStatus.OFFLINE);
     checkIfUserExists(newUser);
-    // saves the given entity but data is only persisted in the database once
-    // flush() is called
     
     newUser.setStatus(UserStatus.ONLINE);
     newUser.setIsLoggedIn(true);
@@ -57,6 +51,24 @@ public class UserService {
 
     log.debug("Created Information for User: {}", newUser);
     return newUser;
+  }
+
+
+  public void loginUser(String username, String password) {
+    User user = userRepository.findByUsername(username);
+    User newUser = new User();
+    newUser.setUsername(username);
+    newUser.setPassword(password);
+
+    if (user.equals(newUser)){
+      user.setStatus(UserStatus.ONLINE);
+      user.setIsLoggedIn(true);
+      userRepository.save(user);
+      userRepository.flush();
+      return;
+    }
+
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong password or username");
   }
 
   public User findByUsername(String username) {
@@ -78,6 +90,10 @@ public class UserService {
           }
       }
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+  }
+
+  public List<User> getAllUsers() {
+    return this.userRepository.findAll();
   }
 
   public User updateUser(int id, User user) throws Exception {

@@ -45,7 +45,7 @@ public class UserServiceIntegrationTest {
     testUser.setPassword("testPassword");
 
     // when
-    User createdUser = userService.createUser(testUser);
+    User createdUser = userService.registerUser(testUser);
 
     // then
     assertEquals(testUser.getId(), createdUser.getId());

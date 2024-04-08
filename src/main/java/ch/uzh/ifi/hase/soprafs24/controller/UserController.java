@@ -42,16 +42,36 @@ public class UserController {
     return userGetDTOs;
   }
 
-  @PostMapping("/users")
+  @PostMapping("/user/register")
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
-  public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
+  public UserGetDTO registerUser(@RequestBody UserPostDTO userPostDTO) {
     // convert API user to internal representation
     User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
     // create user
-    User createdUser = userService.createUser(userInput);
+    User createdUser = userService.registerUser(userInput);
     // convert internal representation of user back to API
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
+
+  @PostMapping("/user/login")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public void loginUser(@RequestBody UserPostDTO userPostDTO) {
+    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+    String username = userInput.getUsername();
+    String password = userInput.getPassword();
+    userService.loginUser(username, password);
+  }
+
+  @PostMapping("/users/logout/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void logoutUser(@PathVariable int id)
+    {
+        userService.logoutUser(id);
+    }
+
+
 }
