@@ -1,12 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +12,9 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import org.springframework.web.server.ResponseStatusException;
+
+import javax.persistence.Lob;
 
 public class GameServiceTest {
 
@@ -28,6 +29,99 @@ public class GameServiceTest {
         gameService = new GameService(userRepository, userService);
     }
 
+    @Test
+    public void joinLobbyAndLobbyIdIsNullOrEmpty(){
+        Exception exceptionIdIsNull = assertThrows(ResponseStatusException.class, () -> {
+            gameService.joinLobby(null, "userToken");
+        });
+
+        String expectedMessage = "Lobby with sent ID does not exist";
+        String actualMessage = exceptionIdIsNull.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        Exception exceptionIdIsEmpty = assertThrows(ResponseStatusException.class, () -> {
+            gameService.joinLobby("", "userToken");
+        });
+
+        String expectedMessageWhenIdIsEmpty = "Lobby with sent ID does not exist";
+        String actualMessageWhenIdIsEmpty = exceptionIdIsNull.getMessage();
+
+        assertTrue(actualMessageWhenIdIsEmpty.contains(expectedMessageWhenIdIsEmpty));
+
+    }
+
+    @Test void joinLobbyAndUserTokenIsNullOrEmpty(){
+        Exception exceptionUserTokenIsNull = assertThrows(ResponseStatusException.class, () -> {
+            gameService.joinLobby("1", null);
+        });
+
+        String expectedMessage = "User does not exists";
+        String actualMessage = exceptionUserTokenIsNull.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+        Exception exceptionUserTokenIsEmpty = assertThrows(ResponseStatusException.class, () -> {
+            gameService.joinLobby("1", "");
+        });
+
+        String expectedMessageWhenUserTokenIsEmpty = "User does not exists";
+        String actualMessageWhenUserTokenIsEmpty = exceptionUserTokenIsEmpty.getMessage();
+
+        assertTrue(actualMessageWhenUserTokenIsEmpty.contains(expectedMessageWhenUserTokenIsEmpty));
+    }
+
+    @Test
+    public void joinGameAndLobbyDoesNotExist() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
+
+        Lobby lobby = gameService.createLobby("userToken");
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+           gameService.joinLobby("-1", "userToken");
+        });
+
+        String expectedMessage = "Lobby with id -1 does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void joinLobbyButGameHasAlreadyStarted() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User newUser = new User();
+        newUser.setUserToken("userToken2");
+        newUser.setUsername("user2");
+
+
+        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
+        when(userService.findByToken("userToken2")).thenReturn(newUser);
+
+        Lobby lobby = gameService.createLobby("userToken");
+        Player player1 = new Player();
+        lobby.addPlayer(player1);;
+        lobby.setTimeLimit(5f);
+        lobby.startGame();
+        boolean I = lobby.gameHasStarted();
+        String id = lobby.getLobbyId();
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.joinLobby(id, "userToken2");
+        });
+
+        String expectedMessage = "Game has already started";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
 
     @Test
     public void testFindByLobbyIdWhenExists() {
@@ -79,7 +173,7 @@ public class GameServiceTest {
         gamePostDTO.setAmtOfRounds(7);
         gamePostDTO.setMaxAmtPlayers(12);
 
-        Lobby updatedLobby = gameService.updateGame(lobby.getLobbyId(), gamePostDTO);
+        Lobby updatedLobby = gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
 
         // Assert
         assertNotNull(updatedLobby);
@@ -88,6 +182,29 @@ public class GameServiceTest {
         assertEquals(12, updatedLobby.getMaxAmtPlayers());
     }
 
+    @Test
+    public void testUpdateGameIllegalArgument() throws Exception {
+
+        User lobbyOwen = new User();
+        lobbyOwen.setUserToken("ownerToken");
+        lobbyOwen.setUsername("owner");
+
+        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
+
+        Lobby lobby = gameService.createLobby("ownerToken");
+        lobby.setTimeLimit(10.0f);
+        lobby.setAmtOfRounds(5);
+        lobby.setMaxAmtPlayers(10);
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(15.0f);
+        gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
+        gamePostDTO.setMaxAmtPlayers(12);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
+        }, "There must be at least one round.");
+    }
 
     @Test
     public void testJoinGame() throws Exception {
