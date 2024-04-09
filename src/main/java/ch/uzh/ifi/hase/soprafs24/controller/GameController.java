@@ -86,18 +86,6 @@ public class GameController {
     }
 
     @PutMapping("/lobby/update/{lobbyId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
-        Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
-
-        if (lobby == null) {
-            throw new Exception("Lobby Id: " + lobbyId + " not found");
-        }
-        return lobby;
-    }
-
-    @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public Lobby updateGameSettings(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws Exception {
