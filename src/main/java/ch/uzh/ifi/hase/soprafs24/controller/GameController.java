@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
 import java.util.Map;
 
@@ -20,9 +21,11 @@ public class GameController {
     private final GameService gameService;
     private UserService userService;
 
+    private final UserRepository userRepository;
 
-    GameController(GameService gameService) {
+    GameController(GameService gameService, UserRepository userRepository) {
         this.gameService = gameService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/lobby/create")
@@ -49,19 +52,19 @@ public class GameController {
 
     // }
 
-    @PostMapping("/lobby/join/{lobbyId}")
+    @PostMapping("/lobby/join/{invitationCodes}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void joinLobby(@PathVariable String lobbyId, @RequestBody String userToken) throws Exception{
+    public void joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
         if (userToken == null || userToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
 
-        if(lobbyId == null || lobbyId.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "lobbyId is null or empty");
+        if(invitationCodes == null || invitationCodes.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "invitationCodes is null or empty");
         }
 
-        gameService.joinLobby(lobbyId, userToken);
+        gameService.joinLobby(invitationCodes, userToken);
     }
 
 
@@ -95,7 +98,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
         }
         //ensure user is the host
-        User user = userService.findByToken(userToken);
+        User user = userRepository.findByUserToken(userToken);
         if (!user.getUsername().equals(lobby.getLobbyOwner())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
         }

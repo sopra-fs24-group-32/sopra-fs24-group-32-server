@@ -51,11 +51,19 @@ public class GameService {
         }
         return null; // Return null if lobby is not found
     }
+    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
+        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+            if (entry.getValue().getInvitationCodes().equals(invitationCodes)) {
+                return entry.getValue();
+            }
+        }
+        return null; // Return null if lobby is not found
+    }
 
     //create a lobby
     public Lobby createLobby(String userToken) throws Exception {
         
-        User lobbyOwner = userService.findByToken(userToken);
+        User lobbyOwner = userRepository.findByUserToken(userToken);
         long id = nextId++;
         String lobbyOwnerName = lobbyOwner.getUsername();
         Lobby lobby = new Lobby(id, lobbyOwnerName);
@@ -129,28 +137,28 @@ public class GameService {
         return lobby;
     }
 
-    public void joinLobby(String lobbyId, String userToken) throws Exception {
+    public void joinLobby(String invitationCodes, String userToken) throws Exception {
 
-        if(lobbyId == null || lobbyId.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent ID does not exist");
+        if(invitationCodes == null || invitationCodes.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
         }
 
         if(userToken == null || userToken.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
         }
 
-        User user = userService.findByToken(userToken);
-        Lobby lobby = findByLobbyId(lobbyId);
+        User user = userRepository.findByUserToken(userToken);
+        Lobby lobby = findByLobbyInvitationCodes(invitationCodes);
 
         /*
-        Currently checked within the userService.findByToken() method -> same exception gets thrown
+        Currently checked within the userService.findByUserToken() method -> same exception gets thrown
         if(user == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
         }
          */
 
         if(lobby == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + lobbyId + " does not exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
         }
 
         if(lobby.gameHasStarted()){

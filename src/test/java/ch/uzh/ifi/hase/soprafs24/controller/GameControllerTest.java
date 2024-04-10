@@ -124,7 +124,7 @@ public class GameControllerTest {
 
         Lobby lobby = new Lobby(lobbyId, username); // Assuming Lobby has an appropriate constructor
 
-        given(userService.findByToken(userToken)).willReturn(user);
+        given(userRepository.findByUserToken(userToken)).willReturn(user);
         given(gameService.createLobby(userToken)).willReturn(lobby);
 
         mockMvc.perform(post("/lobby/create")

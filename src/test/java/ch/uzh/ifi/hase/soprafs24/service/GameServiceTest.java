@@ -77,7 +77,7 @@ public class GameServiceTest {
         lobbyOwner.setUserToken("userToken");
         lobbyOwner.setUsername("lobbyOwner");
 
-        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 
         Lobby lobby = gameService.createLobby("userToken");
 
@@ -102,8 +102,8 @@ public class GameServiceTest {
         newUser.setUsername("user2");
 
 
-        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
-        when(userService.findByToken("userToken2")).thenReturn(newUser);
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(newUser);
 
         Lobby lobby = gameService.createLobby("userToken");
         Player player1 = new Player();
@@ -143,7 +143,7 @@ public class GameServiceTest {
         lobbyOwner.setUserToken("userToken");
         lobbyOwner.setUsername("lobbyOwner");
 
-        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 
         Lobby lobby = gameService.createLobby("userToken");
 
@@ -161,7 +161,7 @@ public class GameServiceTest {
         lobbyOwen.setUserToken("ownerToken");
         lobbyOwen.setUsername("owner");
             
-        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
 
         Lobby lobby = gameService.createLobby("ownerToken");
         lobby.setTimeLimit(10.0f);
@@ -189,7 +189,7 @@ public class GameServiceTest {
         lobbyOwen.setUserToken("ownerToken");
         lobbyOwen.setUsername("owner");
 
-        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
 
         Lobby lobby = gameService.createLobby("ownerToken");
         lobby.setTimeLimit(10.0f);
@@ -217,8 +217,8 @@ public class GameServiceTest {
         user.setUserToken("userToken");
         user.setUsername("username");
 
-        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
-        when(userService.findByToken("userToken")).thenReturn(user);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
 
         Lobby lobby = gameService.createLobby("ownerToken");
      

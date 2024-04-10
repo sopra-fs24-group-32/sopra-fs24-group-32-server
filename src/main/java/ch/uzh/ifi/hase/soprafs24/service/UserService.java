@@ -82,15 +82,15 @@ public class UserService {
     return findUser;
   }
 
-  public User findByToken(String userToken){
-      List<User> users = userRepository.findAll();
-      for (int i=0; i<users.size(); i++){
-          if (users.get(i).getUserToken().equals(userToken)){
-              return users.get(i);
-          }
-      }
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
-  }
+//  public User findByUserToken(String userToken){
+//      List<User> users = userRepository.findAll();
+//      for (int i=0; i<users.size(); i++){
+//          if (users.get(i).getUserToken().equals(userToken)){
+//              return users.get(i);
+//          }
+//      }
+//      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+//  }
 
   public List<User> getAllUsers() {
     return this.userRepository.findAll();
