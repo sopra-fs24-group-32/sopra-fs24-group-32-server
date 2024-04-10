@@ -119,7 +119,7 @@ public class GameService {
         /*
         Currently checked within the userService.findByToken() method -> same exception gets thrown
         if(user == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent token does not exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
         }
          */
 

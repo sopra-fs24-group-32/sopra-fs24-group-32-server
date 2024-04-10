@@ -16,6 +16,7 @@ public class UserGetDTO {
   private Date birthday;
   private String email;
   private String picture;
+  private String userToken;
 
   public Long getId() {
     return id;
@@ -87,6 +88,14 @@ public class UserGetDTO {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public String getUserToken() {
+    return userToken;
+  }
+
+  public void setUserToken(String userToken) {
+    this.userToken = userToken;
   }
   
 }

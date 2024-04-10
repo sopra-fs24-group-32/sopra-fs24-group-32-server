@@ -169,4 +169,5 @@ public class User implements Serializable {
             "Username:"+username+
             "status:"+status;
   }
+
 }
