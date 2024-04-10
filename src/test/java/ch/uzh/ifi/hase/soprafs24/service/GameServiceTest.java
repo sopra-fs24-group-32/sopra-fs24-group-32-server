@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,12 +22,13 @@ public class GameServiceTest {
     private GameService gameService;
     private UserService userService;
     private UserRepository userRepository;
+    private GameRepository gameRepository;
 
     @BeforeEach
     public void setup() {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
-        gameService = new GameService(userRepository, userService);
+        gameService = new GameService(userRepository, gameRepository, userService);
     }
 
     @Test
@@ -111,10 +113,10 @@ public class GameServiceTest {
         lobby.setTimeLimit(5f);
         lobby.startGame();
         boolean I = lobby.gameHasStarted();
-        String invitationCode = lobby.getInvitationCodes();
+        String lobbyInvitationCode = lobby.getInvitationCodes();
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.joinLobby(invitationCode, "userToken2");
+            gameService.joinLobby(lobbyInvitationCode, "userToken2");
         });
 
         String expectedMessage = "Game has already started";
@@ -127,12 +129,12 @@ public class GameServiceTest {
     public void testFindByLobbyIdWhenExists() {
         Lobby expectedLobby = new Lobby(1L, "TestOwner");
         gameService.getAllLobbies().put(1L, expectedLobby);
-        assertEquals(expectedLobby, gameService.findByLobbyId("roomId1"));
+        assertEquals(expectedLobby, gameRepository.findByLobbyId("roomId1"));
     }
 
     @Test
     public void testFindByLobbyIdWhenNotExists() {
-        assertNull(gameService.findByLobbyId("nonExistingId"));
+        assertNull(gameRepository.findByLobbyId("nonExistingId"));
     }
 
 
@@ -222,7 +224,7 @@ public class GameServiceTest {
 
         Lobby lobby = gameService.createLobby("ownerToken");
 
-        gameService.joinLobby(lobby.getInvitationCodes(), "userToken");
+        gameService.joinLobby(lobby.getLobbyInvitationCode(), "userToken");
 
         // Assert
         assertNotNull(lobby);

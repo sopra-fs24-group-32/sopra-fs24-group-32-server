@@ -32,7 +32,7 @@ public class Lobby {
     private int maxAmtPlayers =50;
     // private Game game;
     private String lobbyOwner;
-    private String invitationCode;
+    private String lobbyInvitationCode;
     @Column(nullable = false)
     private boolean gameStarted = false;
 
@@ -53,7 +53,7 @@ public class Lobby {
         this.lobbyId = "roomId" + id;
         this.lobbyOwner = lobbyOwner;
         this.id = id;
-        this.invitationCode = generateNewInvitationCode();
+        this.lobbyInvitationCode = generateNewInvitationCode();
     }
     
     public Long getId() {
@@ -153,8 +153,8 @@ public class Lobby {
         // Additional cleanup logic can be added here
     }
 
-    public String getInvitationCodes() {
-        return invitationCode;
+    public String getLobbyInvitationCode() {
+        return lobbyInvitationCode;
     }
 
 

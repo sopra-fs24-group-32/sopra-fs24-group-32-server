@@ -152,7 +152,7 @@ public class GameControllerTest {
 
 //         // Ensure the findByLobbyId and updateGame methods are correctly mocked.
 //         // Assuming findByLobbyId is needed to first fetch the lobby before update
-//         given(gameService.findByLobbyId(lobbyId)).willReturn(updatedLobby);
+//         given(gameRepository.findByLobbyId(lobbyId)).willReturn(updatedLobby);
 //         given(gameService.updateGame(lobbyId, validGamePostDTO)).willReturn(updatedLobby);
 
 

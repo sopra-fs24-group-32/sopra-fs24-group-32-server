@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.weaver.bcel.UnwovenClassFile.ChildClass;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,17 @@ import java.util.Map;
 public class GameService {
 
     private final UserRepository userRepository;
+    private final GameRepository gameRepository;
     private final UserService userService;
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
     @Autowired
-    public GameService(@Qualifier("userRepository") UserRepository userRepository,
+    public GameService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository,
                         @Qualifier("userService") UserService userService
                         ){
         this.userRepository = userRepository;
+        this.gameRepository = gameRepository;
         this.userService = userService;
     }
 
@@ -44,22 +47,25 @@ public class GameService {
         return lobbies;
     }
 
-    public Lobby findByLobbyId(String lobbyId) {
-        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-            if (entry.getValue().getLobbyId().equals(lobbyId)) {
-                return entry.getValue();
-            }
-        }
-        return null; // Return null if lobby is not found
-    }
-    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
-        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-            if (entry.getValue().getInvitationCodes().equals(invitationCodes)) {
-                return entry.getValue();
-            }
-        }
-        return null; // Return null if lobby is not found
-    }
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//    public Lobby findByLobbyId(String lobbyId) {
+//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+//            if (entry.getValue().getLobbyId().equals(lobbyId)) {
+//                return entry.getValue();
+//            }
+//        }
+//        return null; // Return null if lobby is not found
+//    }
+//    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
+//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+//            if (entry.getValue().getInvitationCodes().equals(invitationCodes)) {
+//                return entry.getValue();
+//            }
+//        }
+//        return null; // Return null if lobby is not found
+//    }
 
     //create a lobby
     public Lobby createLobby(String userToken) throws Exception {
@@ -78,7 +84,7 @@ public class GameService {
 
     public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
 
-        Lobby reqLobby = findByLobbyId(lobbyId);
+        Lobby reqLobby = gameRepository.findByLobbyId(lobbyId);
         float timeLimit = gamePostDTO.getTimeLimit();
         if (reqLobby != null) {
             if (timeLimit >= 5.0 && timeLimit <= 100.0){
@@ -106,7 +112,7 @@ public class GameService {
     }
 
     public Lobby updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
-        Lobby lobby = findByLobbyId(lobbyId);
+        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
 
         //Validate if lobby exists
         if (lobby == null) {
@@ -156,7 +162,7 @@ public class GameService {
         User user = userRepository.findByUserToken(mappedToken);
         System.out.println(mappedToken);
         System.out.println(user);
-        Lobby lobby = findByLobbyInvitationCodes(invitationCodes);
+        Lobby lobby = gameRepository.findByLobbyInvitationCode(invitationCodes);
 
         /*
         Currently checked within the userService.findByUserToken() method -> same exception gets thrown
