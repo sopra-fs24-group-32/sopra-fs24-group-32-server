@@ -6,3 +6,6 @@ Implemented registration, lobby join and create menu and correct routing fronten
 
 ## Eduard 
 implemented GameSetting with issues #45 and #6
+
+## Nicolas
+implemented player joining Lobby with issues #57 and #100
