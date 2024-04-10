@@ -35,7 +35,7 @@ public class GameServiceTest {
             gameService.joinLobby(null, "userToken");
         });
 
-        String expectedMessage = "Lobby with sent ID does not exist";
+        String expectedMessage = "Lobby with sent invitationCodes does not exist";
         String actualMessage = exceptionIdIsNull.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -44,7 +44,7 @@ public class GameServiceTest {
             gameService.joinLobby("", "userToken");
         });
 
-        String expectedMessageWhenIdIsEmpty = "Lobby with sent ID does not exist";
+        String expectedMessageWhenIdIsEmpty = "Lobby with sent invitationCodes does not exist";
         String actualMessageWhenIdIsEmpty = exceptionIdIsNull.getMessage();
 
         assertTrue(actualMessageWhenIdIsEmpty.contains(expectedMessageWhenIdIsEmpty));
@@ -111,10 +111,10 @@ public class GameServiceTest {
         lobby.setTimeLimit(5f);
         lobby.startGame();
         boolean I = lobby.gameHasStarted();
-        String id = lobby.getLobbyId();
+        String invitationCode = lobby.getInvitationCodes();
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.joinLobby(id, "userToken2");
+            gameService.joinLobby(invitationCode, "userToken2");
         });
 
         String expectedMessage = "Game has already started";
@@ -221,8 +221,8 @@ public class GameServiceTest {
         when(userRepository.findByUserToken("userToken")).thenReturn(user);
 
         Lobby lobby = gameService.createLobby("ownerToken");
-     
-        gameService.joinLobby(lobby.getLobbyId(), "userToken");
+
+        gameService.joinLobby(lobby.getInvitationCodes(), "userToken");
 
         // Assert
         assertNotNull(lobby);
