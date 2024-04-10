@@ -82,6 +82,9 @@ public class UserService {
     return findUser;
   }
 
+
+  // This method didn't work, I implemented the functionality directly in the user repository
+
 //  public User findByUserToken(String userToken){
 //      List<User> users = userRepository.findAll();
 //      for (int i=0; i<users.size(); i++){

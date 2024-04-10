@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.weaver.bcel.UnwovenClassFile.ChildClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -147,7 +148,14 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
         }
 
-        User user = userRepository.findByUserToken(userToken);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+
+        User user = userRepository.findByUserToken(mappedToken);
+        System.out.println(mappedToken);
+        System.out.println(user);
         Lobby lobby = findByLobbyInvitationCodes(invitationCodes);
 
         /*
