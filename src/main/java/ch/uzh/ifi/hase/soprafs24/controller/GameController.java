@@ -28,9 +28,7 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Lobby createGame(@RequestBody UserPostDTO userPostDTO) throws Exception {
-        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-        String userToken = userInput.getUserToken();
+    public Lobby createLobby(@RequestBody String userToken) throws Exception {
         if(userToken == null || userToken.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
@@ -85,17 +83,17 @@ public class GameController {
         return lobby;
     }
 
-    @PutMapping("/lobby/update/{lobbyId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
-        Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
+    // @PutMapping("/lobby/update/{lobbyId}")
+    // @ResponseStatus(HttpStatus.OK)
+    // @ResponseBody
+    // public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
+    //     Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
 
-        if (lobby == null) {
-            throw new Exception("Lobby Id: " + lobbyId + " not found");
-        }
-        return lobby;
-    }
+    //     if (lobby == null) {
+    //         throw new Exception("Lobby Id: " + lobbyId + " not found");
+    //     }
+    //     return lobby;
+    // }
 
     @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

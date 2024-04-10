@@ -184,8 +184,8 @@ public class UserControllerTest {
             nullGamePostDTO.setTimeLimit(0); // Set a null timeLimit
             nullGamePostDTO.setMaxAmtPlayers(0); // Set a null maxAmtPlayers
             
-            given(gameService.updateGame("", emptyGamePostDTO)).willReturn(null);
-            given(gameService.updateGame(null, nullGamePostDTO)).willReturn(null);
+            given(gameService.updateGameSettings("", emptyGamePostDTO)).willReturn(null);
+            given(gameService.updateGameSettings(null, nullGamePostDTO)).willReturn(null);
             
             // Test for the empty lobbyId
 
@@ -219,10 +219,10 @@ public class UserControllerTest {
             gamePostDTOTooHigh.setTimeLimit(101);
             gamePostDTOTooHigh.setAmtOfRounds(15);
     
-            given(gameService.updateGame(lobbyId, gamePostDTOTooLow))
+            given(gameService.updateGameSettings(lobbyId, gamePostDTOTooLow))
                     .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
             
-            given(gameService.updateGame(lobbyId, gamePostDTOTooHigh))
+            given(gameService.updateGameSettings(lobbyId, gamePostDTOTooHigh))
                     .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
             
             mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
@@ -245,7 +245,7 @@ public class UserControllerTest {
                 gamePostDTO.setTimeLimit(3);
                 gamePostDTO.setAmtOfRounds(0);
             
-                given(gameService.updateGame(lobbyId, gamePostDTO))
+                given(gameService.updateGameSettings(lobbyId, gamePostDTO))
                         .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero"));
                 
                 mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
@@ -262,7 +262,7 @@ public class UserControllerTest {
                 gamePostDTO.setTimeLimit(30);
                 gamePostDTO.setAmtOfRounds(15);
             
-                given(gameService.updateGame(lobbyId, gamePostDTO))
+                given(gameService.updateGameSettings(lobbyId, gamePostDTO))
                         .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players cannot be less than 2"));
                 
                 mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
@@ -290,7 +290,7 @@ public class UserControllerTest {
             gamePostDTO.setAmtOfRounds(15);
             gamePostDTO.setTimeLimit(10);
             gamePostDTO.setMaxAmtPlayers(50);            
-            when(gameService.updateGame(lobbyId, gamePostDTO)).thenReturn(lobby);
+            when(gameService.updateGameSettings(lobbyId, gamePostDTO)).thenReturn(lobby);
             
             mockMvc.perform(put("/lobby/update/{lobbyId}", "invalidLobbyId")
                     .contentType(MediaType.APPLICATION_JSON)

@@ -56,6 +56,9 @@ public class GameService {
     public Lobby createLobby(String userToken) throws Exception {
         
         User lobbyOwner = userService.findByToken(userToken);
+        if (lobbyOwner == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,  "User does not exists");
+        }
         long id = nextId++;
         String lobbyOwnerName = lobbyOwner.getUsername();
         Lobby lobby = new Lobby(id, lobbyOwnerName);
@@ -66,35 +69,6 @@ public class GameService {
         return lobby;
     }
 
-
-    public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
-
-        Lobby reqLobby = findByLobbyId(lobbyId);
-        float timeLimit = gamePostDTO.getTimeLimit();
-        if (reqLobby != null) {
-            if (timeLimit >= 5.0 && timeLimit <= 100.0){
-                reqLobby.setTimeLimit(timeLimit);
-                
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high");
-            }
-
-            if (gamePostDTO.getAmtOfRounds() > 0){
-                reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero");
-            }
-
-            if (gamePostDTO.getMaxAmtPlayers() >= 2){
-                reqLobby.setMaxAmtPlayers(gamePostDTO.getMaxAmtPlayers());
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players cannot be less than 2");
-            }
-            lobbies.put(reqLobby.getId(), reqLobby);
-            return reqLobby;
-        } 
-        return reqLobby;
-    }
 
     public Lobby updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
         Lobby lobby = findByLobbyId(lobbyId);

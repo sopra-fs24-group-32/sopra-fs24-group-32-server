@@ -82,7 +82,7 @@ public class UserService {
     return findUser;
   }
 
-  public User findByToken(String userToken){
+  public User findByToken(String userToken) throws Exception{
       List<User> users = userRepository.findAll();
       for (int i=0; i<users.size(); i++){
           if (users.get(i).getUserToken().equals(userToken)){

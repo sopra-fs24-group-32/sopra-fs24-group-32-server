@@ -103,7 +103,7 @@ public class Round {
         int pointsAwarded;
         if (similarityScore >= 0.75) {
             pointsAwarded = 6;
-        } else if (similarityScore >= 0.5) { // Logical AND is replaced with proper syntax
+        } else if (similarityScore >= 0.5) {
             pointsAwarded = 4;
         } else if (similarityScore >= 0.25) {
             pointsAwarded = 2;
