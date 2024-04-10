@@ -138,7 +138,7 @@ public class GameService {
         return lobby;
     }
 
-    public void joinLobby(String invitationCodes, String userToken) throws Exception {
+    public Lobby joinLobby(String invitationCodes, String userToken) throws Exception {
 
         if(invitationCodes == null || invitationCodes.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
@@ -178,6 +178,8 @@ public class GameService {
         newPlayer.setUsername(user.getUsername());
         lobby.addPlayer(newPlayer);
         lobbies.put(lobby.getId(), lobby);
+
+        return lobby;
     }
     
 }

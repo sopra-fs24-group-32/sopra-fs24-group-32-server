@@ -55,7 +55,7 @@ public class GameController {
     @PostMapping("/lobby/join/{invitationCodes}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
+    public Lobby joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
         if (userToken == null || userToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
@@ -64,7 +64,9 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "invitationCodes is null or empty");
         }
 
-        gameService.joinLobby(invitationCodes, userToken);
+        Lobby lobby = gameService.joinLobby(invitationCodes, userToken);
+
+        return lobby;
     }
 
 
