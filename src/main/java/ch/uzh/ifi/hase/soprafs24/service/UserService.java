@@ -46,8 +46,8 @@ public class UserService {
     userRepository.save(newUser);
     userRepository.flush();
     
-    // print user token to console
-    System.out.println("User token---------------------------------: " + newUser.getUserToken());
+    // print user userToken to console
+    System.out.println("User userToken---------------------------------: " + newUser.getUserToken());
 
     log.debug("Created Information for User: {}", newUser);
     return newUser;

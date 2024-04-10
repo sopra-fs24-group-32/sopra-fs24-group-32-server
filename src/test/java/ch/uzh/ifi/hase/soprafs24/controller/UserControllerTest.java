@@ -342,7 +342,7 @@ public class UserControllerTest {
     //   user.setId(1L);
     //   user.setPassword("password");
     //   user.setUsername("testUsername");
-    //   user.setToken("1");
+    //   user.setUserToken("1");
     //   user.setStatus(UserStatus.ONLINE);
   
     //   UserPostDTO userPostDTO = new UserPostDTO();
