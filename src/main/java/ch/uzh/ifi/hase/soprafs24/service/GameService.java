@@ -185,6 +185,9 @@ public class GameService {
         lobby.addPlayer(newPlayer);
         lobbies.put(lobby.getId(), lobby);
 
+        gameRepository.save(lobby);
+        gameRepository.flush();
+
         return lobby;
     }
     
