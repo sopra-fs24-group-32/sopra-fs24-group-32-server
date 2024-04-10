@@ -7,6 +7,9 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,17 +46,17 @@ public class UserController {
   }
 
   @PostMapping("/user/register")
-  @ResponseStatus(HttpStatus.CREATED)
-  @ResponseBody
-  public UserGetDTO registerUser(@RequestBody UserPostDTO userPostDTO) {
-    // convert API user to internal representation
-    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-
-    // create user
-    User createdUser = userService.registerUser(userInput);
-    // convert internal representation of user back to API
-    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+  public ResponseEntity<UserGetDTO> registerUser(@RequestBody UserPostDTO userPostDTO) {
+      try {
+          User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+          User createdUser = userService.registerUser(userInput);
+          UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+          return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
+      } catch (ResponseStatusException e) {
+          return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+      }
   }
+
 
   @PostMapping("/user/login")
   @ResponseStatus(HttpStatus.OK)

@@ -99,6 +99,7 @@ public class Lobby {
     public void startGame() {
         if (atLeastTwoPlayers() && timeLimit >= 5) {
             Game game = new Game(players, timeLimit, amtOfRounds);
+            this.gameStarted = true;
             game.startGame();
         } else {
             throw new IllegalArgumentException("Not enough players to start the game or guessing time is too short.");

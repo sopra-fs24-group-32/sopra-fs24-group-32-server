@@ -147,6 +147,29 @@ public class UserControllerTest {
   }
 
   @Test
+  public void loginUser_withValidCredentials_returnsOk() throws Exception {
+    UserPostDTO loginDTO = new UserPostDTO();
+    loginDTO.setUsername("validUsername");
+    loginDTO.setPassword("validPassword");
+
+    mockMvc.perform(post("/user/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(asJsonString(loginDTO)))
+            .andExpect(status().isOk());
+}
+
+
+  @Test
+  public void logoutUser_withValidUserId_returnsOk() throws Exception {
+    final Long userId = 1L;
+
+    mockMvc.perform(post("/users/logout/{id}", userId)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+}
+
+
+  @Test
     public void joinLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
       
        UserPostDTO userPostDTO = new UserPostDTO();

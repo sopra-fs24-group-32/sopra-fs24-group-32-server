@@ -83,17 +83,17 @@ public class GameController {
         return lobby;
     }
 
-    // @PutMapping("/lobby/update/{lobbyId}")
-    // @ResponseStatus(HttpStatus.OK)
-    // @ResponseBody
-    // public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
-    //     Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
+    @PutMapping("/lobby/update/{lobbyId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
+        Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
 
-    //     if (lobby == null) {
-    //         throw new Exception("Lobby Id: " + lobbyId + " not found");
-    //     }
-    //     return lobby;
-    // }
+        if (lobby == null) {
+            throw new Exception("Lobby Id: " + lobbyId + " not found");
+        }
+        return lobby;
+    }
 
     @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
