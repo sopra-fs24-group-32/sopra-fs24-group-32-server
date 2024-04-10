@@ -12,3 +12,6 @@ implemented player joining Lobby with issues #57 and #100
 
 ## Nicolas S
 implemented registration backend #2 and currently on hashing password #?
+
+## Roger
+Implemented creating a lobby with issues #30 
