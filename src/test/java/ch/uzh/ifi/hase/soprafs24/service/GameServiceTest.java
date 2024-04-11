@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,12 +22,14 @@ public class GameServiceTest {
     private GameService gameService;
     private UserService userService;
     private UserRepository userRepository;
+    private GameRepository gameRepository;
 
     @BeforeEach
     public void setup() {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
-        gameService = new GameService(userRepository, userService);
+        gameRepository = mock(GameRepository.class);
+        gameService = new GameService(userRepository, gameRepository, userService);
     }
 
     @Test
@@ -35,7 +38,7 @@ public class GameServiceTest {
             gameService.joinLobby(null, "userToken");
         });
 
-        String expectedMessage = "Lobby with sent ID does not exist";
+        String expectedMessage = "Lobby with sent invitationCodes does not exist";
         String actualMessage = exceptionIdIsNull.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -44,7 +47,7 @@ public class GameServiceTest {
             gameService.joinLobby("", "userToken");
         });
 
-        String expectedMessageWhenIdIsEmpty = "Lobby with sent ID does not exist";
+        String expectedMessageWhenIdIsEmpty = "Lobby with sent invitationCodes does not exist";
         String actualMessageWhenIdIsEmpty = exceptionIdIsNull.getMessage();
 
         assertTrue(actualMessageWhenIdIsEmpty.contains(expectedMessageWhenIdIsEmpty));
@@ -77,9 +80,9 @@ public class GameServiceTest {
         lobbyOwner.setUserToken("userToken");
         lobbyOwner.setUsername("lobbyOwner");
 
-        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
-
-        Lobby lobby = gameService.createLobby("userToken");
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        // Lobby lobby = gameService.createLobby("userToken");
+        when(gameRepository.findByLobbyInvitationCode("-1")).thenReturn(null);
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
            gameService.joinLobby("-1", "userToken");
@@ -102,19 +105,21 @@ public class GameServiceTest {
         newUser.setUsername("user2");
 
 
-        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
-        when(userService.findByToken("userToken2")).thenReturn(newUser);
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(newUser);
 
         Lobby lobby = gameService.createLobby("userToken");
         Player player1 = new Player();
         lobby.addPlayer(player1);;
-        lobby.setTimeLimit(5f);
+        lobby.setTimeLimit(15f);
         lobby.startGame();
         boolean I = lobby.gameHasStarted();
-        String id = lobby.getLobbyId();
+        String lobbyInvitationCode = lobby.getLobbyInvitationCode();
+
+        when(gameRepository.findByLobbyInvitationCode(lobbyInvitationCode)).thenReturn(lobby);
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.joinLobby(id, "userToken2");
+            gameService.joinLobby(lobbyInvitationCode, "userToken2");
         });
 
         String expectedMessage = "Game has already started";
@@ -127,12 +132,13 @@ public class GameServiceTest {
     public void testFindByLobbyIdWhenExists() {
         Lobby expectedLobby = new Lobby(1L, "TestOwner");
         gameService.getAllLobbies().put(1L, expectedLobby);
-        assertEquals(expectedLobby, gameService.findByLobbyId("roomId1"));
+        Lobby foundLobby = gameService.findByLobbyId("roomId1");
+        assertEquals(expectedLobby, foundLobby);
     }
 
     @Test
     public void testFindByLobbyIdWhenNotExists() {
-        assertNull(gameService.findByLobbyId("nonExistingId"));
+        assertNull(gameRepository.findByLobbyId("nonExistingId"));
     }
 
 
@@ -143,7 +149,7 @@ public class GameServiceTest {
         lobbyOwner.setUserToken("userToken");
         lobbyOwner.setUsername("lobbyOwner");
 
-        when(userService.findByToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 
         Lobby lobby = gameService.createLobby("userToken");
 
@@ -161,7 +167,7 @@ public class GameServiceTest {
         lobbyOwen.setUserToken("ownerToken");
         lobbyOwen.setUsername("owner");
             
-        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
 
         Lobby lobby = gameService.createLobby("ownerToken");
         lobby.setTimeLimit(10.0f);
@@ -172,6 +178,8 @@ public class GameServiceTest {
         gamePostDTO.setTimeLimit(15.0f);
         gamePostDTO.setAmtOfRounds(7);
         gamePostDTO.setMaxAmtPlayers(12);
+
+        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
 
         Lobby updatedLobby = gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
 
@@ -189,7 +197,7 @@ public class GameServiceTest {
         lobbyOwen.setUserToken("ownerToken");
         lobbyOwen.setUsername("owner");
 
-        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
 
         Lobby lobby = gameService.createLobby("ownerToken");
         lobby.setTimeLimit(10.0f);
@@ -200,6 +208,8 @@ public class GameServiceTest {
         gamePostDTO.setTimeLimit(15.0f);
         gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
         gamePostDTO.setMaxAmtPlayers(12);
+
+        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
 
         assertThrows(IllegalArgumentException.class, () -> {
             gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
@@ -217,12 +227,14 @@ public class GameServiceTest {
         user.setUserToken("userToken");
         user.setUsername("username");
 
-        when(userService.findByToken("ownerToken")).thenReturn(lobbyOwen);
-        when(userService.findByToken("userToken")).thenReturn(user);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
 
         Lobby lobby = gameService.createLobby("ownerToken");
-     
-        gameService.joinLobby(lobby.getLobbyId(), "userToken");
+
+        when(gameRepository.findByLobbyInvitationCode(lobby.getLobbyInvitationCode())).thenReturn(lobby);
+
+        gameService.joinLobby(lobby.getLobbyInvitationCode(), "userToken");
 
         // Assert
         assertNotNull(lobby);

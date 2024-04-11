@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository("gameRepository")
 public interface GameRepository extends JpaRepository<Lobby, Long> {
 
-  Lobby findByLobbyId(long lobbyId);
+  Lobby findByLobbyId(String lobbyId);
+  Lobby findByLobbyInvitationCode(String invitationCodes);
   
 }

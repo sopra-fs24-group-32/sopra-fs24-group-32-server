@@ -2,6 +2,9 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Player;
 
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.weaver.bcel.UnwovenClassFile.ChildClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,16 +28,18 @@ import java.util.Map;
 public class GameService {
 
     private final UserRepository userRepository;
+    private final GameRepository gameRepository;
     private final UserService userService;
     private final DallE dallE = new DallE();
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
     @Autowired
-    public GameService(@Qualifier("userRepository") UserRepository userRepository,
+    public GameService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository,
                         @Qualifier("userService") UserService userService
                         ){
         this.userRepository = userRepository;
+        this.gameRepository = gameRepository;
         this.userService = userService;
     }
 
@@ -46,22 +51,33 @@ public class GameService {
         return lobbies;
     }
 
-    public Lobby findByLobbyId(String lobbyId) {
-        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-            if (entry.getValue().getLobbyId().equals(lobbyId)) {
-                return entry.getValue();
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   public Lobby findByLobbyId(String lobbyId) {
+       for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+           if (entry.getValue().getLobbyId().equals(lobbyId)) {
+               return entry.getValue();
+           }
+       }
+       return null; // Return null if lobby is not found
+   }
+   
+   public Lobby findByLobbyInvitationCodes(String invitationCodes) {
+        List<Lobby> lobbies = gameRepository.findAll();
+
+        for (Lobby lobby : lobbies) {
+            if (lobby.getLobbyInvitationCode().equals(invitationCodes)) {
+                return lobby;
             }
         }
         return null; // Return null if lobby is not found
-    }
+   }
 
     //create a lobby
     public Lobby createLobby(String userToken) throws Exception {
         
-        User lobbyOwner = userService.findByToken(userToken);
-        if (lobbyOwner == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,  "User does not exists");
-        }
+        User lobbyOwner = userRepository.findByUserToken(userToken);
         long id = nextId++;
         String lobbyOwnerName = lobbyOwner.getUsername();
         Lobby lobby = new Lobby(id, lobbyOwnerName);
@@ -69,12 +85,15 @@ public class GameService {
         host.setUsername(lobbyOwner.getUsername());
         lobby.addPlayer(host);
         lobbies.put(id, lobby);
+        gameRepository.save(lobby);
+        gameRepository.flush();
+
         return lobby;
     }
-
+ 
 
     public Lobby updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
-        Lobby lobby = findByLobbyId(lobbyId);
+        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
 
         //Validate if lobby exists
         if (lobby == null) {
@@ -106,28 +125,35 @@ public class GameService {
         return lobby;
     }
 
-    public void joinLobby(String lobbyId, String userToken) throws Exception {
+    public Lobby joinLobby(String invitationCodes, String userToken) throws Exception {
 
-        if(lobbyId == null || lobbyId.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent ID does not exist");
+        if(invitationCodes == null || invitationCodes.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
         }
 
         if(userToken == null || userToken.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
         }
 
-        User user = userService.findByToken(userToken);
-        Lobby lobby = findByLobbyId(lobbyId);
+        // ObjectMapper objectMapper = new ObjectMapper();
+        // Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // // Extract the userToken from the Map
+        // String mappedToken = map.get("userToken");
+
+        User user = userRepository.findByUserToken(userToken);
+        // System.out.println(mappedToken);
+        // System.out.println(user);
+        Lobby lobby = gameRepository.findByLobbyInvitationCode(invitationCodes);
 
         /*
-        Currently checked within the userService.findByToken() method -> same exception gets thrown
+        Currently checked within the userService.findByUserToken() method -> same exception gets thrown
         if(user == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
         }
          */
 
         if(lobby == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + lobbyId + " does not exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
         }
 
         if(lobby.gameHasStarted()){
@@ -139,6 +165,11 @@ public class GameService {
         newPlayer.setUsername(user.getUsername());
         lobby.addPlayer(newPlayer);
         lobbies.put(lobby.getId(), lobby);
+
+        gameRepository.save(lobby);
+        gameRepository.flush();
+
+        return lobby;
     }
 
     public String generatePictureDallE(String prompt) throws Exception {

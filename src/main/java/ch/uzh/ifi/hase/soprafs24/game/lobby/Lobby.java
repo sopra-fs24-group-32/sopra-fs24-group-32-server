@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,14 +33,14 @@ public class Lobby {
     private int maxAmtPlayers =50;
     // private Game game;
     private String lobbyOwner;
-    private String invitationCode;
+    private String lobbyInvitationCode;
     @Column(nullable = false)
     private boolean gameStarted = false;
 
     
     @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Player> players = new ArrayList<>();
 
     @Column(nullable = false)
@@ -53,7 +54,7 @@ public class Lobby {
         this.lobbyId = "roomId" + id;
         this.lobbyOwner = lobbyOwner;
         this.id = id;
-        this.invitationCode = generateNewInvitationCode();
+        this.lobbyInvitationCode = generateNewInvitationCode();
     }
     
     public Long getId() {
@@ -111,7 +112,7 @@ public class Lobby {
             throw new Exception("Player cannot be null");
         }
         if(players.contains(player)){
-            throw new Exception("Player already in lobby");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player already in lobby");
         }
         if(players.size() == maxAmtPlayers){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players in lobby already reached");
@@ -153,8 +154,12 @@ public class Lobby {
         // Additional cleanup logic can be added here
     }
 
-    public String getInvitationCodes() {
-        return invitationCode;
+    public String getLobbyInvitationCode() {
+        return lobbyInvitationCode;
+    }
+
+    public void setLobbyInvitationCode(String lobbyInvitationCode) {
+        this.lobbyInvitationCode = lobbyInvitationCode;
     }
 
 

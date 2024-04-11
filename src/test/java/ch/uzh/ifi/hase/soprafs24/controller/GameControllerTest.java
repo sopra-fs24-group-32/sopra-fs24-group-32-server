@@ -1,17 +1,12 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
-import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,9 +35,6 @@ public class GameControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
-
-  @Autowired
-  private ObjectMapper objectMapper;
 
   @MockBean
   private UserService userService;
@@ -55,6 +48,9 @@ public class GameControllerTest {
   @InjectMocks
   private UserController userController;
 
+  @MockBean
+  private GameRepository gameRepository;
+
   @InjectMocks
    private GameController gameController;
 
@@ -65,14 +61,15 @@ public class GameControllerTest {
 
     @Test
     public void joinLobbyAndLobbyIdDoesNotExists() throws Exception{
-      String lobbyId = "1";
       String userToken = "random";
+      String invitationCodes = "-1";
 
+      when(gameRepository.findByLobbyInvitationCode(invitationCodes)).thenReturn(null);
       doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
               .when(gameService)
-              .joinLobby(lobbyId, userToken);
+              .joinLobby(invitationCodes, userToken);
 
-      MockHttpServletRequestBuilder postRequest = post("/join/lobby/{lobbyId}", lobbyId)
+      MockHttpServletRequestBuilder postRequest = post("/lobby/join/{invitationCodes}", invitationCodes)
               .contentType(MediaType.APPLICATION_JSON)
               .content(userToken);
 
@@ -91,7 +88,7 @@ public class GameControllerTest {
         
         User nullUser = new User();
         nullUser.setUserToken(null); // Set a null userToken
-        
+
         given(gameService.createLobby("")).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty"));
         given(gameService.createLobby(null)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty"));
         
@@ -99,37 +96,32 @@ public class GameControllerTest {
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(emptyUser)))
-                .andExpect(status().isNotFound());
-        
+                .andExpect(status().isNotFound());        
         // Test for the null userToken
-        // mockMvc.perform(post("/lobby/create")
-        //         .contentType(MediaType.APPLICATION_JSON)
-        //         .content(asJsonString(nullUser)))
-        //         .andExpect(status().isNotFound());
+        mockMvc.perform(post("/lobby/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(nullUser)))
+                .andExpect(status().isNotFound());
     }
 
 
     @Test
     public void createLobbyWithValidUserToken() throws Exception {
+        User user = new User(); // Assuming User has a setter for username
         String userToken = "valid_token";
         String username = "owner";
         long lobbyId = 1L;
-
-        UserPostDTO userPostDTO = new UserPostDTO();
-        userPostDTO.setUserToken(userToken);
-        userPostDTO.setUsername(username);
-
-        User user = new User(); // Assuming User has a setter for username
+        user.setUserToken(userToken);
         user.setUsername(username);
 
         Lobby lobby = new Lobby(lobbyId, username); // Assuming Lobby has an appropriate constructor
 
-        given(userService.findByToken(userToken)).willReturn(user);
+        given(userRepository.findByUserToken(userToken)).willReturn(user);
         given(gameService.createLobby(userToken)).willReturn(lobby);
 
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userPostDTO)))
+                .content(userToken))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(lobbyId));
     }
@@ -152,7 +144,7 @@ public class GameControllerTest {
 
 //         // Ensure the findByLobbyId and updateGame methods are correctly mocked.
 //         // Assuming findByLobbyId is needed to first fetch the lobby before update
-//         given(gameService.findByLobbyId(lobbyId)).willReturn(updatedLobby);
+//         given(gameRepository.findByLobbyId(lobbyId)).willReturn(updatedLobby);
 //         given(gameService.updateGame(lobbyId, validGamePostDTO)).willReturn(updatedLobby);
 
 
