@@ -67,7 +67,6 @@ public class Round {
     }
 
     public float getTimeLeft(float timeLimit, float timeGuessSubmitted) {
-        // Implementation of the method
         return timeLimit - timeGuessSubmitted;
     }
 
@@ -89,28 +88,28 @@ public class Round {
             pointsAwarded = 0;
         }
         return pointsAwarded;
-        // player.receivePoints(pointsAwarded);
     }
 
-    public void scalePointsByDuration(Player player, float timeLimit, float timeGuessSubmitted) {
-        // Implementation of the method
-        // if the timeGuessSubmitted is over the timeLimit, the player gets 0 points
-        // if the timeGuessSubmitted is >=75% of the timeLimit, the player gets full points (maxPoints = 6)
-        // if the timeGuessSubmitted is 50% of the timeLimit, the player gets half of the points (3)
-        // if the timeGuessSubmitted is 25% of the timeLimit, the player gets 1 point
+    public void scalePointsByDuration(Player player, int similarityScore, float timeLimit, float timeGuessSubmitted) throws Exception {
+        
 
-        // IMPLEMENTATION NOT TOTALLY CORRECT (problem with (int) (maxPoints * percentage)
-        // Rounding issue, should be fixed by using Math.round() or Math.floor() or Math.ceil() instead of casting to int
+        int pointsAwarded = chatGPTSimilarityScore(similarityScore);
 
-        int maxPoints = 6;
+        float timeLeft = getTimeLeft(timeLimit, timeGuessSubmitted);
+        float bonusPoints = 0;
 
-        if (timeGuessSubmitted >= timeLimit) {
-            scores.updateScore(player, 0);
+        if (timeLeft <= 0) {
+            player.receivePoints(0);
         } else {
-            float timeLeft = getTimeLeft(timeLimit, timeGuessSubmitted);
-            float percentage = timeLeft / timeLimit;
-            int points = (int) (maxPoints * percentage);
-            scores.updateScore(player, points);
+            float percentageOfTimeLeft = timeLeft / timeLimit;
+            if (percentageOfTimeLeft >= 0.75) {
+                bonusPoints = 0.25f;
+            } else if (percentageOfTimeLeft >= 0.5) {
+                bonusPoints = 0.10f;
+            }
+
+            int finalPointsAwarded = (int) (pointsAwarded + (pointsAwarded * bonusPoints));
+            player.receivePoints(finalPointsAwarded);
         }
     }
 }
