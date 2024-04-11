@@ -78,16 +78,16 @@ public class DTOMapperTest {
     }
 
     @Test
-    public void testGetAndSetMaxAmtPlayers() {
+    public void testGetAndSetMaxAmtUsers() {
         // Arrange
-        int expectedMaxAmtPlayers = 4;
+        int expectedMaxAmtUsers = 4;
         GamePostDTO dto = new GamePostDTO();
 
         // Act
-        dto.setMaxAmtPlayers(expectedMaxAmtPlayers);
-        int actualMaxAmtPlayers = dto.getMaxAmtPlayers();
+        dto.setMaxAmtUsers(expectedMaxAmtUsers);
+        int actualMaxAmtUsers = dto.getMaxAmtUsers();
 
         // Assert
-        assertEquals(expectedMaxAmtPlayers, actualMaxAmtPlayers);
+        assertEquals(expectedMaxAmtUsers, actualMaxAmtUsers);
     }
 }

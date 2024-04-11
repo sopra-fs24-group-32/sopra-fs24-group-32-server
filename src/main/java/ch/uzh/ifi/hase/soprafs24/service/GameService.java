@@ -1,7 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 
+import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.weaver.bcel.UnwovenClassFile.ChildClass;
@@ -16,6 +17,8 @@ import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,128 +71,146 @@ public class GameService {
 //    }
 
     //create a lobby
-    public Lobby createLobby(String userToken) throws Exception {
-        
-        User lobbyOwner = userRepository.findByUserToken(userToken);
-        long id = nextId++;
-        String lobbyOwnerName = lobbyOwner.getUsername();
-        Lobby lobby = new Lobby(id, lobbyOwnerName);
-        Player host = new Player();
-        host.setUsername(lobbyOwner.getUsername());
-        lobby.addPlayer(host);
-        lobbies.put(id, lobby);
-        return lobby;
-    }
-
-
-    public Lobby updateGame(String lobbyId, GamePostDTO gamePostDTO) {
-
-        Lobby reqLobby = gameRepository.findByLobbyId(lobbyId);
-        float timeLimit = gamePostDTO.getTimeLimit();
-        if (reqLobby != null) {
-            if (timeLimit >= 5.0 && timeLimit <= 100.0){
-                reqLobby.setTimeLimit(timeLimit);
-                
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high");
-            }
-
-            if (gamePostDTO.getAmtOfRounds() > 0){
-                reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero");
-            }
-
-            if (gamePostDTO.getMaxAmtPlayers() >= 2){
-                reqLobby.setMaxAmtPlayers(gamePostDTO.getMaxAmtPlayers());
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players cannot be less than 2");
-            }
-            lobbies.put(reqLobby.getId(), reqLobby);
-            return reqLobby;
-        } 
-        return reqLobby;
-    }
-
-    public Lobby updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
-        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
-
-        //Validate if lobby exists
-        if (lobby == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-        }
-        // Validate the amount of rounds
-        int amtOfRounds = gamePostDTO.getAmtOfRounds();
-        if (amtOfRounds < 1) {
-            throw new IllegalArgumentException("There must be at least one round.");
-        }
-
-        // Validate the time limit
-        float timeLimit = gamePostDTO.getTimeLimit();
-        if (timeLimit < 5 || timeLimit > 100) {
-            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
-        }
-
-        //Validate max amount of players
-        int maxAmtPlayers = gamePostDTO.getMaxAmtPlayers();
-        if (maxAmtPlayers < 2) {
-            throw new IllegalArgumentException("The maximum number of players cannot be less than 2.");
-        }
-
-        lobby.setMaxAmtPlayers(maxAmtPlayers);
-        lobby.setAmtOfRounds(amtOfRounds);
-        lobby.setTimeLimit(timeLimit);
-
-        lobbies.put(lobby.getId(), lobby);
-        return lobby;
-    }
-
-    public Lobby joinLobby(String invitationCodes, String userToken) throws Exception {
-
-        if(invitationCodes == null || invitationCodes.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
-        }
-
-        if(userToken == null || userToken.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
-        }
+    public Game createLobby(Game newGame, String userToken) throws Exception {
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> map = objectMapper.readValue(userToken, Map.class);
         // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
+        
+        User lobbyOwner = userRepository.findByUserToken(mappedToken);
 
-        User user = userRepository.findByUserToken(mappedToken);
-        System.out.println(mappedToken);
-        System.out.println(user);
-        Lobby lobby = gameRepository.findByLobbyInvitationCode(invitationCodes);
+        List<User> users = new ArrayList<>();
+        users.add(lobbyOwner);
+        newGame.setUsers(users);
+        newGame.setLobbyOwner(lobbyOwner.getId().toString());
 
-        /*
-        Currently checked within the userService.findByUserToken() method -> same exception gets thrown
-        if(user == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+        String LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        SecureRandom RANDOM = new SecureRandom();
+        int length = 10;
+
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(LETTERS.charAt(RANDOM.nextInt(LETTERS.length())));
         }
-         */
+        ;
+        newGame.setLobbyInvitationCode(sb.toString());
 
-        if(lobby == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
-        }
-
-        if(lobby.gameHasStarted()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
-        }
-
-        // Player newPlayer = (Player) user;
-        Player newPlayer = new Player();
-        newPlayer.setUsername(user.getUsername());
-        lobby.addPlayer(newPlayer);
-        lobbies.put(lobby.getId(), lobby);
-
-        gameRepository.save(lobby);
+        gameRepository.save(newGame);
         gameRepository.flush();
 
-        return lobby;
+        return newGame;
     }
+
+
+//    public Game updateGame(String lobbyId, GamePostDTO gamePostDTO) {
+//
+//        Game reqLobby = gameRepository.findByLobbyId(lobbyId);
+//        float timeLimit = gamePostDTO.getTimeLimit();
+//        if (reqLobby != null) {
+//            if (timeLimit >= 5.0 && timeLimit <= 100.0){
+//                reqLobby.setTimeLimit(timeLimit);
+//
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high");
+//            }
+//
+//            if (gamePostDTO.getAmtOfRounds() > 0){
+//                reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero");
+//            }
+//
+//            if (gamePostDTO.getMaxAmtUsers() >= 2){
+//                reqLobby.setMaxAmtUsers(gamePostDTO.getMaxAmtUsers());
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users cannot be less than 2");
+//            }
+//            lobbies.put(reqLobby.getId(), reqLobby);
+//            return reqLobby;
+//        }
+//        return reqLobby;
+//    }
+
+//    public Game updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
+//        Game lobby = gameRepository.findByLobbyId(lobbyId);
+//
+//        //Validate if lobby exists
+//        if (lobby == null) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+//        }
+//        // Validate the amount of rounds
+//        int amtOfRounds = gamePostDTO.getAmtOfRounds();
+//        if (amtOfRounds < 1) {
+//            throw new IllegalArgumentException("There must be at least one round.");
+//        }
+//
+//        // Validate the time limit
+//        float timeLimit = gamePostDTO.getTimeLimit();
+//        if (timeLimit < 5 || timeLimit > 100) {
+//            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
+//        }
+//
+//        //Validate max amount of users
+//        int maxAmtUsers = gamePostDTO.getMaxAmtUsers();
+//        if (maxAmtUsers < 2) {
+//            throw new IllegalArgumentException("The maximum number of users cannot be less than 2.");
+//        }
+//
+//        lobby.setMaxAmtUsers(maxAmtUsers);
+//        lobby.setAmtOfRounds(amtOfRounds);
+//        lobby.setTimeLimit(timeLimit);
+//
+//        lobbies.put(lobby.getId(), lobby);
+//        return lobby;
+//    }
+
+//    public Lobby joinLobby(String invitationCodes, String userToken) throws Exception {
+//
+//        if(invitationCodes == null || invitationCodes.isEmpty()){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
+//        }
+//
+//        if(userToken == null || userToken.isEmpty()){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
+//        }
+//
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+//        // Extract the userToken from the Map
+//        String mappedToken = map.get("userToken");
+//
+//        User user = userRepository.findByUserToken(mappedToken);
+//        System.out.println(mappedToken);
+//        System.out.println(user);
+//        Lobby lobby = gameRepository.findByLobbyInvitationCode(invitationCodes);
+//
+//        /*
+//        Currently checked within the userService.findByUserToken() method -> same exception gets thrown
+//        if(user == null){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+//        }
+//         */
+//
+//        if(lobby == null){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
+//        }
+//
+//        if(lobby.gameHasStarted()){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+//        }
+//
+//        // User newPlayer = (User) user;
+//        User newPlayer = new User();
+//        newPlayer.setUsername(user.getUsername());
+//        lobby.addPlayer(newPlayer);
+//        lobbies.put(lobby.getId(), lobby);
+//
+//        gameRepository.save(lobby);
+//        gameRepository.flush();
+//
+//        return lobby;
+//    }
     
 }
         

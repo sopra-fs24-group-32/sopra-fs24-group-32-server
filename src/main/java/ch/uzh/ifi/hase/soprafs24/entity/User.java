@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.game.Game;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -41,6 +42,10 @@ public class User implements Serializable {
 
   @Column(nullable = false)
   private UserStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "game_id") // Foreign key in the User table pointing to the Game
+    private Game game;
 
   @Column
   @CreationTimestamp

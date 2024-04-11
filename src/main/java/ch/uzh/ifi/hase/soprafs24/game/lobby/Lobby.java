@@ -1,6 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.game.lobby;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,7 +29,7 @@ public class Lobby {
     private Long id;
 
     @Column(nullable = false)
-    private int maxAmtPlayers =50;
+    private int maxAmtUsers =50;
     // private Game game;
     private String lobbyOwner;
     private String lobbyInvitationCode;
@@ -40,13 +40,15 @@ public class Lobby {
     @Column(nullable = false, name = "lobbyId")
     private String lobbyId;
     @OneToMany
-    private List<Player> players = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
 
     @Column(nullable = false)
     private int amtOfRounds;
 
     @Column(nullable = false)
     private float timeLimit;
+
+    // EACH NEW FIELD YOU SPECIFY HERE MUST ALSO BE STECIFIED IN GAMEGETDTO.JAVA AND GAMEPOSTDTO.JAVA FILE !!!!!!!!!!!!!!!!
 
     public Lobby(){}
     public Lobby(long id, String lobbyOwner) {
@@ -76,6 +78,14 @@ public class Lobby {
         return lobbyId;
     }
 
+    public void setLobbyInvitationCode(String lobbyInvitationCode) {
+        this.lobbyInvitationCode = lobbyInvitationCode;
+    }
+
+    public String getLobbyInvitationCode() {
+        return lobbyInvitationCode;
+    }
+
     public void setLobbyId(String lobbyId) {
         this.lobbyId = lobbyId;
     }
@@ -96,44 +106,44 @@ public class Lobby {
         return amtOfRounds;
     }
 
-    public void startGame() {
-        if (atLeastTwoPlayers() && timeLimit >= 5) {
-            Game game = new Game(players, timeLimit, amtOfRounds);
-            this.gameStarted = true;
-            game.startGame();
-        } else {
-            throw new IllegalArgumentException("Not enough players to start the game or guessing time is too short.");
+//    public void startGame() {
+//        if (atLeastTwoUsers() && timeLimit >= 5) {
+//            Game game = new Game(users, timeLimit, amtOfRounds);
+//            this.gameStarted = true;
+//            game.startGame();
+//        } else {
+//            throw new IllegalArgumentException("Not enough users to start the game or guessing time is too short.");
+//        }
+//    }
+
+    public void addPlayer(User user) throws Exception {
+        if(user == null){
+            throw new Exception("User cannot be null");
         }
+        if(users.contains(user)){
+            throw new Exception("User already in lobby");
+        }
+        if(users.size() == maxAmtUsers){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users in lobby already reached");
+        }
+        users.add(user);
     }
 
-    public void addPlayer(Player player) throws Exception {
-        if(player == null){
-            throw new Exception("Player cannot be null");
-        }
-        if(players.contains(player)){
-            throw new Exception("Player already in lobby");
-        }
-        if(players.size() == maxAmtPlayers){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players in lobby already reached");
-        }
-        players.add(player);
+    public List<User> getAllUsers() {
+        return users;
     }
 
-    public List<Player> getAllPlayers() {
-        return players;
+    public void removePlayer(User user) {
+        users.remove(user);
     }
 
-    public void removePlayer(Player player) {
-        players.remove(player);
-    }
-
-    public List<Player> kickedPlayers() {
+    public List<User> kickedUsers() {
         // Implementation not provided: Sprint 2
         return null;
     }
 
-    public boolean atLeastTwoPlayers() {
-        return players.size() >= 2;
+    public boolean atLeastTwoUsers() {
+        return users.size() >= 2;
     }
 
     private String generateNewInvitationCode() {
@@ -153,10 +163,6 @@ public class Lobby {
         // Additional cleanup logic can be added here
     }
 
-    public String getLobbyInvitationCode() {
-        return lobbyInvitationCode;
-    }
-
 
     public String getOwner() {
         return lobbyOwner;
@@ -174,12 +180,12 @@ public class Lobby {
     //     this.game = game;
     // }
 
-    public int getMaxAmtPlayers() {
-        return maxAmtPlayers;
+    public int getMaxAmtUsers() {
+        return maxAmtUsers;
     }
 
-    public void setMaxAmtPlayers(int maxAmtPlayers) {
-        this.maxAmtPlayers = maxAmtPlayers;
+    public void setMaxAmtUsers(int maxAmtUsers) {
+        this.maxAmtUsers = maxAmtUsers;
     }
 
     public boolean gameHasStarted() {

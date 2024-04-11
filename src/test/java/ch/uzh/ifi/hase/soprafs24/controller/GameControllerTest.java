@@ -1,7 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
@@ -142,13 +142,13 @@ public class GameControllerTest {
 //         GamePostDTO validGamePostDTO = new GamePostDTO();
 //         validGamePostDTO.setTimeLimit(20); // Assume valid time limit
 //         validGamePostDTO.setAmtOfRounds(10); // Assume valid amount of rounds
-//         validGamePostDTO.setMaxAmtPlayers(10); // Assume valid max amount of players
+//         validGamePostDTO.setMaxAmtUsers(10); // Assume valid max amount of users
 
 //         // Ensure the Lobby object matches what your service is expected to return.
 //         Lobby updatedLobby = new Lobby(1L, "owner");
 //         updatedLobby.setTimeLimit(20);
 //         updatedLobby.setAmtOfRounds(10);
-//         updatedLobby.setMaxAmtPlayers(10);
+//         updatedLobby.setMaxAmtUsers(10);
 
 //         // Ensure the findByLobbyId and updateGame methods are correctly mocked.
 //         // Assuming findByLobbyId is needed to first fetch the lobby before update

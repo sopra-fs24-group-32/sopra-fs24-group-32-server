@@ -1,12 +1,20 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DTOMapper
@@ -25,9 +33,37 @@ public interface DTOMapper {
 
   DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
 
+    @Autowired
+    UserRepository userRepository = null;
+    
+
+    // Custom mapping method (no implementation needed, MapStruct generates the code)
+//    @Named("stringsToUsers")
+//    default List<User> stringsToUsers(List<String> userIds) {
+//        if (userIds == null) {
+//            // Return an empty list or handle accordingly
+//            return Collections.emptyList();
+//        }
+//        return userIds.stream()
+//                .map(id -> userRepository.findById(Long.valueOf(id))
+//                        .orElseThrow(() -> new RuntimeException("User not found for ID: " + id)))
+//                .collect(Collectors.toList());
+//    }
+//
+//    @Named("usersToStrings")
+//    default List<String> usersToStrings(List<User> users) {
+//        if (users == null) {
+//            return Collections.emptyList(); // Return an empty list if users is null
+//        }
+//        return users.stream()
+//                .map(user -> String.valueOf(user.getId()))
+//                .collect(Collectors.toList());
+//    }
+
   @Mapping(source = "timeLimit", target = "timeLimit")
   @Mapping(source = "amtOfRounds", target = "amtOfRounds")
-  @Mapping(source = "maxAmtPlayers", target = "maxAmtPlayers")
+  @Mapping(source = "maxAmtUsers", target = "maxAmtUsers")
+  @Mapping(source = "users", target = "users") // Use custom mapping for users
   Game convertGamePostDTOtoEntity(GamePostDTO gamePostDTO);
 
   @Mapping(source = "username", target = "username")
@@ -46,4 +82,12 @@ public interface DTOMapper {
   @Mapping(source = "email", target = "email")
   @Mapping(source = "picture", target = "picture")
   UserGetDTO convertEntityToUserGetDTO(User user);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "lobbyId", target = "lobbyId")
+    @Mapping(source = "users", target = "users") // Use the new custom mapping for users
+    @Mapping(source = "timeLimit", target = "timeLimit")
+    @Mapping(source = "amtOfRounds", target = "amtOfRounds")
+    @Mapping(source = "maxAmtUsers", target = "maxAmtUsers")
+    GameGetDTO convertEntityToGameGetDTO(Game createdLobby);
 }
