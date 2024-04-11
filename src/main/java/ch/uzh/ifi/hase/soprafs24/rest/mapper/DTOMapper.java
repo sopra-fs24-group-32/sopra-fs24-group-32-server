@@ -84,7 +84,6 @@ public interface DTOMapper {
   UserGetDTO convertEntityToUserGetDTO(User user);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "lobbyId", target = "lobbyId")
     @Mapping(source = "users", target = "users") // Use the new custom mapping for users
     @Mapping(source = "timeLimit", target = "timeLimit")
     @Mapping(source = "amtOfRounds", target = "amtOfRounds")

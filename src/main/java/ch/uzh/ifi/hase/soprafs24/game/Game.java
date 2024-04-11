@@ -35,9 +35,6 @@ public class Game {
     @Column(nullable = false)
     private boolean gameStarted = false;
 
-    @GeneratedValue
-    private String lobbyId;
-
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> users = new ArrayList<>();
 
@@ -54,7 +51,6 @@ public class Game {
     public Game() {}
 
     public Game(long id, String lobbyOwner) {
-        this.lobbyId = "roomId" + id;
         this.lobbyOwner = lobbyOwner;
         this.id = id;
         this.lobbyInvitationCode = generateNewInvitationCode();
@@ -69,10 +65,6 @@ public class Game {
     public String getLobbyOwner() { return lobbyOwner; }
 
     public void setLobbyOwner(String lobbyOwner) { this.lobbyOwner = lobbyOwner; }
-
-    public String getLobbyId() { return lobbyId; }
-
-    public void setLobbyId(String lobbyId) { this.lobbyId = lobbyId; }
 
     public int getAmtOfRounds() { return amtOfRounds; }
 
@@ -148,13 +140,13 @@ public class Game {
 
     @Override
     public int hashCode(){
-        return Objects.hash(id, maxAmtUsers, lobbyOwner, lobbyInvitationCode, gameStarted, lobbyId, users, amtOfRounds, timeLimit);
+        return Objects.hash(id, maxAmtUsers, lobbyOwner, lobbyInvitationCode, gameStarted, id, users, amtOfRounds, timeLimit);
     }
 
     @Override
     public String toString(){
         return "Game:"+
-                "lobbyId:"+lobbyId+
+                "id:"+id+
                 "id:"+id;
     }
 }

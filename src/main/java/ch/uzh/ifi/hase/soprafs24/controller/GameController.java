@@ -5,7 +5,6 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
@@ -20,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.persistence.Id;
 
 @RestController
 public class GameController {
@@ -39,19 +40,6 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-//    public Lobby createGame(@RequestBody UserPostDTO userPostDTO) throws Exception {
-//        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-//        String userToken = userInput.getUserToken();
-//        if(userToken == null || userToken.isEmpty()){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
-//        }
-//        Lobby lobby = gameService.createLobby(userToken);
-//
-//        if(lobby == null){
-//            throw new Exception("newly created lobby is null");
-//        }
-//        return lobby;
-//    }
         public ResponseEntity<GameGetDTO> createGame(@RequestBody String userToken) {
         try {
             GamePostDTO gamePostDTO = new GamePostDTO();
@@ -74,7 +62,7 @@ public class GameController {
         }
     }
 
-    // @PutMapping("lobby/update/{lobbyId}")
+    // @PutMapping("lobby/update/{id}")
     // @ResponseStatus(HttpStatus.NO_CONTENT)
     // @ResponseBody
     // public void updateLobby(GamePostDTO gamePostDTO){
@@ -101,25 +89,20 @@ public class GameController {
 
 
 
-    @GetMapping("/lobby/{lobbyId}")
+    @GetMapping("/lobby/{id}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Game getLobby(@PathVariable String lobbyId) throws ResponseStatusException{
-        Game lobby = gameRepository.findByLobbyId(lobbyId);
-
-        if (lobby == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-        }
-
-        return lobby;
+    public Game getLobby(@PathVariable Long id) throws ResponseStatusException{
+        return gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
     }
 
-//    @PutMapping("/lobby/update/{lobbyId}")
+//    @PutMapping("/lobby/update/{id}")
 //    @ResponseStatus(HttpStatus.NO_CONTENT)
 //    @ResponseBody
-//    public Game updateGameSettings(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException {
+//    public Game updateGameSettings(@PathVariable String id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException {
 //
-//        Game lobby = gameRepository.findByLobbyId(lobbyId);
+//        Game lobby = gameRepository.findById(id);
 //        if (lobby == null) {
 //            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
 //        }
@@ -129,6 +112,6 @@ public class GameController {
 //            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
 //        }
 //
-//        return gameService.updateGameSettings(lobbyId, gamePostDTO);
+//        return gameService.updateGameSettings(id, gamePostDTO);
 //    }
 }

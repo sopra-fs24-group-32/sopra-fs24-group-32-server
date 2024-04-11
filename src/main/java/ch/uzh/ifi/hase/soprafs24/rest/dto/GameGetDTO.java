@@ -13,7 +13,6 @@ public class GameGetDTO {
     // Field Declarations
     private Long id;
     private String lobbyOwner;
-    private String lobbyId;
     private Integer amtOfRounds;
     private Float timeLimit;
     private Map<String, Integer> scores; // Assuming scores is a map for demonstration
@@ -37,14 +36,6 @@ public class GameGetDTO {
 
     public void setLobbyOwner(String lobbyOwner) {
         this.lobbyOwner = lobbyOwner;
-    }
-
-    public String getLobbyId() {
-        return lobbyId;
-    }
-
-    public void setLobbyId(String lobbyId) {
-        this.lobbyId = lobbyId;
     }
 
     public Integer getAmtOfRounds() {

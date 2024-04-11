@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 
@@ -30,7 +29,6 @@ public class GameService {
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final UserService userService;
-    private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
     @Autowired
@@ -46,16 +44,13 @@ public class GameService {
         return this.userRepository.findAll();
     }
 
-    public Map<Long, Lobby> getAllLobbies() {
-        return lobbies;
-    }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//    public Lobby findByLobbyId(String lobbyId) {
+//    public Lobby findById(String id) {
 //        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-//            if (entry.getValue().getLobbyId().equals(lobbyId)) {
+//            if (entry.getValue().getId().equals(id)) {
 //                return entry.getValue();
 //            }
 //        }
@@ -103,9 +98,9 @@ public class GameService {
     }
 
 
-//    public Game updateGame(String lobbyId, GamePostDTO gamePostDTO) {
+//    public Game updateGame(String id, GamePostDTO gamePostDTO) {
 //
-//        Game reqLobby = gameRepository.findByLobbyId(lobbyId);
+//        Game reqLobby = gameRepository.findById(id);
 //        float timeLimit = gamePostDTO.getTimeLimit();
 //        if (reqLobby != null) {
 //            if (timeLimit >= 5.0 && timeLimit <= 100.0){
@@ -132,8 +127,8 @@ public class GameService {
 //        return reqLobby;
 //    }
 
-//    public Game updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
-//        Game lobby = gameRepository.findByLobbyId(lobbyId);
+//    public Game updateGameSettings(String id, GamePostDTO gamePostDTO) {
+//        Game lobby = gameRepository.findById(id);
 //
 //        //Validate if lobby exists
 //        if (lobby == null) {

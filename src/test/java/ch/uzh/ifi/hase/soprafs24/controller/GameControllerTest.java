@@ -64,15 +64,15 @@ public class GameControllerTest {
   }
 
     @Test
-    public void joinLobbyAndLobbyIdDoesNotExists() throws Exception{
-      String lobbyId = "1";
+    public void joinLobbyAndIdDoesNotExists() throws Exception{
+      String id = "1";
       String userToken = "random";
 
       doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
               .when(gameService)
-              .joinLobby(lobbyId, userToken);
+              .joinLobby(id, userToken);
 
-      MockHttpServletRequestBuilder postRequest = post("/join/lobby/{lobbyId}", lobbyId)
+      MockHttpServletRequestBuilder postRequest = post("/join/lobby/{id}", id)
               .contentType(MediaType.APPLICATION_JSON)
               .content(userToken);
 
@@ -113,7 +113,7 @@ public class GameControllerTest {
     public void createLobbyWithValidUserToken() throws Exception {
         String userToken = "valid_token";
         String username = "owner";
-        long lobbyId = 1L;
+        long id = 1L;
 
         UserPostDTO userPostDTO = new UserPostDTO();
         userPostDTO.setUserToken(userToken);
@@ -122,7 +122,7 @@ public class GameControllerTest {
         User user = new User(); // Assuming User has a setter for username
         user.setUsername(username);
 
-        Lobby lobby = new Lobby(lobbyId, username); // Assuming Lobby has an appropriate constructor
+        Lobby lobby = new Lobby(id, username); // Assuming Lobby has an appropriate constructor
 
         given(userRepository.findByUserToken(userToken)).willReturn(user);
         given(gameService.createLobby(userToken)).willReturn(lobby);
@@ -131,14 +131,14 @@ public class GameControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userPostDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(lobbyId));
+                .andExpect(jsonPath("$.id").value(id));
     }
 
 
 //     @Test
 //     public void updateLobbyWithValidParameters() throws Exception {
-//         // Ensure the lobbyId is a consistent, literal value.
-//         final String lobbyId = "roomId1";
+//         // Ensure the id is a consistent, literal value.
+//         final String id = "roomId1";
 //         GamePostDTO validGamePostDTO = new GamePostDTO();
 //         validGamePostDTO.setTimeLimit(20); // Assume valid time limit
 //         validGamePostDTO.setAmtOfRounds(10); // Assume valid amount of rounds
@@ -150,13 +150,13 @@ public class GameControllerTest {
 //         updatedLobby.setAmtOfRounds(10);
 //         updatedLobby.setMaxAmtUsers(10);
 
-//         // Ensure the findByLobbyId and updateGame methods are correctly mocked.
-//         // Assuming findByLobbyId is needed to first fetch the lobby before update
-//         given(gameRepository.findByLobbyId(lobbyId)).willReturn(updatedLobby);
-//         given(gameService.updateGame(lobbyId, validGamePostDTO)).willReturn(updatedLobby);
+//         // Ensure the findById and updateGame methods are correctly mocked.
+//         // Assuming findById is needed to first fetch the lobby before update
+//         given(gameRepository.findById(id)).willReturn(updatedLobby);
+//         given(gameService.updateGame(id, validGamePostDTO)).willReturn(updatedLobby);
 
 
-//         mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+//         mockMvc.perform(put("/lobby/update/{id}", id)
 //                 .contentType(MediaType.APPLICATION_JSON)
 //                 .content(asJsonString(validGamePostDTO)))
 //                 .andExpect(status().isOk());

@@ -33,7 +33,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void joinLobbyAndLobbyIdIsNullOrEmpty(){
+    public void joinLobbyAndIdIsNullOrEmpty(){
         Exception exceptionIdIsNull = assertThrows(ResponseStatusException.class, () -> {
             gameService.joinLobby(null, "userToken");
         });
@@ -129,16 +129,16 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testFindByLobbyIdWhenExists() {
+    public void testFindByIdWhenExists() {
         Lobby expectedLobby = new Lobby(1L, "TestOwner");
         gameService.getAllLobbies().put(1L, expectedLobby);
-        Lobby foundLobby = gameService.findByLobbyId("roomId1");
+        Lobby foundLobby = gameService.findById("roomId1");
         assertEquals(expectedLobby, foundLobby);
     }
 
     @Test
-    public void testFindByLobbyIdWhenNotExists() {
-        assertNull(gameRepository.findByLobbyId("nonExistingId"));
+    public void testFindByIdWhenNotExists() {
+        assertNull(gameRepository.findById("nonExistingId"));
     }
 
 
@@ -179,9 +179,9 @@ public class GameServiceTest {
         gamePostDTO.setAmtOfRounds(7);
         gamePostDTO.setMaxAmtUsers(12);
 
-        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
+        when(gameRepository.findById(lobby.getId())).thenReturn(lobby);
 
-        Lobby updatedLobby = gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
+        Lobby updatedLobby = gameService.updateGameSettings(lobby.getId(), gamePostDTO);
 
         // Assert
         assertNotNull(updatedLobby);
@@ -209,10 +209,10 @@ public class GameServiceTest {
         gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
         gamePostDTO.setMaxAmtUsers(12);
 
-        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
+        when(gameRepository.findById(lobby.getId())).thenReturn(lobby);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
+            gameService.updateGameSettings(lobby.getId(), gamePostDTO);
         }, "There must be at least one round.");
     }
 
