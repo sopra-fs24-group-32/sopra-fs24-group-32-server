@@ -16,7 +16,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-
+import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
 import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 
 import java.util.HashMap;
@@ -31,6 +31,7 @@ public class GameService {
     private final GameRepository gameRepository;
     private final UserService userService;
     private final DallE dallE = new DallE();
+    private final ChatGPT chatGPT = new ChatGPT();
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
@@ -62,7 +63,7 @@ public class GameService {
        }
        return null; // Return null if lobby is not found
    }
-   
+
    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
         List<Lobby> lobbies = gameRepository.findAll();
 
@@ -175,12 +176,26 @@ public class GameService {
     public String generatePictureDallE(String prompt) throws Exception {
         
         if (prompt == null || prompt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text prompt provided by the player is null or empty");
         }
 
         return dallE.generatePicture(prompt);
         
     }
     
+    public Map<Player, String> playerChatGTPScore(String originalPrompt, Map<Player, String> playerInputGuessed) throws Exception {
+
+        if (originalPrompt == null || originalPrompt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text prompt provided by the player is null or empty");
+        }
+        
+        for (Map.Entry<Player, String> entry : playerInputGuessed.entrySet()) {
+            String guessedInput = entry.getValue();
+            if (guessedInput == null || guessedInput.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text response provided by the player is null or empty");
+            }
+        }
+        return chatGPT.rateInputs(originalPrompt, playerInputGuessed);
+    }
 }
         

@@ -6,6 +6,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.json.JSONArray;
 
 
@@ -39,7 +41,7 @@ public class DallE {
         Response response = client.newCall(request).execute();
 
         if (!response.isSuccessful()) {
-            throw new RuntimeException("Failed to generate image with DALL-E");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
         }
 
         String responseBody = response.body().string();

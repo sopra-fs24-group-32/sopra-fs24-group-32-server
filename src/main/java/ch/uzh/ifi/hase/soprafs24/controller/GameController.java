@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
@@ -87,11 +88,11 @@ public class GameController {
 
 
 
-    @GetMapping("/lobby/{invitationCodes}")
+    @GetMapping("/lobby/{lobbyId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Lobby getLobby(@PathVariable String invitationCodes) throws ResponseStatusException{
-        Lobby lobby = gameRepository.findByLobbyInvitationCode(invitationCodes);
+    public Lobby getLobby(@PathVariable String lobbyId) throws ResponseStatusException{
+        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
 
         if (lobby == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
@@ -148,6 +149,21 @@ public class GameController {
         }
 
         return pictureGenerated;
+    }
+
+    @PostMapping("/rate/score")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public String assessByChatGPT(@RequestBody String playerGuessed) throws Exception {
+        if (playerGuessed == null || playerGuessed.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player guesses is null or empty");
+        }
+        Player player = new Player();
+        player.setUsername("player1");
+        Map<Player, String> playerGuessedInputs = Map.of(player, playerGuessed);
+        Map<Player, String> game = gameService.playerChatGTPScore("Sofa in the shape of avocado", playerGuessedInputs);
+
+        return game.values().iterator().next();
     }
 
 }
