@@ -28,6 +28,7 @@ public class GameServiceTest {
     public void setup() {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
+        gameRepository = mock(GameRepository.class);
         gameService = new GameService(userRepository, gameRepository, userService);
     }
 
@@ -80,8 +81,8 @@ public class GameServiceTest {
         lobbyOwner.setUsername("lobbyOwner");
 
         when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
-
-        Lobby lobby = gameService.createLobby("userToken");
+        // Lobby lobby = gameService.createLobby("userToken");
+        when(gameRepository.findByLobbyInvitationCode("-1")).thenReturn(null);
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
            gameService.joinLobby("-1", "userToken");
@@ -110,10 +111,12 @@ public class GameServiceTest {
         Lobby lobby = gameService.createLobby("userToken");
         User player1 = new User();
         lobby.addPlayer(player1);;
-        lobby.setTimeLimit(5f);
+        lobby.setTimeLimit(15f);
         lobby.startGame();
         boolean I = lobby.gameHasStarted();
-        String lobbyInvitationCode = lobby.getInvitationCodes();
+        String lobbyInvitationCode = lobby.getLobbyInvitationCode();
+
+        when(gameRepository.findByLobbyInvitationCode(lobbyInvitationCode)).thenReturn(lobby);
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
             gameService.joinLobby(lobbyInvitationCode, "userToken2");
@@ -129,7 +132,8 @@ public class GameServiceTest {
     public void testFindByLobbyIdWhenExists() {
         Lobby expectedLobby = new Lobby(1L, "TestOwner");
         gameService.getAllLobbies().put(1L, expectedLobby);
-        assertEquals(expectedLobby, gameRepository.findByLobbyId("roomId1"));
+        Lobby foundLobby = gameService.findByLobbyId("roomId1");
+        assertEquals(expectedLobby, foundLobby);
     }
 
     @Test
@@ -175,6 +179,8 @@ public class GameServiceTest {
         gamePostDTO.setAmtOfRounds(7);
         gamePostDTO.setMaxAmtUsers(12);
 
+        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
+
         Lobby updatedLobby = gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
 
         // Assert
@@ -203,6 +209,8 @@ public class GameServiceTest {
         gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
         gamePostDTO.setMaxAmtUsers(12);
 
+        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
+
         assertThrows(IllegalArgumentException.class, () -> {
             gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
         }, "There must be at least one round.");
@@ -223,6 +231,8 @@ public class GameServiceTest {
         when(userRepository.findByUserToken("userToken")).thenReturn(user);
 
         Lobby lobby = gameService.createLobby("ownerToken");
+
+        when(gameRepository.findByLobbyInvitationCode(lobby.getLobbyInvitationCode())).thenReturn(lobby);
 
         gameService.joinLobby(lobby.getLobbyInvitationCode(), "userToken");
 

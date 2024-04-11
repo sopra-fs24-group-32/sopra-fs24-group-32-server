@@ -46,6 +46,8 @@ public class UserController {
   }
 
   @PostMapping("/user/register")
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
   public ResponseEntity<UserGetDTO> registerUser(@RequestBody UserPostDTO userPostDTO) {
       try {
           User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);

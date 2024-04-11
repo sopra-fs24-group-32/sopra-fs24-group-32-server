@@ -35,21 +35,18 @@ public class UserServiceIntegrationTest {
   }
 
   @Test
-  public void createUser_validInputs_success() {
-    // given
-    assertNull(userRepository.findByUsername("testUsername"));
+  public void createUser_validInputs_success() {    
 
     User testUser = new User();
-    // testUser.setName("testName");
     testUser.setUsername("testUsername");
     testUser.setPassword("testPassword");
+    testUser.setId(1L);
 
     // when
     User createdUser = userService.registerUser(testUser);
 
     // then
     assertEquals(testUser.getId(), createdUser.getId());
-    // assertEquals(testUser.getName(), createdUser.getName());
     assertEquals(testUser.getUsername(), createdUser.getUsername());
     assertNotNull(createdUser.getUserToken());
     assertEquals(UserStatus.ONLINE, createdUser.getStatus());

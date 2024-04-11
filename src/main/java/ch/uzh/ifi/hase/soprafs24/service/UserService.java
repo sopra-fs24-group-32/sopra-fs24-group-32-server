@@ -82,6 +82,15 @@ public class UserService {
     return findUser;
   }
 
+  public User findByToken(String userToken) throws Exception{
+      List<User> users = userRepository.findAll();
+      for (int i=0; i<users.size(); i++){
+          if (users.get(i).getUserToken().equals(userToken)){
+              return users.get(i);
+          }
+      }
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
+  }
 
   // This method didn't work, I implemented the functionality directly in the user repository
 
