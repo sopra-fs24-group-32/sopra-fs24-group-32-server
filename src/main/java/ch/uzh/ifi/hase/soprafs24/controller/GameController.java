@@ -12,6 +12,8 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
 import java.util.Map;
 
+import javax.persistence.Lob;
+
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -98,7 +100,7 @@ public class GameController {
         return lobby;
     }
 
-    @PutMapping("/lobby/update/{invitationCodes}")
+    @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public Lobby updateGameSettings(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException {
@@ -133,10 +135,16 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
         }
 
+        Lobby lobby = gameRepository.findByLobbyId(gameId);
+
+        if (lobby == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+        }
+
         String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
 
         if (pictureGenerated == null) {
-            throw new Exception("Picture not generated");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
         }
 
         return pictureGenerated;
