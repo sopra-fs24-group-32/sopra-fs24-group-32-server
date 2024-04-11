@@ -14,6 +14,8 @@ import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 
+import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ public class GameService {
 
     private final UserRepository userRepository;
     private final UserService userService;
+    private final DallE dallE = new DallE();
     private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
@@ -136,6 +139,16 @@ public class GameService {
         newPlayer.setUsername(user.getUsername());
         lobby.addPlayer(newPlayer);
         lobbies.put(lobby.getId(), lobby);
+    }
+
+    public String generatePictureDallE(String prompt) throws Exception {
+        
+        if (prompt == null || prompt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
+        }
+
+        return dallE.generatePicture(prompt);
+        
     }
     
 }

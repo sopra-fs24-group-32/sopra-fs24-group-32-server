@@ -84,18 +84,6 @@ public class GameController {
     }
 
     @PutMapping("/lobby/update/{lobbyId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public Lobby updateGame(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO) throws Exception{
-        Lobby lobby = gameService.updateGame(lobbyId, gamePostDTO);
-
-        if (lobby == null) {
-            throw new Exception("Lobby Id: " + lobbyId + " not found");
-        }
-        return lobby;
-    }
-
-    @PutMapping("/lobby/update/{lobbyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public Lobby updateGameSettings(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws Exception {
@@ -112,4 +100,31 @@ public class GameController {
 
         return gameService.updateGameSettings(lobbyId, gamePostDTO);
     }
+
+
+    @PostMapping("/game/image/{gameId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public String generatePictureDallE(@PathVariable String gameId, @RequestBody String text_prompt) throws Exception {
+
+        if (text_prompt == null || text_prompt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
+        }
+        // Add checking conditions related to the gameId
+        // for example, if the gameId exists in the database
+        // or something like Game game = gameService.findGameById(gameId);
+        // if (game == null || game.isEmpty() 
+        if (gameId == null || gameId.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+        }
+
+        String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
+
+        if (pictureGenerated == null) {
+            throw new Exception("Picture not generated");
+        }
+
+        return pictureGenerated;
+    }
+
 }
