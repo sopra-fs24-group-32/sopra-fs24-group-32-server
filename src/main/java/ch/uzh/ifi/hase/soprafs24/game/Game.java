@@ -142,6 +142,20 @@ public class Game {
         return sb.toString();
     }
 
+    public void startGame() {
+        if(users.size() < 2){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not enough players in lobby");
+        }
+        if(gameStarted){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+        }
+        gameStarted = true;
+    }
+
+    public boolean gameHasStarted() {
+        return gameStarted;
+    }
+
     @Override
     public int hashCode(){
         return Objects.hash(id, maxAmtUsers, lobbyOwner, lobbyInvitationCode, gameStarted, id, amtOfRounds, timeLimit, users);

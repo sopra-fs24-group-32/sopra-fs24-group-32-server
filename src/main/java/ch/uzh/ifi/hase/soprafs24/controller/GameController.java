@@ -20,6 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.persistence.Id;
 
 @RestController
@@ -94,21 +98,37 @@ public class GameController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
     }
 
-//    @PutMapping("/lobby/update/{id}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @ResponseBody
-//    public Game updateGameSettings(@PathVariable String id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException {
-//
-//        Game lobby = gameRepository.findById(id);
-//        if (lobby == null) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-//        }
-//        //ensure user is the host
-//        User user = userRepository.findByUserToken(userToken);
-//        if (!user.getUsername().equals(lobby.getLobbyOwner())) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
-//        }
-//
-//        return gameService.updateGameSettings(id, gamePostDTO);
-//    }
+   @PutMapping("/lobby/update/{id}")
+   @ResponseStatus(HttpStatus.NO_CONTENT)
+   @ResponseBody
+   public Game updateGameSettings(@PathVariable Long id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException, JsonMappingException, JsonProcessingException {
+
+       if (userToken == null || userToken.isEmpty()) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+       }
+
+       if (id == null || id == 0) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID is null or empty");
+       }
+
+       //ensure user is the host
+       ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+
+       User user = userRepository.findByUserToken(mappedToken);
+       if (user == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+       }
+
+       Game lobby = gameRepository.findById(id)
+               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+       if (!user.getUsername().equals(lobby.getLobbyOwner())) {
+           throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
+       }
+
+       return gameService.updateGameSettings(id, gamePostDTO);
+   }
 }

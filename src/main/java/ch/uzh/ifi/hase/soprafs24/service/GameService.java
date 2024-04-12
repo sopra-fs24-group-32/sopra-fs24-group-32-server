@@ -48,6 +48,9 @@ public class GameService {
         return this.userRepository.findAll();
     }
 
+    public List<Game> getAllGames() {
+        return this.gameRepository.findAll();
+    }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
@@ -92,67 +95,38 @@ public class GameService {
     }
 
 
-//    public Game updateGame(String id, GamePostDTO gamePostDTO) {
-//
-//        Game reqLobby = gameRepository.findById(id);
-//        float timeLimit = gamePostDTO.getTimeLimit();
-//        if (reqLobby != null) {
-//            if (timeLimit >= 5.0 && timeLimit <= 100.0){
-//                reqLobby.setTimeLimit(timeLimit);
-//
-//            } else {
-//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high");
-//            }
-//
-//            if (gamePostDTO.getAmtOfRounds() > 0){
-//                reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
-//            } else {
-//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero");
-//            }
-//
-//            if (gamePostDTO.getMaxAmtUsers() >= 2){
-//                reqLobby.setMaxAmtUsers(gamePostDTO.getMaxAmtUsers());
-//            } else {
-//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users cannot be less than 2");
-//            }
-//            lobbies.put(reqLobby.getId(), reqLobby);
-//            return reqLobby;
-//        }
-//        return reqLobby;
-//    }
+   public Game updateGameSettings(Long id, GamePostDTO gamePostDTO) {
+       Game lobby = gameRepository.findById(id)
+       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
-//    public Game updateGameSettings(String id, GamePostDTO gamePostDTO) {
-//        Game lobby = gameRepository.findById(id);
-//
-//        //Validate if lobby exists
-//        if (lobby == null) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-//        }
-//        // Validate the amount of rounds
-//        int amtOfRounds = gamePostDTO.getAmtOfRounds();
-//        if (amtOfRounds < 1) {
-//            throw new IllegalArgumentException("There must be at least one round.");
-//        }
-//
-//        // Validate the time limit
-//        float timeLimit = gamePostDTO.getTimeLimit();
-//        if (timeLimit < 5 || timeLimit > 100) {
-//            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
-//        }
-//
-//        //Validate max amount of users
-//        int maxAmtUsers = gamePostDTO.getMaxAmtUsers();
-//        if (maxAmtUsers < 2) {
-//            throw new IllegalArgumentException("The maximum number of users cannot be less than 2.");
-//        }
-//
-//        lobby.setMaxAmtUsers(maxAmtUsers);
-//        lobby.setAmtOfRounds(amtOfRounds);
-//        lobby.setTimeLimit(timeLimit);
-//
-//        lobbies.put(lobby.getId(), lobby);
-//        return lobby;
-//    }
+       // Validate the amount of rounds
+       int amtOfRounds = gamePostDTO.getAmtOfRounds();
+       if (amtOfRounds < 1) {
+           throw new IllegalArgumentException("There must be at least one round.");
+       }
+
+       // Validate the time limit
+       float timeLimit = gamePostDTO.getTimeLimit();
+       if (timeLimit < 5 || timeLimit > 100) {
+           throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
+       }
+
+       //Validate max amount of users
+       int maxAmtUsers = gamePostDTO.getMaxAmtUsers();
+       if (maxAmtUsers < 2) {
+           throw new IllegalArgumentException("The maximum number of users cannot be less than 2.");
+       }
+
+       lobby.setMaxAmtUsers(maxAmtUsers);
+       lobby.setAmtOfRounds(amtOfRounds);
+       lobby.setTimeLimit(timeLimit);
+
+       gameRepository.save(lobby);
+       gameRepository.flush();
+
+    //    lobbies.put(lobby.getId(), lobby);
+       return lobby;
+   }
 
    public Game joinLobby(String invitationCodes, String userToken) throws Exception {
 

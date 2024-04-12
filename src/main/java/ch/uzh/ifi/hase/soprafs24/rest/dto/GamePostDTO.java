@@ -17,7 +17,7 @@ public class GamePostDTO {
     private Float timeLimit;
     private Map<String, Integer> scores; // Assuming scores is a map for demonstration
     private List<User> users;
-    private Integer maxAmtUsers;
+    private Integer maxAmtUsers=50;
 
     // Getter and Setter Methods
 
