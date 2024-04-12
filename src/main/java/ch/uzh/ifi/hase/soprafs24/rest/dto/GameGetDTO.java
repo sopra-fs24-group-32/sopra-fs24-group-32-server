@@ -1,22 +1,21 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
-
+import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class GamePostDTO {
-
-
+public class GameGetDTO {
 
     // Field Declarations
     private Long id;
     private String lobbyOwner;
     private Integer amtOfRounds;
     private Float timeLimit;
-    private Map<String, Integer> scores; // Assuming scores is a map for demonstration
-    private List<User> users;
+    private List<User> users; // Assuming users is a list of user usernames
     private Integer maxAmtUsers;
 
     // Getter and Setter Methods
@@ -53,15 +52,6 @@ public class GamePostDTO {
         this.timeLimit = timeLimit;
     }
 
-    public Map<String, Integer> getScores() {
-        return scores;
-    }
-
-    public void setScores(Map<String, Integer> scores) {
-        this.scores = scores;
-    }
-
-
     public List<User> getUsers() {
         return users;
     }
@@ -77,8 +67,6 @@ public class GamePostDTO {
     public void setMaxAmtUsers(Integer maxAmtUsers) {
         this.maxAmtUsers = maxAmtUsers;
     }
-
-
 
 
 }

@@ -17,6 +17,7 @@ public class UserGetDTO {
   private String email;
   private String picture;
   private String userToken;
+  private Integer score=0;
 
   public Long getId() {
     return id;
@@ -96,6 +97,14 @@ public class UserGetDTO {
 
   public void setUserToken(String userToken) {
     this.userToken = userToken;
+  }
+
+  public Integer getScore() {
+    return score;
+  }
+
+  public void setScore(Integer score) {
+    this.score = score;
   }
   
 }

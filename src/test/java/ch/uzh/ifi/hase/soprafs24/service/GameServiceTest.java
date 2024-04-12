@@ -4,13 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,7 +32,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void joinLobbyAndLobbyIdIsNullOrEmpty(){
+    public void joinLobbyAndIdIsNullOrEmpty(){
         Exception exceptionIdIsNull = assertThrows(ResponseStatusException.class, () -> {
             gameService.joinLobby(null, "userToken");
         });
@@ -109,7 +108,7 @@ public class GameServiceTest {
         when(userRepository.findByUserToken("userToken2")).thenReturn(newUser);
 
         Lobby lobby = gameService.createLobby("userToken");
-        Player player1 = new Player();
+        User player1 = new User();
         lobby.addPlayer(player1);;
         lobby.setTimeLimit(15f);
         lobby.startGame();
@@ -129,16 +128,16 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testFindByLobbyIdWhenExists() {
+    public void testFindByIdWhenExists() {
         Lobby expectedLobby = new Lobby(1L, "TestOwner");
         gameService.getAllLobbies().put(1L, expectedLobby);
-        Lobby foundLobby = gameService.findByLobbyId("roomId1");
+        Lobby foundLobby = gameService.findById("roomId1");
         assertEquals(expectedLobby, foundLobby);
     }
 
     @Test
-    public void testFindByLobbyIdWhenNotExists() {
-        assertNull(gameRepository.findByLobbyId("nonExistingId"));
+    public void testFindByIdWhenNotExists() {
+        assertNull(gameRepository.findById("nonExistingId"));
     }
 
 
@@ -155,8 +154,8 @@ public class GameServiceTest {
 
         // Assert
         assertNotNull(lobby);
-        assertEquals(1, lobby.getAllPlayers().size());
-        assertTrue(lobby.getAllPlayers().stream().anyMatch(player -> player.getUsername().equals("lobbyOwner")));
+        assertEquals(1, lobby.getAllUsers().size());
+        assertTrue(lobby.getAllUsers().stream().anyMatch(user -> user.getUsername().equals("lobbyOwner")));
     }
 
 
@@ -172,22 +171,22 @@ public class GameServiceTest {
         Lobby lobby = gameService.createLobby("ownerToken");
         lobby.setTimeLimit(10.0f);
         lobby.setAmtOfRounds(5);
-        lobby.setMaxAmtPlayers(10);
+        lobby.setMaxAmtUsers(10);
 
         GamePostDTO gamePostDTO = new GamePostDTO();
         gamePostDTO.setTimeLimit(15.0f);
         gamePostDTO.setAmtOfRounds(7);
-        gamePostDTO.setMaxAmtPlayers(12);
+        gamePostDTO.setMaxAmtUsers(12);
 
-        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
+        when(gameRepository.findById(lobby.getId())).thenReturn(lobby);
 
-        Lobby updatedLobby = gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
+        Lobby updatedLobby = gameService.updateGameSettings(lobby.getId(), gamePostDTO);
 
         // Assert
         assertNotNull(updatedLobby);
         assertEquals(15.0f, updatedLobby.getTimeLimit());
         assertEquals(7, updatedLobby.getAmtOfRounds());
-        assertEquals(12, updatedLobby.getMaxAmtPlayers());
+        assertEquals(12, updatedLobby.getMaxAmtUsers());
     }
 
     @Test
@@ -202,17 +201,17 @@ public class GameServiceTest {
         Lobby lobby = gameService.createLobby("ownerToken");
         lobby.setTimeLimit(10.0f);
         lobby.setAmtOfRounds(5);
-        lobby.setMaxAmtPlayers(10);
+        lobby.setMaxAmtUsers(10);
 
         GamePostDTO gamePostDTO = new GamePostDTO();
         gamePostDTO.setTimeLimit(15.0f);
         gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
-        gamePostDTO.setMaxAmtPlayers(12);
+        gamePostDTO.setMaxAmtUsers(12);
 
-        when(gameRepository.findByLobbyId(lobby.getLobbyId())).thenReturn(lobby);
+        when(gameRepository.findById(lobby.getId())).thenReturn(lobby);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            gameService.updateGameSettings(lobby.getLobbyId(), gamePostDTO);
+            gameService.updateGameSettings(lobby.getId(), gamePostDTO);
         }, "There must be at least one round.");
     }
 
@@ -238,8 +237,8 @@ public class GameServiceTest {
 
         // Assert
         assertNotNull(lobby);
-        assertEquals(2, lobby.getAllPlayers().size());
-        assertTrue(lobby.getAllPlayers().stream().anyMatch(player -> player.getUsername().equals("username")));
+        assertEquals(2, lobby.getAllUsers().size());
+        assertTrue(lobby.getAllUsers().stream().anyMatch(user -> user.getUsername().equals("username")));
     }
     
 }

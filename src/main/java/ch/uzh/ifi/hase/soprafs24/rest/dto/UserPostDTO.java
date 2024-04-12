@@ -11,6 +11,7 @@ public class UserPostDTO {
   private String email;
   private String picture;
   private String userToken;
+  private Integer score=0;
 
     // Getter
   public String getUserToken() {
@@ -69,6 +70,14 @@ public class UserPostDTO {
 
   public void setBirthDay(Date birthDay) {
     this.birthDay = birthDay;
+  }
+
+  public Integer getScore() {
+    return score;
+  }
+
+  public void setScore(Integer score) {
+    this.score = score;
   }
 
 }

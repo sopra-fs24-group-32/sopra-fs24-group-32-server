@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
@@ -13,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 /**
  * User Controller
@@ -25,9 +28,11 @@ import java.util.List;
 public class UserController {
 
   private final UserService userService;
+  private final UserRepository userRepository;
 
-  UserController(UserService userService) {
+  UserController(UserService userService, UserRepository userRepository) {
     this.userService = userService;
+    this.userRepository = userRepository;
   }
 
   @GetMapping("/users")
@@ -43,6 +48,20 @@ public class UserController {
       userGetDTOs.add(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user));
     }
     return userGetDTOs;
+  }
+
+  @GetMapping("/users/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public UserGetDTO User(@PathVariable Long id) throws InterruptedException, ExecutionException {
+    Optional<User> user = userRepository.findById(id);
+    if (user.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    }
+
+    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user.get());
+    // return user;
+    // return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
   }
 
   @PostMapping("/user/register")

@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 
+import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
+import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.weaver.bcel.UnwovenClassFile.ChildClass;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
-import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ public class GameService {
     private final UserService userService;
     private final DallE dallE = new DallE();
     private final ChatGPT chatGPT = new ChatGPT();
-    private static final Map<Long, Lobby> lobbies = new HashMap<>();
     private long nextId=1;    
 
     @Autowired
@@ -48,148 +48,160 @@ public class GameService {
         return this.userRepository.findAll();
     }
 
-    public Map<Long, Lobby> getAllLobbies() {
-        return lobbies;
-    }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   public Lobby findByLobbyId(String lobbyId) {
-       for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-           if (entry.getValue().getLobbyId().equals(lobbyId)) {
-               return entry.getValue();
-           }
-       }
-       return null; // Return null if lobby is not found
-   }
-
-   public Lobby findByLobbyInvitationCodes(String invitationCodes) {
-        List<Lobby> lobbies = gameRepository.findAll();
-
-        for (Lobby lobby : lobbies) {
-            if (lobby.getLobbyInvitationCode().equals(invitationCodes)) {
-                return lobby;
-            }
-        }
-        return null; // Return null if lobby is not found
-   }
+//    public Lobby findById(String id) {
+//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+//            if (entry.getValue().getId().equals(id)) {
+//                return entry.getValue();
+//            }
+//        }
+//        return null; // Return null if lobby is not found
+//    }
+//    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
+//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
+//            if (entry.getValue().getInvitationCodes().equals(invitationCodes)) {
+//                return entry.getValue();
+//            }
+//        }
+//        return null; // Return null if lobby is not found
+//    }
 
     //create a lobby
-    public Lobby createLobby(String userToken) throws Exception {
+    public Game createLobby(String userToken) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
         
-        User lobbyOwner = userRepository.findByUserToken(userToken);
-        long id = nextId++;
-        String lobbyOwnerName = lobbyOwner.getUsername();
-        Lobby lobby = new Lobby(id, lobbyOwnerName);
-        Player host = new Player();
-        host.setUsername(lobbyOwner.getUsername());
-        lobby.addPlayer(host);
-        lobbies.put(id, lobby);
-        gameRepository.save(lobby);
+        User lobbyOwner = userRepository.findByUserToken(mappedToken);
+
+        List<User> users = new ArrayList<>();
+        users.add(lobbyOwner);
+        Game newGame = new Game(nextId, lobbyOwner.getUsername()); 
+        newGame.addPlayer(lobbyOwner);
+        newGame.setLobbyOwner(lobbyOwner.getUsername());
+
+        gameRepository.save(newGame);
         gameRepository.flush();
 
-        return lobby;
-    }
- 
-
-    public Lobby updateGameSettings(String lobbyId, GamePostDTO gamePostDTO) {
-        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
-
-        //Validate if lobby exists
-        if (lobby == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-        }
-        // Validate the amount of rounds
-        int amtOfRounds = gamePostDTO.getAmtOfRounds();
-        if (amtOfRounds < 1) {
-            throw new IllegalArgumentException("There must be at least one round.");
-        }
-
-        // Validate the time limit
-        float timeLimit = gamePostDTO.getTimeLimit();
-        if (timeLimit < 5 || timeLimit > 100) {
-            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
-        }
-
-        //Validate max amount of players
-        int maxAmtPlayers = gamePostDTO.getMaxAmtPlayers();
-        if (maxAmtPlayers < 2) {
-            throw new IllegalArgumentException("The maximum number of players cannot be less than 2.");
-        }
-
-        lobby.setMaxAmtPlayers(maxAmtPlayers);
-        lobby.setAmtOfRounds(amtOfRounds);
-        lobby.setTimeLimit(timeLimit);
-
-        lobbies.put(lobby.getId(), lobby);
-        return lobby;
+        return newGame;
     }
 
-    public Lobby joinLobby(String invitationCodes, String userToken) throws Exception {
 
-        if(invitationCodes == null || invitationCodes.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
-        }
+//    public Game updateGame(String id, GamePostDTO gamePostDTO) {
+//
+//        Game reqLobby = gameRepository.findById(id);
+//        float timeLimit = gamePostDTO.getTimeLimit();
+//        if (reqLobby != null) {
+//            if (timeLimit >= 5.0 && timeLimit <= 100.0){
+//                reqLobby.setTimeLimit(timeLimit);
+//
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high");
+//            }
+//
+//            if (gamePostDTO.getAmtOfRounds() > 0){
+//                reqLobby.setAmtOfRounds(gamePostDTO.getAmtOfRounds());
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero");
+//            }
+//
+//            if (gamePostDTO.getMaxAmtUsers() >= 2){
+//                reqLobby.setMaxAmtUsers(gamePostDTO.getMaxAmtUsers());
+//            } else {
+//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users cannot be less than 2");
+//            }
+//            lobbies.put(reqLobby.getId(), reqLobby);
+//            return reqLobby;
+//        }
+//        return reqLobby;
+//    }
 
-        if(userToken == null || userToken.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
-        }
+//    public Game updateGameSettings(String id, GamePostDTO gamePostDTO) {
+//        Game lobby = gameRepository.findById(id);
+//
+//        //Validate if lobby exists
+//        if (lobby == null) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+//        }
+//        // Validate the amount of rounds
+//        int amtOfRounds = gamePostDTO.getAmtOfRounds();
+//        if (amtOfRounds < 1) {
+//            throw new IllegalArgumentException("There must be at least one round.");
+//        }
+//
+//        // Validate the time limit
+//        float timeLimit = gamePostDTO.getTimeLimit();
+//        if (timeLimit < 5 || timeLimit > 100) {
+//            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
+//        }
+//
+//        //Validate max amount of users
+//        int maxAmtUsers = gamePostDTO.getMaxAmtUsers();
+//        if (maxAmtUsers < 2) {
+//            throw new IllegalArgumentException("The maximum number of users cannot be less than 2.");
+//        }
+//
+//        lobby.setMaxAmtUsers(maxAmtUsers);
+//        lobby.setAmtOfRounds(amtOfRounds);
+//        lobby.setTimeLimit(timeLimit);
+//
+//        lobbies.put(lobby.getId(), lobby);
+//        return lobby;
+//    }
 
-        // ObjectMapper objectMapper = new ObjectMapper();
-        // Map<String, String> map = objectMapper.readValue(userToken, Map.class);
-        // // Extract the userToken from the Map
-        // String mappedToken = map.get("userToken");
+   public Game joinLobby(String invitationCodes, String userToken) throws Exception {
 
-        User user = userRepository.findByUserToken(userToken);
-        // System.out.println(mappedToken);
-        // System.out.println(user);
-        Lobby lobby = gameRepository.findByLobbyInvitationCode(invitationCodes);
+       if(invitationCodes == null || invitationCodes.isEmpty()){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
+       }
 
-        /*
-        Currently checked within the userService.findByUserToken() method -> same exception gets thrown
-        if(user == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
-        }
-         */
+       if(userToken == null || userToken.isEmpty()){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
+       }
 
-        if(lobby == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
-        }
+       ObjectMapper objectMapper = new ObjectMapper();
+       Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+       // Extract the userToken from the Map
+       String mappedToken = map.get("userToken");
 
-        if(lobby.gameHasStarted()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
-        }
+       User user = userRepository.findByUserToken(mappedToken);
+       Game game = gameRepository.findByLobbyInvitationCode(invitationCodes);
 
-        // Player newPlayer = (Player) user;
-        Player newPlayer = new Player();
-        newPlayer.setUsername(user.getUsername());
-        lobby.addPlayer(newPlayer);
-        lobbies.put(lobby.getId(), lobby);
+       /*
+       Currently checked within the userService.findByUserToken() method -> same exception gets thrown
+       if(user == null){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+       }
+        */
 
-        gameRepository.save(lobby);
-        gameRepository.flush();
+       if(game == null){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
+       }
 
-        return lobby;
-    }
+       if(game.isGameStarted()){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+       }
 
-    public String generatePictureDallE(String prompt) throws Exception {
-        
-        if (prompt == null || prompt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text prompt provided by the player is null or empty");
-        }
+       game.addPlayer(user);
 
-        return dallE.generatePicture(prompt);
-        
-    }
+       gameRepository.save(game);
+       gameRepository.flush();
+
+       return game;
+   }
     
-    public Map<Player, String> playerChatGTPScore(String originalPrompt, Map<Player, String> playerInputGuessed) throws Exception {
+    public Map<User, String> playerChatGTPScore(String originalPrompt, Map<User, String> playerInputGuessed) throws Exception {
 
         if (originalPrompt == null || originalPrompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text prompt provided by the player is null or empty");
         }
         
-        for (Map.Entry<Player, String> entry : playerInputGuessed.entrySet()) {
+        for (Map.Entry<User, String> entry : playerInputGuessed.entrySet()) {
             String guessedInput = entry.getValue();
             if (guessedInput == null || guessedInput.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text response provided by the player is null or empty");

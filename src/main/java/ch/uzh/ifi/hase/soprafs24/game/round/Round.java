@@ -11,45 +11,45 @@ import java.util.Collections;
 
 import javax.persistence.*;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.score.Score;
 
 public class Round {
 
     private String inputPhrase;
     private Clock timer;
-    private Map<Player, Map<String, Duration>> guessedInputs;
-    private List<Player> players;
-    private Iterator<Player> iterator;
-    private Player pictureGenerator;
+    private Map<User, Map<String, Duration>> guessedInputs;
+    private List<User> users;
+    private Iterator<User> iterator;
+    private User pictureGenerator;
     @OneToMany
-    private List<Player> remainingGenerators;
+    private List<User> remainingGenerators;
     // private ChatGPT chatGPT;
     private Score scores;
 
-    public Round(List<Player> players) {
-        this.players = new ArrayList<>(players);
+    public Round(List<User> users) {
+        this.users = new ArrayList<>(users);
         this.guessedInputs = new HashMap<>();
     }
 
-    public void startNewRound(List<Player> players, float timeLimit, Score scores) {
-        this.players = new ArrayList<>(players);
-        Collections.shuffle(this.players);
-        this.iterator = this.players.iterator();
+    public void startNewRound(List<User> users, float timeLimit, Score scores) {
+        this.users = new ArrayList<>(users);
+        Collections.shuffle(this.users);
+        this.iterator = this.users.iterator();
         this.scores = scores;
 
-        Player nextPlayer = nextGenerator();
+        User nextPlayer = nextGenerator();
         this.pictureGenerator = nextPlayer;
-        // this.remainingGenerators = new ArrayList<>(players);
+        // this.remainingGenerators = new ArrayList<>(users);
         // this.remainingGenerators.remove(nextPlayer);
 
 
 
     }
 
-    public Player nextGenerator() {
+    public User nextGenerator() {
         if (!iterator.hasNext()) {
-            iterator = players.iterator();
+            iterator = users.iterator();
         }
         return iterator.next();
     }
@@ -67,11 +67,34 @@ public class Round {
     }
 
     public float getTimeLeft(float timeLimit, float timeGuessSubmitted) {
+        // Implementation of the method
         return timeLimit - timeGuessSubmitted;
     }
 
+    public void scalePointsByDuration(User user, float timeLimit, float timeGuessSubmitted) {
+        // Implementation of the method
+        // if the timeGuessSubmitted is over the timeLimit, the user gets 0 points
+        // if the timeGuessSubmitted is >=75% of the timeLimit, the user gets full points (maxPoints = 6)
+        // if the timeGuessSubmitted is 50% of the timeLimit, the user gets half of the points (3)
+        // if the timeGuessSubmitted is 25% of the timeLimit, the user gets 1 point
 
-    public int chatGPTSimilarityScore( float similarityScore) throws Exception {
+        // IMPLEMENTATION NOT TOTALLY CORRECT (problem with (int) (maxPoints * percentage)
+        // Rounding issue, should be fixed by using Math.round() or Math.floor() or Math.ceil() instead of casting to int
+
+        int maxPoints = 6;
+
+        if (timeGuessSubmitted >= timeLimit) {
+            scores.updateScore(user, 0);
+        } else {
+            float timeLeft = getTimeLeft(timeLimit, timeGuessSubmitted);
+            float percentage = timeLeft / timeLimit;
+            int points = (int) (maxPoints * percentage);
+            scores.updateScore(user, points);
+        }
+    }
+
+
+    public void chatGPTSimilarityScore(User user, float similarityScore) throws Exception {
         
         if (similarityScore < 0 || similarityScore > 1) {
             throw new IllegalArgumentException("Similarity score must be between 0 and 1.");
@@ -80,36 +103,14 @@ public class Round {
         int pointsAwarded;
         if (similarityScore >= 0.75) {
             pointsAwarded = 6;
-        } else if (similarityScore >= 0.5) {
+        } else if (similarityScore >= 0.5) { // Logical AND is replaced with proper syntax
             pointsAwarded = 4;
         } else if (similarityScore >= 0.25) {
             pointsAwarded = 2;
         } else {
             pointsAwarded = 0;
         }
-        return pointsAwarded;
-    }
-
-    public void scalePointsByDuration(Player player, int similarityScore, float timeLimit, float timeGuessSubmitted) throws Exception {
         
-
-        int pointsAwarded = chatGPTSimilarityScore(similarityScore);
-
-        float timeLeft = getTimeLeft(timeLimit, timeGuessSubmitted);
-        float bonusPoints = 0;
-
-        if (timeLeft <= 0) {
-            player.receivePoints(0);
-        } else {
-            float percentageOfTimeLeft = timeLeft / timeLimit;
-            if (percentageOfTimeLeft >= 0.75) {
-                bonusPoints = 0.25f;
-            } else if (percentageOfTimeLeft >= 0.5) {
-                bonusPoints = 0.10f;
-            }
-
-            int finalPointsAwarded = (int) (pointsAwarded + (pointsAwarded * bonusPoints));
-            player.receivePoints(finalPointsAwarded);
-        }
+//        user.receivePoints(pointsAwarded);
     }
 }

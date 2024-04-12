@@ -1,9 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
@@ -170,7 +169,7 @@ public class UserControllerTest {
 
 
   @Test
-    public void joinLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
+    public void joinLobbyAndIdIsNullOrEmpty() throws Exception {
       
        UserPostDTO userPostDTO = new UserPostDTO();
        userPostDTO.setUserToken("valid_token");
@@ -178,11 +177,11 @@ public class UserControllerTest {
 
       String requestBody = asJsonString(userPostDTO);
 
-      MockHttpServletRequestBuilder postRequestEmpty = post("/lobby/join/{lobbyId}", "")
+      MockHttpServletRequestBuilder postRequestEmpty = post("/lobby/join/{id}", "")
               .contentType(MediaType.APPLICATION_JSON)
               .content(requestBody);
 
-      MockHttpServletRequestBuilder postRequestNull = post("/lobby/join/{lobbyId}", (String) null)
+      MockHttpServletRequestBuilder postRequestNull = post("/lobby/join/{id}", (String) null)
               .contentType(MediaType.APPLICATION_JSON)
               .content(requestBody);
 
@@ -195,30 +194,30 @@ public class UserControllerTest {
 
     // Test updating a lobby
         @Test
-        public void updateLobbyAndLobbyIdIsNullOrEmpty() throws Exception {
+        public void updateLobbyAndIdIsNullOrEmpty() throws Exception {
             // Prepare an empty GamePostDTO
             GamePostDTO emptyGamePostDTO = new GamePostDTO();
             emptyGamePostDTO.setAmtOfRounds(0); // Set an empty amtOfRounds
-            emptyGamePostDTO.setTimeLimit(0); // Set an empty timeLimit
-            emptyGamePostDTO.setMaxAmtPlayers(0); // Set an empty maxAmtPlayers
+            emptyGamePostDTO.setTimeLimit((float) 0); // Set an empty timeLimit
+            emptyGamePostDTO.setMaxAmtUsers(0); // Set an empty maxAmtUsers
             
             GamePostDTO nullGamePostDTO = new GamePostDTO();
             nullGamePostDTO.setAmtOfRounds(0); // Set a null amtOfRounds
-            nullGamePostDTO.setTimeLimit(0); // Set a null timeLimit
-            nullGamePostDTO.setMaxAmtPlayers(0); // Set a null maxAmtPlayers
+            nullGamePostDTO.setTimeLimit((float) 0); // Set a null timeLimit
+            nullGamePostDTO.setMaxAmtUsers(0); // Set a null maxAmtUsers
             
             given(gameService.updateGameSettings("", emptyGamePostDTO)).willReturn(null);
             given(gameService.updateGameSettings(null, nullGamePostDTO)).willReturn(null);
             
-            // Test for the empty lobbyId
+            // Test for the empty id
 
-                mockMvc.perform(put("/lobby/update/{lobbyId}", "")
+                mockMvc.perform(put("/lobby/update/{id}", "")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(emptyGamePostDTO)))
                         .andExpect(status().isNotFound());
 
-        // Test for the null lobbyId
-        mockMvc.perform(put("/lobby/update/{lobbyId}", (String) null)
+        // Test for the null id
+        mockMvc.perform(put("/lobby/update/{id}", (String) null)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(nullGamePostDTO)))
                 .andExpect(status().isNotFound());
@@ -228,32 +227,32 @@ public class UserControllerTest {
 
         @Test
         public void updateLobbyInvalidTimeLimit() throws Exception {
-            String lobbyId = "roomId1";
+            String id = "roomId1";
     
             // time limit is too low
             GamePostDTO gamePostDTOTooLow = new GamePostDTO();
-            gamePostDTOTooLow.setMaxAmtPlayers(50);
-            gamePostDTOTooLow.setTimeLimit(3);
+            gamePostDTOTooLow.setMaxAmtUsers(50);
+            gamePostDTOTooLow.setTimeLimit(3F);
             gamePostDTOTooLow.setAmtOfRounds(15);
     
             // time limit is too high
             GamePostDTO gamePostDTOTooHigh = new GamePostDTO(); 
-            gamePostDTOTooHigh.setMaxAmtPlayers(50);
-            gamePostDTOTooHigh.setTimeLimit(101);
+            gamePostDTOTooHigh.setMaxAmtUsers(50);
+            gamePostDTOTooHigh.setTimeLimit(101F);
             gamePostDTOTooHigh.setAmtOfRounds(15);
     
-            given(gameService.updateGameSettings(lobbyId, gamePostDTOTooLow))
+            given(gameService.updateGame(id, gamePostDTOTooLow))
                     .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
             
-            given(gameService.updateGameSettings(lobbyId, gamePostDTOTooHigh))
+            given(gameService.updateGame(id, gamePostDTOTooHigh))
                     .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Time limit is too low or too high"));
             
-            mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+            mockMvc.perform(put("/lobby/update/{id}", id)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(asJsonString(gamePostDTOTooLow)))
                     .andExpect(status().isNotFound());
     
-            mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+            mockMvc.perform(put("/lobby/update/{id}", id)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(asJsonString(gamePostDTOTooHigh)))
                     .andExpect(status().isNotFound());
@@ -262,33 +261,33 @@ public class UserControllerTest {
     
             @Test
             public void updateLobbyInvalidAmtOfRounds() throws Exception {
-                String lobbyId = "1";
+                String id = "1";
                 GamePostDTO gamePostDTO = new GamePostDTO();
-                gamePostDTO.setMaxAmtPlayers(50);
-                gamePostDTO.setTimeLimit(3);
+                gamePostDTO.setMaxAmtUsers(50);
+                gamePostDTO.setTimeLimit(3F);
                 gamePostDTO.setAmtOfRounds(0);
             
-                given(gameService.updateGameSettings(lobbyId, gamePostDTO))
+                given(gameService.updateGame(id, gamePostDTO))
                         .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Amount of rounds cannot be negative or zero"));
                 
-                mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                mockMvc.perform(put("/lobby/update/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(gamePostDTO)))
                         .andExpect(status().isNotFound());
             }
     
             @Test
-            public void updateLobbyInvalidMaxAmtPlayers() throws Exception {
-                String lobbyId = "1";
+            public void updateLobbyInvalidMaxAmtUsers() throws Exception {
+                String id = "1";
                 GamePostDTO gamePostDTO = new GamePostDTO(); // Invalid time limit
-                gamePostDTO.setMaxAmtPlayers(1);
-                gamePostDTO.setTimeLimit(30);
+                gamePostDTO.setMaxAmtUsers(1);
+                gamePostDTO.setTimeLimit(30F);
                 gamePostDTO.setAmtOfRounds(15);
             
-                given(gameService.updateGameSettings(lobbyId, gamePostDTO))
-                        .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of players cannot be less than 2"));
+                given(gameService.updateGame(id, gamePostDTO))
+                        .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users cannot be less than 2"));
                 
-                mockMvc.perform(put("/lobby/update/{lobbyId}", lobbyId)
+                mockMvc.perform(put("/lobby/update/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(gamePostDTO)))
                         .andExpect(status().isNotFound());
@@ -296,26 +295,26 @@ public class UserControllerTest {
 
 
   @Test
-        public void updateLobbyAndLobbyIdDoesNotExists() throws Exception {
+        public void updateLobbyAndIdDoesNotExists() throws Exception {
             Lobby lobby = new Lobby(1L, "owner");
-            String lobbyId = lobby.getLobbyId();
+            String id = lobby.getId();
             User owner = new User();
             owner.setUsername("owner");
-            Player host = new Player();
+            User host = new User();
             host.setUsername("owner");
             lobby.addPlayer(host);
-            lobby.setLobbyId(lobbyId);
+            lobby.setId(id);
             lobby.setAmtOfRounds(15);
             lobby.setTimeLimit(10);
-            lobby.setMaxAmtPlayers(50);
+            lobby.setMaxAmtUsers(50);
 
             GamePostDTO gamePostDTO = new GamePostDTO();
             gamePostDTO.setAmtOfRounds(15);
-            gamePostDTO.setTimeLimit(10);
-            gamePostDTO.setMaxAmtPlayers(50);            
-            when(gameService.updateGameSettings(lobbyId, gamePostDTO)).thenReturn(lobby);
+            gamePostDTO.setTimeLimit(10F);
+            gamePostDTO.setMaxAmtUsers(50);            
+            when(gameService.updateGame(id, gamePostDTO)).thenReturn(lobby);
             
-            mockMvc.perform(put("/lobby/update/{lobbyId}", "invalidLobbyId")
+            mockMvc.perform(put("/lobby/update/{id}", "invalidId")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(asJsonString(gamePostDTO)))
                     .andExpect(status().isNotFound());

@@ -1,10 +1,15 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.game.Game;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -27,7 +32,7 @@ public class User implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(nullable = false)
@@ -41,6 +46,14 @@ public class User implements Serializable {
 
   @Column(nullable = false)
   private UserStatus status;
+
+  @Column(nullable = false)
+  private Integer score=0;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "game_id", referencedColumnName = "id") // Foreign key in the User table pointing to the Game
+    private Game game;
 
   @Column
   @CreationTimestamp
@@ -144,6 +157,22 @@ public class User implements Serializable {
 
   public void setBirthDay(Date birthDay) {
     this.birthDay = birthDay;
+  }
+
+  public Integer getScore() {
+    return score;
+  }
+
+  public void setScore(Integer score) {
+    this.score = score;
+  }
+
+  public Game getGame() {
+    return game;
+  }
+
+  public void setGame(Game game) {
+    this.game = game;
   }
 
   @Override

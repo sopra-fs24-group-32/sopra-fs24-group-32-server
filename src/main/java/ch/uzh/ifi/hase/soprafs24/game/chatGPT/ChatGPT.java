@@ -11,7 +11,7 @@ import okhttp3.Response;
 import okhttp3.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -20,13 +20,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 public class ChatGPT {
     
-    public Map<Player, String> playerInputs;
+    public Map<User, String> playerInputs;
 
     public ChatGPT() {
     }
 
-    public Map<Player, String> rateInputs(String originalTextPrompt, Map<Player, String> playerInputs) throws IOException {
-        Map<Player, String> ratings = new HashMap<>();
+    public Map<User, String> rateInputs(String originalTextPrompt, Map<User, String> playerInputs) throws IOException {
+        Map<User, String> ratings = new HashMap<>();
 
         Dotenv dotenv = Dotenv.load();
         String apiKey = dotenv.get("DALL_E_API_KEY"); // Assuming the correct environment variable name
@@ -35,7 +35,7 @@ public class ChatGPT {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         ObjectMapper objectMapper = new ObjectMapper();
 
-        for (Map.Entry<Player, String> entry : playerInputs.entrySet()) {
+        for (Map.Entry<User, String> entry : playerInputs.entrySet()) {
             String guessedInput = entry.getValue();
             String prompt = String.format("How much similar are these two sentences from 0 to 100: \"%s\" and \"%s\".", originalTextPrompt, guessedInput);
         

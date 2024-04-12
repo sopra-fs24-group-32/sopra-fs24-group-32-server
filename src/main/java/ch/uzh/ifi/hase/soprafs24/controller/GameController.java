@@ -1,25 +1,26 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
+import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
-import ch.uzh.ifi.hase.soprafs24.entity.Player;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.lobby.Lobby;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
+import java.util.List;
 import java.util.Map;
-
-import javax.persistence.Lob;
 
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.persistence.Id;
 
 @RestController
 public class GameController {
@@ -39,131 +40,75 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Lobby createLobby(@RequestBody String userToken) throws Exception {
-        if(userToken == null || userToken.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
-        }
-        Lobby lobby = gameService.createLobby(userToken);
-
-        if(lobby == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "newly created lobby is null");
-        }
-        return lobby;
+    public ResponseEntity<GameGetDTO> createGame(@RequestBody String userToken) {
+    try {
+        User user = userRepository.findByUserToken(userToken);
+        Game createdLobby = gameService.createLobby(userToken);
+        GameGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(createdLobby);
+        return new ResponseEntity<>(lobbyGetDTO, HttpStatus.CREATED);
+    } catch (ResponseStatusException e) {
+        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+        throw new RuntimeException("Could not create lobby:", e);
     }
-    //    public ResponseEntity<LobbyGetDTO> createLobby(@RequestBody LobbyPostDTO lobbyPostDTO) {
-//        try {
-//            Lobby lobbyInput = DTOMapper.INSTANCE.convertLobbyPostDTOtoEntity(lobbyPostDTO);
-//            Lobby createdLobby = lobbyService.registerLobby(lobbyInput);
-//            LobbyGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToLobbyGetDTO(createdLobby);
-//            return new ResponseEntity<>(lobbyGetDTO, HttpStatus.CREATED);
-//        } catch (ResponseStatusException e) {
-//            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-//        }
-//    }
+}
 
-    // @PutMapping("lobby/update/{lobbyId}")
+    // @PutMapping("lobby/update/{id}")
     // @ResponseStatus(HttpStatus.NO_CONTENT)
     // @ResponseBody
     // public void updateLobby(GamePostDTO gamePostDTO){
 
     // }
 
-    @PostMapping("/lobby/join/{invitationCodes}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public Lobby joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
-        if (userToken == null || userToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
-        }
+   @PostMapping("/lobby/join/{invitationCodes}")
+   @ResponseStatus(HttpStatus.OK)
+   @ResponseBody
+   public Game joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
+       if (userToken == null || userToken.isEmpty()) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+       }
 
-        if(invitationCodes == null || invitationCodes.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "invitationCodes is null or empty");
-        }
+       if(invitationCodes == null || invitationCodes.isEmpty()){
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "invitationCodes is null or empty");
+       }
 
-        Lobby lobby = gameService.joinLobby(invitationCodes, userToken);
+       Game game = gameService.joinLobby(invitationCodes, userToken);
 
-        return lobby;
-    }
-
-
+       return game;
+   }
 
 
-    @GetMapping("/lobby/{lobbyId}")
+    @GetMapping("/lobbies")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Lobby getLobby(@PathVariable String lobbyId) throws ResponseStatusException{
-        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
-
-        if (lobby == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-        }
-
-        return lobby;
+    public List<Game> getAllLobbies() {
+        List<Game> games = gameRepository.findAll();
+        return games;
     }
 
-    @PutMapping("/lobby/update/{lobbyId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @GetMapping("/lobby/{id}")
+    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Lobby updateGameSettings(@PathVariable String lobbyId, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException {
-
-        Lobby lobby = gameRepository.findByLobbyId(lobbyId);
-        if (lobby == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-        }
-        //ensure user is the host
-        User user = userRepository.findByUserToken(userToken);
-        if (!user.getUsername().equals(lobby.getLobbyOwner())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
-        }
-
-        return gameService.updateGameSettings(lobbyId, gamePostDTO);
+    public Game getLobby(@PathVariable Long id) throws ResponseStatusException{
+        return gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
     }
 
-
-    @PostMapping("/game/image/{gameId}")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
-    public String generatePictureDallE(@PathVariable String gameId, @RequestBody String text_prompt) throws Exception {
-
-        if (text_prompt == null || text_prompt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
-        }
-        // Add checking conditions related to the gameId
-        // for example, if the gameId exists in the database
-        // or something like Game game = gameService.findGameById(gameId);
-        // if (game == null || game.isEmpty() 
-        if (gameId == null || gameId.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
-        }
-
-        Lobby lobby = gameRepository.findByLobbyId(gameId);
-
-        if (lobby == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-        }
-
-        String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
-
-        if (pictureGenerated == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
-        }
-
-        return pictureGenerated;
-    }
-
-    @PostMapping("/rate/score")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
-    public String assessByChatGPT(@RequestBody String playerGuessed) throws Exception {
-        if (playerGuessed == null || playerGuessed.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player guesses is null or empty");
-        }
-        Player player = new Player();
-        player.setUsername("player1");
-        Map<Player, String> playerGuessedInputs = Map.of(player, playerGuessed);
-        Map<Player, String> game = gameService.playerChatGTPScore("Sofa in the shape of avocado", playerGuessedInputs);
-
-        return game.values().iterator().next();
-    }
-
+//    @PutMapping("/lobby/update/{id}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    @ResponseBody
+//    public Game updateGameSettings(@PathVariable String id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException {
+//
+//        Game lobby = gameRepository.findById(id);
+//        if (lobby == null) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
+//        }
+//        //ensure user is the host
+//        User user = userRepository.findByUserToken(userToken);
+//        if (!user.getUsername().equals(lobby.getLobbyOwner())) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
+//        }
+//
+//        return gameService.updateGameSettings(id, gamePostDTO);
+//    }
 }
