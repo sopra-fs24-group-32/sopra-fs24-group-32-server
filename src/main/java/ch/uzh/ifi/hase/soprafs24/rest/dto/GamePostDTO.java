@@ -78,7 +78,4 @@ public class GamePostDTO {
         this.maxAmtUsers = maxAmtUsers;
     }
 
-
-
-
 }
