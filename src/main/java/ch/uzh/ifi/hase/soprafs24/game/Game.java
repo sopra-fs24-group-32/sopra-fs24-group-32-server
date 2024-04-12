@@ -158,7 +158,7 @@ public class Game {
 
     @Override
     public int hashCode(){
-        return Objects.hash(id, maxAmtUsers, lobbyOwner, lobbyInvitationCode, gameStarted, id, amtOfRounds, timeLimit, users);
+        return Objects.hash(id, maxAmtUsers, lobbyOwner, lobbyInvitationCode, gameStarted, id, users, amtOfRounds, timeLimit);
     }
 
     @Override
