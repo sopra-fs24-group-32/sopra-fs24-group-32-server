@@ -1,3 +1,4 @@
+/*
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import java.util.Map;
@@ -29,3 +30,5 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     }
     
 }
+
+ */
