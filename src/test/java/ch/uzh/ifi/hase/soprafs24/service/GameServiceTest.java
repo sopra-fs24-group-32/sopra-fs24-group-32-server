@@ -42,7 +42,7 @@ public class GameServiceTest {
             gameService.joinLobby(null, "userToken");
         });
 
-        String expectedMessage = "Lobby with sent invitationCodes does not exist";
+        String expectedMessage = "Lobby invitation code is null or empty";
         String actualMessage = exceptionIdIsNull.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -51,7 +51,7 @@ public class GameServiceTest {
             gameService.joinLobby("", "userToken");
         });
 
-        String expectedMessageWhenIdIsEmpty = "Lobby with sent invitationCodes does not exist";
+        String expectedMessageWhenIdIsEmpty = "Lobby invitation code is null or empty";
         String actualMessageWhenIdIsEmpty = exceptionIdIsNull.getMessage();
 
         assertTrue(actualMessageWhenIdIsEmpty.contains(expectedMessageWhenIdIsEmpty));
@@ -63,7 +63,7 @@ public class GameServiceTest {
             gameService.joinLobby("1", null);
         });
 
-        String expectedMessage = "User does not exists";
+        String expectedMessage = "UserToken is null or empty";
         String actualMessage = exceptionUserTokenIsNull.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -72,7 +72,7 @@ public class GameServiceTest {
             gameService.joinLobby("1", "");
         });
 
-        String expectedMessageWhenUserTokenIsEmpty = "User does not exists";
+        String expectedMessageWhenUserTokenIsEmpty = "UserToken is null or empty";
         String actualMessageWhenUserTokenIsEmpty = exceptionUserTokenIsEmpty.getMessage();
 
         assertTrue(actualMessageWhenUserTokenIsEmpty.contains(expectedMessageWhenUserTokenIsEmpty));

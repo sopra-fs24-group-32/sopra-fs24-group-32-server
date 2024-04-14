@@ -8,7 +8,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder.In;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

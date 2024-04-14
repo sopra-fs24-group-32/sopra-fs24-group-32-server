@@ -15,8 +15,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 public class DallE {
     
-    private String inputPhrase;
-
     private static final String API_URL = "https://api.openai.com/v1/images/generations";
     private static final MediaType JSON = MediaType.parse("application/json");
     private final OkHttpClient client = new OkHttpClient();

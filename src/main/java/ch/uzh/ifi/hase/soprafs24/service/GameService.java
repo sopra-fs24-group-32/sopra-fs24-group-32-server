@@ -7,20 +7,16 @@ import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
 import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.aspectj.weaver.bcel.UnwovenClassFile.ChildClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +29,8 @@ public class GameService {
     private final UserService userService;
     private final DallE dallE = new DallE();
     private final ChatGPT chatGPT = new ChatGPT();
-    private long nextId=1;    
+    private long nextId=1;   
+    private final List<Game> games = new ArrayList<>(); 
 
     @Autowired
     public GameService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository,
@@ -49,19 +46,19 @@ public class GameService {
     }
 
     public List<Game> getAllGames() {
-        return this.gameRepository.findAll();
+        return games;
     }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//    public Lobby findById(String id) {
-//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-//            if (entry.getValue().getId().equals(id)) {
-//                return entry.getValue();
-//            }
-//        }
-//        return null; // Return null if lobby is not found
+//    public Game findById(Long id) throws ResponseStatusException{
+//             for (Game game : games) {
+//                 if (game.getId().equals(id)) {
+//                     return game;
+//                 }
+//             }
+//         return null;
 //    }
 //    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
 //        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
@@ -79,17 +76,25 @@ public class GameService {
         Map<String, String> map = objectMapper.readValue(userToken, Map.class);
         // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
+
         
         User lobbyOwner = userRepository.findByUserToken(mappedToken);
+
+        if (lobbyOwner == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+        }
 
         List<User> users = new ArrayList<>();
         users.add(lobbyOwner);
         Game newGame = new Game(nextId, lobbyOwner.getUsername()); 
         newGame.addPlayer(lobbyOwner);
         newGame.setLobbyOwner(lobbyOwner.getUsername());
+        newGame.setId(nextId);
 
         gameRepository.save(newGame);
         gameRepository.flush();
+
+        games.add(newGame);
 
         return newGame;
     }
@@ -131,11 +136,11 @@ public class GameService {
    public Game joinLobby(String invitationCodes, String userToken) throws Exception {
 
        if(invitationCodes == null || invitationCodes.isEmpty()){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with sent invitationCodes does not exist");
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby invitation code is null or empty");
        }
 
        if(userToken == null || userToken.isEmpty()){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists 111");
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "UserToken is null or empty");
        }
 
        ObjectMapper objectMapper = new ObjectMapper();
@@ -168,6 +173,34 @@ public class GameService {
 
        return game;
    }
+
+   // This is just an initial implementation of the startGameLobby method
+   public Game startGameLobby(Long id) {
+    if (id == null || id == 0) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+    }
+       
+    Game lobby = gameRepository.findById(id)
+       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+    // lobby.startGame();
+    lobby.setGameStarted(true);
+
+    gameRepository.save(lobby);
+    gameRepository.flush();
+
+    return lobby;
+   }
+
+   public String generatePictureDallE(String prompt) throws Exception {
+
+    if (prompt == null || prompt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
+        }
+
+        return dallE.generatePicture(prompt);
+    
+    }
     
     public Map<User, String> playerChatGTPScore(String originalPrompt, Map<User, String> playerInputGuessed) throws Exception {
 

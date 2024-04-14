@@ -112,10 +112,10 @@ public class Game {
 
     public void addPlayer(User user) throws Exception {
         if(user == null){
-            throw new Exception("User cannot be null");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot be null");
         }
         if(users.contains(user)){
-            throw new Exception("User already in lobby");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User already in lobby");
         }
         if(users.size() == maxAmtUsers){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users in lobby already reached");
