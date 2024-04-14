@@ -8,13 +8,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import java.util.List;
+import java.util.*;
 
 import javax.persistence.*;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Entity
 @Table(name = "game")
@@ -36,9 +35,13 @@ public class Game {
     @Column(nullable = false)
     private boolean gameStarted = false;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "game")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "game")
     @JsonManagedReference
     private List<User> users = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "game")
+    @JsonManagedReference
+    private List<User>  remaininPictureGenerators = new ArrayList<>();
 
     @Column(nullable = false)
     private int amtOfRounds;
@@ -150,6 +153,21 @@ public class Game {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
         }
         gameStarted = true;
+
+        this.remaininPictureGenerators = new ArrayList<>(this.users);
+        Collections.shuffle(this.remaininPictureGenerators);
+
+    }
+
+    public User selectPictureGenerator(){
+        if(!this.remaininPictureGenerators.isEmpty()){
+            int randomNum = ThreadLocalRandom.current().nextInt(0, remaininPictureGenerators.size());
+            System.out.println(randomNum);
+            System.out.println(Arrays.toString(remaininPictureGenerators.toArray()));
+            return this.remaininPictureGenerators.remove(randomNum);
+        }else{
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
+        }
     }
 
     public boolean gameHasStarted() {

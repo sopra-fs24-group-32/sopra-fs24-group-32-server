@@ -183,13 +183,29 @@ public class GameService {
     Game lobby = gameRepository.findById(id)
        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
-    // lobby.startGame();
+    lobby.startGame();
     lobby.setGameStarted(true);
 
     gameRepository.save(lobby);
     gameRepository.flush();
 
     return lobby;
+   }
+
+   public User getNextPictureGenerator(Long id){
+       if (id == null || id == 0) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+       }
+
+       Game game = gameRepository.findById(id)
+               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+       User nextPictureGenerator = game.selectPictureGenerator();
+
+       gameRepository.save(game);
+       gameRepository.flush();
+
+       return nextPictureGenerator;
    }
 
    public String generatePictureDallE(String prompt) throws Exception {
