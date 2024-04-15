@@ -243,4 +243,5 @@ public class GameWebSocketController {
 
         return new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
     }
+   
 }

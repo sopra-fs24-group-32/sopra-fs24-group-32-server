@@ -3,10 +3,10 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 
 import ch.uzh.ifi.hase.soprafs24.game.Game;
-import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
 import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -28,7 +28,6 @@ public class GameService {
     private final GameRepository gameRepository;
     private final UserService userService;
     private final DallE dallE = new DallE();
-    private final ChatGPT chatGPT = new ChatGPT();
     private long nextId=1;   
     private final List<Game> games = new ArrayList<>(); 
 
@@ -221,21 +220,6 @@ public class GameService {
 
         return dallE.generatePicture(mappedPrompt);
     
-    }
-    
-    public Map<User, String> playerChatGTPScore(String originalPrompt, Map<User, String> playerInputGuessed) throws Exception {
-
-        if (originalPrompt == null || originalPrompt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text prompt provided by the player is null or empty");
-        }
-        
-        for (Map.Entry<User, String> entry : playerInputGuessed.entrySet()) {
-            String guessedInput = entry.getValue();
-            if (guessedInput == null || guessedInput.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Text response provided by the player is null or empty");
-            }
-        }
-        return chatGPT.rateInputs(originalPrompt, playerInputGuessed);
     }
 }
         

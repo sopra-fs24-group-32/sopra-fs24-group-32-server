@@ -1,7 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
@@ -11,10 +10,6 @@ import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * DTOMapper
@@ -66,6 +61,13 @@ public interface DTOMapper {
   @Mapping(source = "users", target = "users") // Use custom mapping for users
   Game convertGamePostDTOtoEntity(GamePostDTO gamePostDTO);
 
+  @Mapping(source = "id", target = "id")
+  @Mapping(source = "users", target = "users") // Use the new custom mapping for users
+  @Mapping(source = "timeLimit", target = "timeLimit")
+  @Mapping(source = "amtOfRounds", target = "amtOfRounds")
+  @Mapping(source = "maxAmtUsers", target = "maxAmtUsers")
+  GameGetDTO convertEntityToGameGetDTO(Game createdLobby);
+
   @Mapping(source = "username", target = "username")
   @Mapping(source = "password", target = "password")
   @Mapping(source = "isLoggedIn", target = "isLoggedIn")
@@ -83,10 +85,4 @@ public interface DTOMapper {
   @Mapping(source = "picture", target = "picture")
   UserGetDTO convertEntityToUserGetDTO(User user);
 
-    @Mapping(source = "id", target = "id")
-    @Mapping(source = "users", target = "users") // Use the new custom mapping for users
-    @Mapping(source = "timeLimit", target = "timeLimit")
-    @Mapping(source = "amtOfRounds", target = "amtOfRounds")
-    @Mapping(source = "maxAmtUsers", target = "maxAmtUsers")
-    GameGetDTO convertEntityToGameGetDTO(Game createdLobby);
 }

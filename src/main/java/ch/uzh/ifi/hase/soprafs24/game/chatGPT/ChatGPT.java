@@ -11,8 +11,9 @@ import okhttp3.Response;
 import okhttp3.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import io.github.cdimascio.dotenv.Dotenv;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,13 +21,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 public class ChatGPT {
     
-    public Map<User, String> playerInputs;
+    public String playerGuessed;
+    public String originalText;
 
     public ChatGPT() {
     }
 
-    public Map<User, String> rateInputs(String originalTextPrompt, Map<User, String> playerInputs) throws IOException {
-        Map<User, String> ratings = new HashMap<>();
+    public float rateInputs(String originalText, String playerGuessed) throws IOException {
 
         Dotenv dotenv = Dotenv.load();
         String apiKey = dotenv.get("DALL_E_API_KEY"); // Assuming the correct environment variable name
@@ -35,43 +36,33 @@ public class ChatGPT {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         ObjectMapper objectMapper = new ObjectMapper();
 
-        for (Map.Entry<User, String> entry : playerInputs.entrySet()) {
-            String guessedInput = entry.getValue();
-            String prompt = String.format("How much similar are these two sentences from 0 to 100: \"%s\" and \"%s\".", originalTextPrompt, guessedInput);
+        String prompt = String.format("How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
         
-            // Create the request payload as a Map and serialize it to JSON
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("model", "gpt-3.5-turbo-instruct");
-            payload.put("prompt", prompt);
-            payload.put("temperature", 0);
-            payload.put("max_tokens", 50);
-            String jsonBody = objectMapper.writeValueAsString(payload); // Serialize the map to JSON string
+        // Create the request payload as a Map and serialize it to JSON
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("model", "gpt-3.5-turbo-instruct");
+        payload.put("prompt", prompt);
+        payload.put("temperature", 0);
+        payload.put("max_tokens", 50);
+        String jsonBody = objectMapper.writeValueAsString(payload); // Serialize the map to JSON string
         
-            RequestBody body = RequestBody.create(jsonBody, JSON);
-            Request request = new Request.Builder()
-                .url("https://api.openai.com/v1/completions")
-                .post(body)
-                .addHeader("Authorization", "Bearer " + apiKey)
-                .build();
-            Response response = client.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to rate the similarity with ChatGPT: " + response.body().string());
-            }
+        RequestBody body = RequestBody.create(jsonBody, JSON);
+        Request request = new Request.Builder()
+            .url("https://api.openai.com/v1/completions")
+            .post(body)
+            .addHeader("Authorization", "Bearer " + apiKey)
+            .build();
+        
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to rate the similarity with ChatGPT: " + response.body().string());
+        }
 
-            // JSONObject jsonResponse = new JSONObject(response.body().string());
-            // String textResponse = jsonResponse.getJSONArray("choices").toString();
-            // float similarityRating = extractRatingFromResponse(textResponse);
-            String textResponse = response.body().string();
-                
-            ratings.put(entry.getKey(), textResponse);
-    }
+        JSONObject jsonResponse = new JSONObject(response.body().string());
+        JSONArray textResponse = jsonResponse.getJSONArray("choices");
+        JSONObject textResponseObject = textResponse.getJSONObject(0);
+        String similarityRating = textResponseObject.getString("text");
 
-    return ratings;
-    }
-
-    private String extractRatingFromResponse(String textResponse) {
-        // Extract the rating from the text response
-        // I need to know the exact format of the response to provide the correct implementation
-        return textResponse;
+        return  Float.parseFloat(similarityRating);
     }
 }
