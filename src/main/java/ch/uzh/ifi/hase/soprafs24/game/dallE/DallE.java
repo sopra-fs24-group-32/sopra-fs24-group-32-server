@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.json.JSONArray;
-
+import java.util.concurrent.TimeUnit;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -17,9 +17,13 @@ public class DallE {
     
     private static final String API_URL = "https://api.openai.com/v1/images/generations";
     private static final MediaType JSON = MediaType.parse("application/json");
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client;
 
     public DallE() {
+        this.client = new OkHttpClient().newBuilder()
+                        .connectTimeout(30, TimeUnit.SECONDS) // Increase connect timeout if needed
+                        .readTimeout(60, TimeUnit.SECONDS)    // Read timeout set to 60 seconds
+                        .build();
     }
 
     public String generatePicture(String inputPhrase) throws Exception{
