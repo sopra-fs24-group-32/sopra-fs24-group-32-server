@@ -2,6 +2,9 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
@@ -84,5 +87,15 @@ public interface DTOMapper {
   @Mapping(source = "email", target = "email")
   @Mapping(source = "picture", target = "picture")
   UserGetDTO convertEntityToUserGetDTO(User user);
+
+  @Mapping(source = "originalText", target = "originalText")
+  @Mapping(source = "playerGuessed", target = "playerGuessed")
+  // @Mapping(source = "timeGuessSubmitted", target = "timeGuessSubmitted")
+  ChatGPTGetDTO convertEntityToChatGPTGetDTO(ChatGPT chatGPT);
+
+  @Mapping(source = "originalText", target = "originalText")
+  @Mapping(source = "playerGuessed", target = "playerGuessed")
+  // @Mapping(source = "timeGuessSubmitted", target = "timeGuessSubmitted")
+  ChatGPT convertChatGPTPostDTOtoEntity(ChatGPTPostDTO chatGPTPostDTO);
 
 }

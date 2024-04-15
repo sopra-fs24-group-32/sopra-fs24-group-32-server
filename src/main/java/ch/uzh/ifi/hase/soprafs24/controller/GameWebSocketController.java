@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
@@ -242,6 +243,48 @@ public class GameWebSocketController {
         }
 
         return new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/game/chatgpt/{gameId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public ResponseEntity<UserGetDTO> evaluateGuessesByChatGPT(@PathVariable Long gameId, @RequestBody ChatGPTPostDTO chatGPTPostDTO, @RequestHeader("userToken") String userToken) throws Exception {
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+        }
+
+        Optional<Game> lobby = gameRepository.findById(gameId);
+        if (!lobby.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+
+        User user = userRepository.findByUserToken(mappedToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+        }
+        
+        float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
+        String originalText = chatGPTPostDTO.getOriginalText();
+        String playerGuessed = chatGPTPostDTO.getPlayerGuessed();
+
+        // Point awarded for correct guess (with ChatGPT evaluation)
+        int score =  gameService.chatGPTEvaluation(originalText, playerGuessed);
+
+        // Scale the score based on the time taken to submit the guess
+        int scaledScore = lobby.get().scalePointsByDuration(score, timeGuessSubmitted);
+
+        // Update the user's score
+        // user.setScore(user.getScore() + scaledScore);
+        user.updatedScore(scaledScore);
+
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
     }
    
 }

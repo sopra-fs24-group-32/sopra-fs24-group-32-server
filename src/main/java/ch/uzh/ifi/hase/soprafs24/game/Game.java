@@ -174,6 +174,27 @@ public class Game {
         return gameStarted;
     }
 
+    public int scalePointsByDuration(int pointsFromChatGPT, float timeGuessSubmitted) throws Exception {
+
+
+        float timeLeft = timeLimit - timeGuessSubmitted;
+        float bonusPoints = 0;
+
+        if (timeLeft <= 0) {
+            return 0;
+        } else {
+            float percentageOfTimeLeft = timeLeft / timeLimit;
+            if (percentageOfTimeLeft >= 0.75) {
+                bonusPoints = 0.25f;
+            } else if (percentageOfTimeLeft >= 0.5) {
+                bonusPoints = 0.10f;
+            }
+
+            int finalPointsAwarded = (int) (pointsFromChatGPT + (pointsFromChatGPT * bonusPoints));
+            return finalPointsAwarded;
+        }
+    }
+
     @Override
     public boolean equals(Object o){
         if(this == o){

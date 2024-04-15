@@ -36,7 +36,7 @@ public class ChatGPT {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String prompt = String.format("How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
+        String prompt = String.format("Only provide the similarity score value, nothing else. How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
         
         // Create the request payload as a Map and serialize it to JSON
         Map<String, Object> payload = new HashMap<>();
@@ -64,5 +64,25 @@ public class ChatGPT {
         String similarityRating = textResponseObject.getString("text");
 
         return  Float.parseFloat(similarityRating);
+    }
+
+    public int convertSimilarityScoreToPoints(float similarityScore) throws Exception {
+        
+        if (similarityScore < 0 || similarityScore > 1) {
+            throw new IllegalArgumentException("Similarity score must be between 0 and 1.");
+        }
+        
+        int pointsAwarded;
+        if (similarityScore >= 0.75) {
+            pointsAwarded = 6;
+        } else if (similarityScore >= 0.5) {
+            pointsAwarded = 4;
+        } else if (similarityScore >= 0.25) {
+            pointsAwarded = 2;
+        } else {
+            pointsAwarded = 0;
+        }
+
+        return pointsAwarded;        
     }
 }

@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
 import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ public class GameService {
     private final GameRepository gameRepository;
     private final UserService userService;
     private final DallE dallE = new DallE();
+    private final ChatGPT chatGPT = new ChatGPT();
     private long nextId=1;   
     private final List<Game> games = new ArrayList<>(); 
 
@@ -211,15 +213,29 @@ public class GameService {
 
     ObjectMapper objectMapper = new ObjectMapper();
        Map<String, String> map = objectMapper.readValue(prompt, Map.class);
-       // Extract the userToken from the Map
        String mappedPrompt = map.get("description");
 
     if (mappedPrompt == null || mappedPrompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
         }
 
-        return dallE.generatePicture(mappedPrompt);
+    return dallE.generatePicture(mappedPrompt);
     
+    }
+
+    public int chatGPTEvaluation(String originalText, String playerGuessed) throws Exception {
+
+        if (originalText == null || originalText.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
+        }
+
+        if (playerGuessed == null || playerGuessed.isEmpty()) {
+            return 0;
+        }
+        float chatGPTResult = chatGPT.rateInputs(originalText, playerGuessed);
+        int pointsAwarded = chatGPT.convertSimilarityScoreToPoints(chatGPTResult);
+
+        return pointsAwarded;
     }
 }
         
