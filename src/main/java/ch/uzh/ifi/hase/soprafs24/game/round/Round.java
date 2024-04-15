@@ -71,6 +71,7 @@ public class Round {
         return timeLimit - timeGuessSubmitted;
     }
 
+    
     public void scalePointsByDuration(User user, float similarityScore, float timeLimit, float timeGuessSubmitted) throws Exception {
 
         int pointsAwarded = chatGPTSimilarityScore(similarityScore);
