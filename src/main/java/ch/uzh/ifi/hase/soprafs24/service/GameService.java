@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +71,15 @@ public class GameService {
 //        }
 //        return null; // Return null if lobby is not found
 //    }
+
+
+    public GameGetDTO getGame(Long gameId) {
+        return gameRepository.findById(gameId)
+            .map(game -> DTOMapper.INSTANCE.convertEntityToGameGetDTO(game))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+    }
+
+
 
     //create a lobby
     public Game createLobby(String userToken) throws Exception {
