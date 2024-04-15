@@ -166,6 +166,10 @@ public class User implements Serializable {
     this.score = score;
   }
 
+  public void updatedScore(int score){
+    this.score+=score;
+  }
+
   public Game getGame() {
     return game;
   }

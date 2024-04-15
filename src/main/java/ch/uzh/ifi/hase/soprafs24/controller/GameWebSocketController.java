@@ -223,7 +223,7 @@ public class GameWebSocketController {
     @PostMapping("/game/image/{gameId}")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public String generatePictureDallE(@PathVariable Long gameId, @RequestBody String text_prompt) throws Exception {
+    public ResponseEntity<String> generatePictureDallE(@PathVariable Long gameId, @RequestBody String text_prompt) throws Exception {
 
         if (text_prompt == null || text_prompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
@@ -241,6 +241,6 @@ public class GameWebSocketController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
         }
 
-        return pictureGenerated;
+        return new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
     }
 }

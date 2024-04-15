@@ -71,30 +71,30 @@ public class Round {
         return timeLimit - timeGuessSubmitted;
     }
 
-    public void scalePointsByDuration(User user, float timeLimit, float timeGuessSubmitted) {
-        // Implementation of the method
-        // if the timeGuessSubmitted is over the timeLimit, the user gets 0 points
-        // if the timeGuessSubmitted is >=75% of the timeLimit, the user gets full points (maxPoints = 6)
-        // if the timeGuessSubmitted is 50% of the timeLimit, the user gets half of the points (3)
-        // if the timeGuessSubmitted is 25% of the timeLimit, the user gets 1 point
+    public void scalePointsByDuration(User user, float similarityScore, float timeLimit, float timeGuessSubmitted) throws Exception {
 
-        // IMPLEMENTATION NOT TOTALLY CORRECT (problem with (int) (maxPoints * percentage)
-        // Rounding issue, should be fixed by using Math.round() or Math.floor() or Math.ceil() instead of casting to int
+        int pointsAwarded = chatGPTSimilarityScore(similarityScore);
 
-        int maxPoints = 6;
+        float timeLeft = getTimeLeft(timeLimit, timeGuessSubmitted);
+        float bonusPoints = 0;
 
-        if (timeGuessSubmitted >= timeLimit) {
-            scores.updateScore(user, 0);
+        if (timeLeft <= 0) {
+            user.updatedScore(0);
         } else {
-            float timeLeft = getTimeLeft(timeLimit, timeGuessSubmitted);
-            float percentage = timeLeft / timeLimit;
-            int points = (int) (maxPoints * percentage);
-            scores.updateScore(user, points);
+            float percentageOfTimeLeft = timeLeft / timeLimit;
+            if (percentageOfTimeLeft >= 0.75) {
+                bonusPoints = 0.25f;
+            } else if (percentageOfTimeLeft >= 0.5) {
+                bonusPoints = 0.10f;
+            }
+
+            int finalPointsAwarded = (int) (pointsAwarded + (pointsAwarded * bonusPoints));
+            user.updatedScore(finalPointsAwarded);
         }
     }
 
 
-    public void chatGPTSimilarityScore(User user, float similarityScore) throws Exception {
+    public int chatGPTSimilarityScore(float similarityScore) throws Exception {
         
         if (similarityScore < 0 || similarityScore > 1) {
             throw new IllegalArgumentException("Similarity score must be between 0 and 1.");
@@ -110,7 +110,7 @@ public class Round {
         } else {
             pointsAwarded = 0;
         }
-        
-//        user.receivePoints(pointsAwarded);
+
+        return pointsAwarded;        
     }
 }

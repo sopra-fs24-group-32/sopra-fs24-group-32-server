@@ -210,11 +210,16 @@ public class GameService {
 
    public String generatePictureDallE(String prompt) throws Exception {
 
-    if (prompt == null || prompt.isEmpty()) {
+    ObjectMapper objectMapper = new ObjectMapper();
+       Map<String, String> map = objectMapper.readValue(prompt, Map.class);
+       // Extract the userToken from the Map
+       String mappedPrompt = map.get("description");
+
+    if (mappedPrompt == null || mappedPrompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
         }
 
-        return dallE.generatePicture(prompt);
+        return dallE.generatePicture(mappedPrompt);
     
     }
     
