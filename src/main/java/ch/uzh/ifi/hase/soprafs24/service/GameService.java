@@ -238,7 +238,9 @@ public class GameService {
     }
 
     public String getImageGeneratedByDallE() {
-        return dallE.getImageUrl();
+        String imgUrl = dallE.getImageUrl();
+        dallE.setImageUrl("");
+        return imgUrl;
     }
 
     public int evaluatePlayerGuessWithChatGPT(String playerGuessed) throws Exception{
