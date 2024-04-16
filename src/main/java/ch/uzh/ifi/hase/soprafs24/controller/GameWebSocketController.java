@@ -184,8 +184,14 @@ public class GameWebSocketController {
            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the lobby host can update settings");
        }
 
-       return gameService.updateGameSettings(id, gamePostDTO);
-   }
+       
+       try {
+            Game updatedGame = gameService.updateGameSettings(id, gamePostDTO);;
+            return updatedGame;
+       } catch (Exception e) {
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+       }
+    }
 
     @PostMapping("/lobby/start/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -245,8 +251,8 @@ public class GameWebSocketController {
         return new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
     }
 
-    @PostMapping("/game/chatgpt/{gameId}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @PutMapping("/game/chatgpt/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResponseEntity<UserGetDTO> evaluateGuessesByChatGPT(@PathVariable Long gameId, @RequestBody ChatGPTPostDTO chatGPTPostDTO, @RequestHeader("userToken") String userToken) throws Exception {
 
