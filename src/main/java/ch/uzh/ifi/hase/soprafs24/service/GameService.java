@@ -231,9 +231,14 @@ public class GameService {
         }
     String imgUrl = dallE.generatePicture(mappedPrompt);
     dallE.setInputPhrase(mappedPrompt);
+    dallE.setImageUrl(imgUrl);
     
     return imgUrl;
     
+    }
+
+    public String getImageGeneratedByDallE() {
+        return dallE.getImageUrl();
     }
 
     public int evaluatePlayerGuessWithChatGPT(String playerGuessed) throws Exception{

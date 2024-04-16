@@ -251,6 +251,29 @@ public class GameWebSocketController {
         return new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
     }
 
+    @GetMapping("/game/image/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<String> getPictureGeneratedByDallE(@PathVariable Long gameId) throws Exception {
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+        }
+
+        Optional<Game> lobby = gameRepository.findById(gameId);
+        if (!lobby.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
+
+        String pictureGenerated =  gameService.getImageGeneratedByDallE();
+
+        if (pictureGenerated == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to get image with DALL-E");
+        }
+
+        return new ResponseEntity<>(pictureGenerated, HttpStatus.OK);
+    }
+
     @PutMapping("/game/chatgpt/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
