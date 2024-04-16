@@ -18,8 +18,17 @@ public class DallE {
     private static final String API_URL = "https://api.openai.com/v1/images/generations";
     private static final MediaType JSON = MediaType.parse("application/json");
     private final OkHttpClient client;
+    private String inputPhrase;
 
     public DallE() {
+        this.client = new OkHttpClient().newBuilder()
+                        .connectTimeout(30, TimeUnit.SECONDS) // Increase connect timeout if needed
+                        .readTimeout(60, TimeUnit.SECONDS)    // Read timeout set to 60 seconds
+                        .build();
+    }
+
+    public DallE(String inputPhrase){
+        this.inputPhrase = inputPhrase;
         this.client = new OkHttpClient().newBuilder()
                         .connectTimeout(30, TimeUnit.SECONDS) // Increase connect timeout if needed
                         .readTimeout(60, TimeUnit.SECONDS)    // Read timeout set to 60 seconds
@@ -52,5 +61,13 @@ public class DallE {
         JSONObject firstElement = dataArray.getJSONObject(0);
         String imageUrl = firstElement.getString("url");
         return imageUrl;
+    }
+
+    public String getInputPhrase() {
+        return inputPhrase;
+    }
+
+    public void setInputPhrase(String inputPhrase) {
+        this.inputPhrase = inputPhrase;
     }
 }

@@ -88,12 +88,10 @@ public interface DTOMapper {
   @Mapping(source = "picture", target = "picture")
   UserGetDTO convertEntityToUserGetDTO(User user);
 
-  @Mapping(source = "originalText", target = "originalText")
   @Mapping(source = "playerGuessed", target = "playerGuessed")
   // @Mapping(source = "timeGuessSubmitted", target = "timeGuessSubmitted")
   ChatGPTGetDTO convertEntityToChatGPTGetDTO(ChatGPT chatGPT);
 
-  @Mapping(source = "originalText", target = "originalText")
   @Mapping(source = "playerGuessed", target = "playerGuessed")
   // @Mapping(source = "timeGuessSubmitted", target = "timeGuessSubmitted")
   ChatGPT convertChatGPTPostDTOtoEntity(ChatGPTPostDTO chatGPTPostDTO);

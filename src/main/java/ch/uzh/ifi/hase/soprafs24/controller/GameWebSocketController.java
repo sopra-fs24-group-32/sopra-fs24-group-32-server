@@ -268,13 +268,11 @@ public class GameWebSocketController {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
         }
-        
-        float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
-        String originalText = chatGPTPostDTO.getOriginalText();
-        String playerGuessed = chatGPTPostDTO.getPlayerGuessed();
 
         // Point awarded for correct guess (with ChatGPT evaluation)
-        int score =  gameService.chatGPTEvaluation(originalText, playerGuessed);
+        String playerGuessed = chatGPTPostDTO.getPlayerGuessed();
+        float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
+        int score =  gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
 
         // Scale the score based on the time taken to submit the guess
         int scaledScore = lobby.get().scalePointsByDuration(score, timeGuessSubmitted);
@@ -282,6 +280,8 @@ public class GameWebSocketController {
         // Update the user's score
         // user.setScore(user.getScore() + scaledScore);
         user.updatedScore(scaledScore);
+        userRepository.save(user);
+        userRepository.flush();
 
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);

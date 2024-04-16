@@ -1,17 +1,9 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
 public class ChatGPTPostDTO {
-    private String originalText;
     private String playerGuessed;
     private float timeGuessSubmitted;
 
-    public String getOriginalText() {
-        return originalText;
-    }
-
-    public void setOriginalText(String originalText) {
-        this.originalText = originalText;
-    }
 
     public String getPlayerGuessed() {
         return playerGuessed;

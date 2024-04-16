@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
@@ -31,7 +32,6 @@ public class GameService {
     private final GameRepository gameRepository;
     private final UserService userService;
     private final DallE dallE = new DallE();
-    private final ChatGPT chatGPT = new ChatGPT();
     private long nextId=1;   
     private final List<Game> games = new ArrayList<>(); 
 
@@ -223,30 +223,32 @@ public class GameService {
    public String generatePictureDallE(String prompt) throws Exception {
 
     ObjectMapper objectMapper = new ObjectMapper();
-       Map<String, String> map = objectMapper.readValue(prompt, Map.class);
-       String mappedPrompt = map.get("description");
+    Map<String, String> map = objectMapper.readValue(prompt, Map.class);
+    String mappedPrompt = map.get("description");
 
     if (mappedPrompt == null || mappedPrompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
         }
-
-    return dallE.generatePicture(mappedPrompt);
+    String imgUrl = dallE.generatePicture(mappedPrompt);
+    dallE.setInputPhrase(mappedPrompt);
+    
+    return imgUrl;
     
     }
 
-    public int chatGPTEvaluation(String originalText, String playerGuessed) throws Exception {
+    public int evaluatePlayerGuessWithChatGPT(String playerGuessed) throws Exception{
 
-        if (originalText == null || originalText.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
-        }
+        ChatGPT chatGPT = new ChatGPT();
+
+        String originalText = dallE.getInputPhrase();
 
         if (playerGuessed == null || playerGuessed.isEmpty()) {
             return 0;
+        } else {
+            float chatGPTResult = chatGPT.rateInputs(originalText, playerGuessed);
+            int pointsAwarded = chatGPT.convertSimilarityScoreToPoints(chatGPTResult);
+            return pointsAwarded;
         }
-        float chatGPTResult = chatGPT.rateInputs(originalText, playerGuessed);
-        int pointsAwarded = chatGPT.convertSimilarityScoreToPoints(chatGPTResult);
-
-        return pointsAwarded;
     }
 }
         
