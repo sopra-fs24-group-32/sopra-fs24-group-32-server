@@ -138,8 +138,8 @@ public class UserService {
     return u;
   }
 
-  public User logoutUser(int id){
-    User u = this.getUserById(id);
+  public User logoutUser(Long id){
+    User u = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     u.setStatus(UserStatus.OFFLINE);
     u.setIsLoggedIn(false);
     return u;

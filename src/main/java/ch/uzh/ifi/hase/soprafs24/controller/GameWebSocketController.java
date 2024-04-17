@@ -307,13 +307,38 @@ public class GameWebSocketController {
         int scaledScore = lobby.get().scalePointsByDuration(score, timeGuessSubmitted);
 
         // Update the user's score
-        // user.setScore(user.getScore() + scaledScore);
-        user.updatedScore(scaledScore);
+        user.setScore(user.getScore() + scaledScore);
+        // user.updatedScore(scaledScore);
         userRepository.save(user);
         userRepository.flush();
 
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/game/leave/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void playerLeaveTheGame(@PathVariable Long gameId, @RequestBody String userToken) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+        if (mappedToken == null || mappedToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+        }
+
+        Optional<Game> lobby = gameRepository.findById(gameId);
+        if (!lobby.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
+        // Remove the user from the game
+        gameService.playerLeaveGame(gameId, mappedToken);
     }
    
 }

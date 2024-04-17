@@ -257,5 +257,28 @@ public class GameService {
             return pointsAwarded;
         }
     }
+
+    public void playerLeaveGame(Long gameId, String userToken) throws Exception {
+
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+        }
+        
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+         
+        User user = userRepository.findByUserToken(userToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+        }
+
+        game.removePlayer(user);
+        gameRepository.save(game);
+        // gameRepository.flush();
+    }
 }
         
