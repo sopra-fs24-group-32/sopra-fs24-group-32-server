@@ -171,7 +171,7 @@ public class GameService {
         */
 
        if(game == null){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with invitation code: " + invitationCodes + " does not exist");
        }
 
        if(game.isGameStarted()){
