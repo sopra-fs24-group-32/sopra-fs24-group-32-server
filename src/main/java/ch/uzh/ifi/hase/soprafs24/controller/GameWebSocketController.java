@@ -202,6 +202,8 @@ public class GameWebSocketController {
        
        try {
             Game updatedGame = gameService.updateGameSettings(id, gamePostDTO);;
+            System.out.println("Game updated successfully------------------: " + updatedGame);
+            System.out.println("Time limit: " + updatedGame.getTimeLimit() + " Rounds: " + updatedGame.getAmtOfRounds() + " Max users: " + updatedGame.getMaxAmtUsers());
             return updatedGame;
        } catch (Exception e) {
               throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -322,8 +324,8 @@ public class GameWebSocketController {
         int scaledScore = lobby.get().scalePointsByDuration(score, timeGuessSubmitted);
 
         // Update the user's score
-        user.setScore(user.getScore() + scaledScore);
-        // user.updatedScore(scaledScore);
+        // user.setScore(user.getScore() + scaledScore);
+        user.updatedScore(scaledScore);
         userRepository.save(user);
         userRepository.flush();
 
