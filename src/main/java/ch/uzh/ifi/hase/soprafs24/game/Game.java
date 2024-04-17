@@ -87,8 +87,14 @@ public class Game {
 
 
     public void removePlayer(User user) {
-        // Method logic...
+        if (user != null && users.contains(user)) {
+            users.remove(user);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in the game");
+        }
     }
+    
+    
 
 //    public List<Round> getRounds() { return rounds; }
 
