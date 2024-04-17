@@ -25,7 +25,10 @@ Point attribution issue #82
 Implemented Frontend for Image Generation with issues #7 #16 #15  
 and Guessing the description with issues #30 #2 #32 #33
 
-## Nicolas
+## Nicolas S.
+Implemented leave Lobby so that it updates the lobby members list #19
+Rest endpoint for @GetMapping("/lobby/{id}") for displaying user list (backend) #18
+
 
 ## Nicolas H.
 Implemented Websockets in client and server so that when the host wants to start the game 
