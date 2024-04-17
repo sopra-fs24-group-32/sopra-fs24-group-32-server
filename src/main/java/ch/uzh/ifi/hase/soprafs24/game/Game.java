@@ -87,17 +87,14 @@ public class Game {
 
 
     public void removePlayer(User user) {
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot be null");
-        }
-
-        if (users.contains(user)) {
+        if (user != null && users.contains(user)) {
             users.remove(user);
-            user.setGame(null);
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not in lobby");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in the game");
         }
     }
+    
+    
 
 //    public List<Round> getRounds() { return rounds; }
 

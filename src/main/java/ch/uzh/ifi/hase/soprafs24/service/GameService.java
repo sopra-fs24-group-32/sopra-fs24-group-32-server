@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 @Service
 public class GameService {
 
@@ -33,7 +32,7 @@ public class GameService {
     private final UserService userService;
     private final DallE dallE = new DallE();
     private long nextId=1;   
-    private final List<Game> games = new ArrayList<>(); 
+    private final List<Game> games = new ArrayList<>();
 
     @Autowired
     public GameService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository,
@@ -185,6 +184,52 @@ public class GameService {
 
        return game;
    }
+
+
+   public Game leaveLobby(Long lobbyId, String userToken) throws Exception {
+    try {
+        // Check for empty userToken
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+        }
+    
+        // Check for empty lobbyId
+        if (lobbyId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
+        }
+    
+        // Parse userToken to find the user
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        String mappedToken = map.get("userToken");
+    
+        User user = userRepository.findByUserToken(mappedToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+        }
+    
+        // Find the game using lobbyId
+        Game game = gameRepository.findById(lobbyId).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with ID " + lobbyId + " does not exist"));
+    
+        // Check if the user is in the specified lobby
+        if (!game.getUsers().contains(user)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not in the specified lobby");
+        }
+    
+        // Remove the user from the lobby
+        game.removePlayer(user);
+        gameRepository.save(game);
+
+        return game;
+    } catch (Exception e) {
+        // Log the exception
+        System.out.println("Error during leaveLobby: " + e.getMessage());
+        throw e;  // Re-throw the exception to handle it according to your error handling strategy
+    }
+}
+
+
 
    // This is just an initial implementation of the startGameLobby method
    public Game startGameLobby(Long id) {

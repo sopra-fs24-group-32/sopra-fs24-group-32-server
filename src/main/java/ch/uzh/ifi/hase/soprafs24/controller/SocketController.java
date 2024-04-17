@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,17 @@ public class SocketController {
 
         return message;
     }
+
+    @MessageMapping("/lobby/leave")
+    @SendTo("/game/public")
+    public Message leaveGame(@Payload Message message) {
+        System.out.println("Leave message received");
+        return message;
+    }
+    
+    
+    
+
 
     @MessageMapping("/lobby/startgame")
     @SendTo("/game/public")

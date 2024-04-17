@@ -113,6 +113,21 @@ public class GameWebSocketController {
        return game;
    }
 
+    @PostMapping("/lobby/leave/{lobbyId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken) throws Exception {
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+        }
+
+        if (lobbyId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
+        }
+
+        return gameService.leaveLobby(lobbyId, userToken);
+    }
+
 
     @GetMapping("/lobbies")
     @ResponseStatus(HttpStatus.OK)
