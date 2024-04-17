@@ -19,6 +19,14 @@ Point attribution issue #82
 
 # Week 10.04 - 17.04
 
+## Eric
+
+## Eduard
+Implemented Frontend for Image Generation with issues #7 #16 #15  
+and Guessing the description with issues #30 #2 #32 #33
+
+## Nicolas
+
 ## Nicolas H.
 Implemented Websockets in client and server so that when the host wants to start the game 
 all the players in the lobby automatically get forwarded to either the page to provide input to DALL-E or guess the input.
