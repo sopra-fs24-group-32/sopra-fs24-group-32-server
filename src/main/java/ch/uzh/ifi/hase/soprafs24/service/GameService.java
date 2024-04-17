@@ -101,6 +101,7 @@ public class GameService {
         newGame.addPlayer(lobbyOwner);
         newGame.setLobbyOwner(lobbyOwner.getUsername());
         newGame.setId(nextId);
+        nextId++;
 
         gameRepository.save(newGame);
         gameRepository.flush();

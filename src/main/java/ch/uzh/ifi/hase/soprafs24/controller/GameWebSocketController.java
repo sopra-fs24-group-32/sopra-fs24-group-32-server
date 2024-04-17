@@ -169,7 +169,7 @@ public class GameWebSocketController {
     // }
 
    @PutMapping("/lobby/update/{id}")
-   @ResponseStatus(HttpStatus.NO_CONTENT)
+   @ResponseStatus(HttpStatus.OK)
    @ResponseBody
    public Game updateGameSettings(@PathVariable Long id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException, JsonMappingException, JsonProcessingException {
 
@@ -201,9 +201,7 @@ public class GameWebSocketController {
 
        
        try {
-            Game updatedGame = gameService.updateGameSettings(id, gamePostDTO);;
-            System.out.println("Game updated successfully------------------: " + updatedGame);
-            System.out.println("Time limit: " + updatedGame.getTimeLimit() + " Rounds: " + updatedGame.getAmtOfRounds() + " Max users: " + updatedGame.getMaxAmtUsers());
+            Game updatedGame = gameService.updateGameSettings(id, gamePostDTO);
             return updatedGame;
        } catch (Exception e) {
               throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
