@@ -25,8 +25,8 @@ public class SocketController {
     }
 
     @MessageMapping("/lobby/join") //-> user needs to send to game/lobby/join
-    @SendTo("/game/public") //user needs to listen to /game/public for a response
-    public Message joinGame(@Payload Message message){
+    @SendTo("/game/join") //user needs to listen to /game/public for a response
+    public String joinGame(@Payload String message){
 
         System.out.println("Message received");
 
