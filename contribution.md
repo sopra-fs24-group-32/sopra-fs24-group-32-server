@@ -20,6 +20,8 @@ Point attribution issue #82
 # Week 10.04 - 17.04
 
 ## Eric
+Players can enter Lobby ID code after clicking on join Lobby #57
+If the invitation code is correct the player will be redirected to the lobby. #58
 
 ## Eduard
 Implemented Frontend for Image Generation with issues #7 #16 #15  
