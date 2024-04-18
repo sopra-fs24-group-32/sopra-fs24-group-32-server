@@ -101,6 +101,7 @@ public class GameService {
         newGame.addPlayer(lobbyOwner);
         newGame.setLobbyOwner(lobbyOwner.getUsername());
         newGame.setId(nextId);
+        nextId++;
 
         gameRepository.save(newGame);
         gameRepository.flush();
@@ -170,7 +171,7 @@ public class GameService {
         */
 
        if(game == null){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id " + invitationCodes + " does not exist");
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with invitation code: " + invitationCodes + " does not exist");
        }
 
        if(game.isGameStarted()){
@@ -301,6 +302,29 @@ public class GameService {
             int pointsAwarded = chatGPT.convertSimilarityScoreToPoints(chatGPTResult);
             return pointsAwarded;
         }
+    }
+
+    public void playerLeaveGame(Long gameId, String userToken) throws Exception {
+
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+        }
+        
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+         
+        User user = userRepository.findByUserToken(userToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+        }
+
+        game.removePlayer(user);
+        gameRepository.save(game);
+        // gameRepository.flush();
     }
 }
         

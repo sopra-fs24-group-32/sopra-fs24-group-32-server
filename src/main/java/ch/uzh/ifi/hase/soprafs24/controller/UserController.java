@@ -92,9 +92,13 @@ public class UserController {
   @PostMapping("/users/logout/{id}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public void logoutUser(@PathVariable int id)
+    public void logoutUser(@PathVariable Long id)
     {
-        userService.logoutUser(id);
+      if (id == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID cannot be null");
+      }
+
+      userService.logoutUser(id);
     }
 
 
