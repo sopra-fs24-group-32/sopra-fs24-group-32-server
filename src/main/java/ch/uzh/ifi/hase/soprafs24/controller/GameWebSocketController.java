@@ -169,7 +169,7 @@ public class GameWebSocketController {
     // }
 
    @PutMapping("/lobby/update/{id}")
-   @ResponseStatus(HttpStatus.NO_CONTENT)
+   @ResponseStatus(HttpStatus.CREATED)
    @ResponseBody
    public Game updateGameSettings(@PathVariable Long id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException, JsonMappingException, JsonProcessingException {
 
@@ -181,13 +181,7 @@ public class GameWebSocketController {
            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID is null or empty");
        }
 
-       //ensure user is the host
-       ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
-        // Extract the userToken from the Map
-        String mappedToken = map.get("userToken");
-
-       User user = userRepository.findByUserToken(mappedToken);
+       User user = userRepository.findByUserToken(userToken);
        if (user == null) {
            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
        }

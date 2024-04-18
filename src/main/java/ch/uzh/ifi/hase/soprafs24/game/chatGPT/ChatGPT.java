@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import ch.uzh.ifi.hase.soprafs24.config.Config;
+import ch.uzh.ifi.hase.soprafs24.config.SecretManagerAccess;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -29,8 +31,8 @@ public class ChatGPT {
 
     public float rateInputs(String originalText, String playerGuessed) throws IOException {
 
-        Dotenv dotenv = Dotenv.load();
-        String apiKey = dotenv.get("DALL_E_API_KEY"); // Assuming the correct environment variable name
+        String apiKey = Config.getApiKey();
+
 
         OkHttpClient client = new OkHttpClient();
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
