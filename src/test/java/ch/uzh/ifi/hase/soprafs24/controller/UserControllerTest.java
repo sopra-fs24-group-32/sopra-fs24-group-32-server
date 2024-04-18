@@ -146,17 +146,25 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
 
-  @Test
-  public void loginUser_withValidCredentials_returnsOk() throws Exception {
-    UserPostDTO loginDTO = new UserPostDTO();
-    loginDTO.setUsername("validUsername");
-    loginDTO.setPassword("validPassword");
+    @Test
+    public void loginUser_withValidCredentials_returnsOk() throws Exception {
+        // Arrange
+        UserPostDTO loginDTO = new UserPostDTO();
+        loginDTO.setUsername("validUsername");
+        loginDTO.setPassword("validPassword");
 
-    mockMvc.perform(post("/user/login")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(asJsonString(loginDTO)))
-            .andExpect(status().isOk());
-}
+        User mockUser = new User();
+        mockUser.setUsername("validUsername");
+        mockUser.setPassword("validPassword");
+
+        when(userRepository.findByUsername("validUsername")).thenReturn(mockUser);
+
+        // Act & Assert
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(loginDTO)))
+                .andExpect(status().isOk());
+    }
 
 
   @Test

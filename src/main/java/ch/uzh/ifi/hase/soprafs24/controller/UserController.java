@@ -84,13 +84,13 @@ public class UserController {
     @ResponseBody
     public User loginUser(@RequestBody UserPostDTO userPostDTO) {
         // convert API user to internal representation
-        User userOptional = userRepository.findByUsername(userPostDTO.getUsername());
+        User user = userRepository.findByUsername(userPostDTO.getUsername());
         if (!Objects.equals(userRepository.findByUsername(userPostDTO.getUsername()).getPassword(), userPostDTO.getPassword())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "wrong password for" + userPostDTO.getUsername());
         }
-        if (userOptional != null) {
-            userService.loginUser(userOptional);
-            return userOptional;
+        if (user != null) {
+            userService.loginUser(user);
+            return user;
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user exists with username: " + userPostDTO.getUsername());
         }
