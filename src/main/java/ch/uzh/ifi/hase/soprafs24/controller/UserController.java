@@ -2,19 +2,19 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.TokenDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -79,15 +79,22 @@ public class UserController {
   }
 
 
-  @PostMapping("/user/login")
-  @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public void loginUser(@RequestBody UserPostDTO userPostDTO) {
-    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-    String username = userInput.getUsername();
-    String password = userInput.getPassword();
-    userService.loginUser(username, password);
-  }
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public User loginUser(@RequestBody UserPostDTO userPostDTO) {
+        // convert API user to internal representation
+        User userOptional = userRepository.findByUsername(userPostDTO.getUsername());
+        if (!Objects.equals(userRepository.findByUsername(userPostDTO.getUsername()).getPassword(), userPostDTO.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "wrong password for" + userPostDTO.getUsername());
+        }
+        if (userOptional != null) {
+            userService.loginUser(userOptional);
+            return userOptional;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user exists with username: " + userPostDTO.getUsername());
+        }
+    }
 
   @PostMapping("/users/logout/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -99,6 +106,22 @@ public class UserController {
       }
 
       userService.logoutUser(id);
+    }
+
+    @PostMapping("/logoutByToken")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void logoutUserToken(@RequestBody TokenDTO tokenDTO) {
+        String userToken = tokenDTO.getUserToken(); // Extracting the token from the DTO
+        System.out.println(userToken); // Logging the extracted token
+
+        User user = userRepository.findByUserToken(userToken); // Finding the user by token
+        if (user != null) {
+            userService.logoutUser(user); // Logout the user if found
+        } else {
+            // Optionally handle the case where the user is not found
+            System.out.println("No user found with the provided token.");
+        }
     }
 
 
