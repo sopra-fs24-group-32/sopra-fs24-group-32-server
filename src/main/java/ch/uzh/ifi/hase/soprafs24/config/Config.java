@@ -17,7 +17,7 @@ public class Config {
         if (dotenv != null) {
             return dotenv.get("DALL_E_API_KEY");
         } else {
-            return SecretManagerAccess.getSecret("sopra-fs24-group-32-server", "dall_e_api_key");
+            return SecretManagerAccess.getSecret("451955966414", "dall_e_api_key");
         }
 
     }
