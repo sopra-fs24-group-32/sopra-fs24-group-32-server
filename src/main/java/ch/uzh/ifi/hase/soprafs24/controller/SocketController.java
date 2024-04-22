@@ -6,44 +6,51 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ResponseStatusException;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
 import java.util.List;
 
 @Controller
 public class SocketController {
 
-    private GameService gameService;
+    private final GameService gameService;
+    private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    SocketController(GameService gameService) {
+
+    @Autowired
+    public SocketController(GameService gameService, UserService userService, SimpMessagingTemplate messagingTemplate) {
         this.gameService = gameService;
+        this.messagingTemplate = messagingTemplate;
+        this.userService = userService;
     }
 
-    @MessageMapping("/lobby/join") //-> user needs to send to game/lobby/join
-    @SendTo("/game/join") //user needs to listen to /game/public for a response
-    public String joinGame(@Payload String message){
-
-        System.out.println("Message received");
-
-        return message;
+    @MessageMapping("/lobby/join")
+    @SendTo("/game/join")
+    public UserGetDTO joinGame(@Payload String userToken) {
+        //log the userToken
+        System.out.println("User joined: " + userToken);
+        try {
+            User user = userService.findByToken(userToken);
+            //log the user
+            System.out.println("User joined: " + user);
+            // Broadcast to all subscribers that a new user has joined
+            return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Join failed: " + e.getMessage(), e);
+        }
     }
-
-    @MessageMapping("/lobby/leave")
-    @SendTo("/game/public")
-    public Message leaveGame(@Payload Message message) {
-        System.out.println("Leave message received");
-        return message;
-    }
-    
-    
-    
-
 
     @MessageMapping("/lobby/startgame")
     @SendTo("/game/public")

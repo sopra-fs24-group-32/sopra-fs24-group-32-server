@@ -32,6 +32,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
 
 
 @RestController
@@ -110,14 +112,17 @@ public class GameWebSocketController {
 
        Game game = gameService.joinLobby(invitationCodes, userToken);
 
-       return game;
+        return game;
    }
 
     @PostMapping("/lobby/leave/{lobbyId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken) throws Exception {
-        if (userToken == null || userToken.isEmpty()) {
+    public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userTokenJson) throws Exception {
+        System.out.println("user Token:" + userTokenJson);
+        
+        if (userTokenJson == null || userTokenJson.isEmpty()) {
+            System.out.println("User token is null or empty");
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
         }
 
@@ -125,7 +130,22 @@ public class GameWebSocketController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
         }
 
-        return gameService.leaveLobby(lobbyId, userToken);
+        // Parse the userToken from JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(userTokenJson);
+        String userToken = jsonNode.get("userToken").asText();
+
+        System.out.println("User token:" + userToken);
+        User user = userService.findByToken(userToken);
+        
+        // Convert the user who left to a DTO to be sent to the subscribed clients
+        UserGetDTO userLeft = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        simpMessagingTemplate.convertAndSend("/game/leave", userLeft);
+
+        System.out.println("Request to leave lobby with id: " + lobbyId + " by user: " + user.getUsername() + " with token: " + userToken);
+        Game game = gameService.leaveLobby(lobbyId, userToken);
+
+        return game;
     }
 
 

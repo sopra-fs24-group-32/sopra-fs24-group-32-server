@@ -82,15 +82,29 @@ public class UserService {
     return findUser;
   }
 
-  public User findByToken(String userToken) throws Exception{
-      List<User> users = userRepository.findAll();
-      for (int i=0; i<users.size(); i++){
-          if (users.get(i).getUserToken().equals(userToken)){
-              return users.get(i);
-          }
-      }
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
-  }
+  public User findByToken(String userToken) {
+    try {
+        System.out.println("Entering findByToken method.");
+        List<User> users = userRepository.findAll();
+
+        System.out.println("Searching for User with token: " + userToken + " in this list:");
+        for (User user : users) {
+            System.out.println("User userToken: " + user.getUserToken());
+        }
+
+        for (User user : users) {
+            if (user.getUserToken().equals(userToken)) {
+                return user;
+            }
+        }
+        System.out.println("User with token: " + userToken + " not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+    } catch (Exception e) {
+        System.out.println("Exception in findByToken: " + e.getMessage());
+        throw e;
+    }
+}
+
 
   // This method didn't work, I implemented the functionality directly in the user repository
 
