@@ -84,51 +84,6 @@ public class UserService {
         userRepository.flush();
     }
 
-    if (user.equals(newUser)){
-      user.setStatus(UserStatus.ONLINE);
-      user.setIsLoggedIn(true);
-      userRepository.save(user);
-      userRepository.flush();
-      return;
-    }
-
-    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong password or username");
-  }
-
-  public User findByUsername(String username) {
-    List<User> users = userRepository.findAll();
-    User findUser = new User();
-    for (int i=0; i<users.size(); i++){
-      if (users.get(i).getUsername().equals(username)){
-        findUser = users.get(i);
-      }
-    }
-    return findUser;
-  }
-
-  public User findByToken(String userToken) {
-    try {
-        System.out.println("Entering findByToken method.");
-        List<User> users = userRepository.findAll();
-
-        System.out.println("Searching for User with token: " + userToken + " in this list:");
-        for (User user : users) {
-            System.out.println("User userToken: " + user.getUserToken());
-        }
-
-        for (User user : users) {
-            if (user.getUserToken().equals(userToken)) {
-                return user;
-            }
-        }
-        System.out.println("User with token: " + userToken + " not found");
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
-    } catch (Exception e) {
-        System.out.println("Exception in findByToken: " + e.getMessage());
-        throw e;
-    }
-}
-
 
   // This method didn't work, I implemented the functionality directly in the user repository
 
