@@ -14,6 +14,7 @@ import javax.persistence.*;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Iterator;
 
 @Entity
 @Table(name = "game")
@@ -51,6 +52,8 @@ public class Game {
 
     @Column(nullable = false)
     private String lobbyId;
+
+    private Iterator<User> iterator;
 
     // Constructors
     public Game() {}
@@ -160,8 +163,11 @@ public class Game {
         }
         gameStarted = true;
 
-        this.remaininPictureGenerators = new ArrayList<>(this.users);
-        Collections.shuffle(this.remaininPictureGenerators);
+        Collections.shuffle(this.users);
+        this.iterator = this.users.iterator();
+
+        // this.remaininPictureGenerators = new ArrayList<>(this.users);
+        // Collections.shuffle(this.remaininPictureGenerators);
 
     }
 
@@ -174,6 +180,13 @@ public class Game {
         }else{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
         }
+    }
+
+    public User nextPictureGenerator(){
+        if (!iterator.hasNext()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
+        }
+        return iterator.next();
     }
 
     public boolean gameHasStarted() {
