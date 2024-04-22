@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.game.dallE;
 
+import ch.uzh.ifi.hase.soprafs24.config.Config;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -41,8 +42,7 @@ public class DallE {
         String jsonBody = String.format("{\"prompt\": \"%s\", \"n\": 1}", inputPhrase);
         RequestBody body = RequestBody.create(jsonBody, JSON);
 
-        Dotenv dotenv = Dotenv.load();
-        String apiKey = dotenv.get("DALL_E_API_KEY");
+        String apiKey = Config.getApiKey();
 
         Request request = new Request.Builder()
                     .url(API_URL)

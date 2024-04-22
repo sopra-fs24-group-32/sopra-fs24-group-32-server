@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -54,11 +55,34 @@ public class UserService {
   }
 
 
-  public void loginUser(String username, String password) {
-    User user = userRepository.findByUsername(username);
-    User newUser = new User();
-    newUser.setUsername(username);
-    newUser.setPassword(password);
+    public void loginUser(User userToLogin) {
+        Optional<User> userOptional = userRepository.findById(userToLogin.getId());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            user.setStatus(UserStatus.ONLINE);
+
+            userRepository.save(user);
+            userRepository.flush();
+        }
+    }
+
+    public void logoutUser(User userToLogout) {
+        Optional<User> userBeforeOptional = userRepository.findById(userToLogout.getId());
+
+        if (userBeforeOptional.isPresent()) {
+            User userBefore = userBeforeOptional.get();
+            userToLogout.setStatus(UserStatus.OFFLINE);
+            userToLogout.setPassword(userBefore.getPassword());
+            userToLogout.setUsername(userBefore.getUsername());
+            userToLogout.setBirthDay(userBefore.getBirthDay());
+        }
+        // saves the given entity but data is only persisted in the database once
+        // flush() is called
+        userToLogout = userRepository.save(userToLogout);
+        userRepository.flush();
+    }
 
     if (user.equals(newUser)){
       user.setStatus(UserStatus.ONLINE);
