@@ -60,10 +60,29 @@ jobs:
           echo "  DALL_E_API_KEY: 'sali'" >> app.yaml
           cat app.yaml  # Output the contents for debugging
 
-      - name: Verify Setup
+      - name: Print Environment Info
         run: |
-          pwd  # Prints the current directory
-          ls -la  # Lists files in the current directory
+          pwd
+          echo "Listing directory contents:"
+          ls -la
+          echo "Contents of app.yaml:"
+          cat app.yaml
+
+      - name: Debugging File Operations
+        run: |
+          set -e  # Exit immediately if a command exits with a non-zero status.
+          echo "Printing working directory:"
+          pwd
+          echo "Listing contents of current directory:"
+          ls -la
+          echo "Checking if app.yaml exists in the expected directory:"
+          if [ -f app.yaml ]; then
+            echo "app.yaml found, displaying contents:"
+            cat app.yaml
+          else
+            echo "app.yaml not found in $(pwd)"
+          fi
+
 
           
 
