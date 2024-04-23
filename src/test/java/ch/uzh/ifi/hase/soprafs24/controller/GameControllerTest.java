@@ -29,6 +29,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -186,8 +187,57 @@ public class GameControllerTest {
                         .andExpect(status().isOk()); // Ensure the status is HttpStatus.CREATED as per your controller annotation
         }
     
+    @Test
+    public void playerLeaveTheGameShouldProcessCorrectly() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
 
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(new Game())); 
 
+        mockMvc.perform(post("/game/leave/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+
+        verify(gameService).playerLeaveGame(gameId, "valid-token");
+   }
+
+   @Test
+    public void playerLeaveTheGameWhenUserTokenIsEmptyShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        String emptyUserToken = "{\"userToken\":\"\"}";
+
+        mockMvc.perform(post("/game/leave/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emptyUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void playerLeaveTheGame_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/game/leave/{invalidGameId}", invalidGameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void playerLeaveTheGame_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        // Mock the gameRepository to return empty Optional
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/game/leave/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isNotFound());
+    }
+    
         // Utility method to convert an object to JSON string
         private String asJsonString(Object object) {
                 try {

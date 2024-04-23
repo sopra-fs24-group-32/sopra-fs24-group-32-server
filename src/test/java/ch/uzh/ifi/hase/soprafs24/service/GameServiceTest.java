@@ -2,12 +2,14 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +29,14 @@ public class GameServiceTest {
     private UserService userService;
     private UserRepository userRepository;
     private GameRepository gameRepository;
+    private DallE mockDallE;
 
     @BeforeEach
     public void setup() {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
         gameRepository = mock(GameRepository.class);
+        mockDallE = mock(DallE.class);
         gameService = new GameService(userRepository, gameRepository, userService);
     }
 
@@ -252,5 +256,40 @@ public class GameServiceTest {
         assertEquals(2, lobby.getUsers().size());
         assertTrue(lobby.getUsers().stream().anyMatch(u -> u.getUsername().equals("username")));
     }
+
+    // @Test
+    // public void generatePictureDallEShouldReturnValidUrl() throws Exception {
+
+    //     String validPrompt = "{\"description\":\"a sunset over a mountain range\"}";
+    //     String expectedUrl = "http://example.com/image.jpg";
+    //     when(mockDallE.generatePicture("a sunset over a mountain range")).thenReturn(expectedUrl);
+
+    //     String result = gameService.generatePictureDallE(validPrompt);
+
+    //     assertEquals(expectedUrl, result);
+    //     verify(mockDallE).generatePicture("a sunset over a mountain range");
+    // }
+
+
+    @Test
+    public void playerLeaveGame_ShouldRemoveUserSuccessfully() throws Exception {
+        
+        Long gameId = 1L;
+        User user = new User();
+        user.setUsername("username");
+        String lobbyOwner = "owner";
+        Game game = new Game(gameId, lobbyOwner);
+        String userToken = "valid-token";
+        game.addPlayer(user);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken(userToken)).thenReturn(user);
+
+        gameService.playerLeaveGame(gameId, userToken);
+
+        verify(gameRepository).save(game);
+        assertEquals(0, game.getUsers().size());
+    }
+
     
 }
