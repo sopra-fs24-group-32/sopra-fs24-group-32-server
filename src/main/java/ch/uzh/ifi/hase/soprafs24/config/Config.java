@@ -18,8 +18,8 @@ public class Config {
         if (apiKey != null) {
             return apiKey;
         } else {
-            System.out.println("API Key not found in environment variables.");
-            return ""; // Handle the error appropriately
+            // Throw an exception when the API key is not found
+            throw new IllegalStateException("API Key not found in environment variables.");
         }
     }
 
