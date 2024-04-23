@@ -2,12 +2,14 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +29,14 @@ public class GameServiceTest {
     private UserService userService;
     private UserRepository userRepository;
     private GameRepository gameRepository;
+    private DallE mockDallE;
 
     @BeforeEach
     public void setup() {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
         gameRepository = mock(GameRepository.class);
+        mockDallE = mock(DallE.class);
         gameService = new GameService(userRepository, gameRepository, userService);
     }
 
@@ -252,5 +256,127 @@ public class GameServiceTest {
         assertEquals(2, lobby.getUsers().size());
         assertTrue(lobby.getUsers().stream().anyMatch(u -> u.getUsername().equals("username")));
     }
+
+    // @Test
+    // public void generatePictureDallEShouldReturnValidUrl() throws Exception {
+
+    //     String validPrompt = "{\"description\":\"a sunset over a mountain range\"}";
+    //     String expectedUrl = "http://example.com/image.jpg";
+    //     when(mockDallE.generatePicture("a sunset over a mountain range")).thenReturn(expectedUrl);
+
+    //     String result = gameService.generatePictureDallE(validPrompt);
+
+    //     assertEquals(expectedUrl, result);
+    //     verify(mockDallE).generatePicture("a sunset over a mountain range");
+    // }
+
+
+    @Test
+    public void playerLeaveGame_ShouldRemoveUserSuccessfully() throws Exception {
+        
+        Long gameId = 1L;
+        User user = new User();
+        user.setUsername("username");
+        String lobbyOwner = "owner";
+        Game game = new Game(gameId, lobbyOwner);
+        String userToken = "valid-token";
+        game.addPlayer(user);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken(userToken)).thenReturn(user);
+
+        gameService.playerLeaveGame(gameId, userToken);
+
+        verify(gameRepository).save(game);
+        assertEquals(0, game.getUsers().size());
+    }
+
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenUserTokenIsEmptyOrNull() throws Exception {
+        Long gameId = 1L;
+        String emptyUserToken = "";
+        String nullUserToken = null;
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, emptyUserToken);
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, nullUserToken);
+        });
+
+        String expectedMessage = "UserToken is null or empty";
+        String actualMessageEmptyToken = exception.getMessage();
+        String actualMessageNullToken = exception2.getMessage();
+
+        assertTrue(actualMessageEmptyToken.contains(expectedMessage));
+        assertTrue(actualMessageNullToken.contains(expectedMessage));
+    }
+
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenGameDoesNotExist() throws Exception {
+        Long gameId = 1L;
+        String userToken = "valid-token";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, userToken);
+        });
+
+        String expectedMessage = "Lobby not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+    }
+
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenUserIsNotInGame() throws Exception {
+        Long gameId = 1L;
+        String userToken = "valid-token";
+        User user = new User();
+        user.setUsername("username");
+
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken(userToken)).thenReturn(user);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, userToken);
+        });
+
+        String expectedMessage = "User not found in the game";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+    }
+
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenGameIdIsNullOrZero() throws Exception {
+        Long gameIdNull = null;
+        Long gameIdZero = 0L;
+
+        String userToken = "valid-token";
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameIdNull, userToken);
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameIdZero, userToken);
+        });
+
+        String expectedMessage = "Game ID is null or zero";
+        String actualMessageNull = exception.getMessage();
+        String actualMessageZero = exception2.getMessage();
+
+        assertTrue(actualMessageNull.contains(expectedMessage));
+        assertTrue(actualMessageZero.contains(expectedMessage));
+    
+    }
+
     
 }

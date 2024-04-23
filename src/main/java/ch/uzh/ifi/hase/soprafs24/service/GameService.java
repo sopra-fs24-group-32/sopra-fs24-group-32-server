@@ -51,26 +51,6 @@ public class GameService {
         return games;
     }
 
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//    public Game findById(Long id) throws ResponseStatusException{
-//             for (Game game : games) {
-//                 if (game.getId().equals(id)) {
-//                     return game;
-//                 }
-//             }
-//         return null;
-//    }
-//    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
-//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-//            if (entry.getValue().getInvitationCodes().equals(invitationCodes)) {
-//                return entry.getValue();
-//            }
-//        }
-//        return null; // Return null if lobby is not found
-//    }
-
 
     public GameGetDTO getGame(Long gameId) {
         return gameRepository.findById(gameId)
@@ -316,7 +296,7 @@ public class GameService {
         }
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
         
         Game game = gameRepository.findById(gameId)
