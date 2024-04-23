@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
@@ -27,6 +29,16 @@ public class GameServiceTest {
     private UserService userService;
     private UserRepository userRepository;
     private GameRepository gameRepository;
+
+    private List<User> generateUsers(int amt){
+        List<User> users = new ArrayList<>();
+        for(int i = 0; i<amt; i++){
+            String username = "user" + String.valueOf(i);
+            User newUser = new User(username, null);
+            users.add(newUser);
+        }
+        return users;
+    }
 
     @BeforeEach
     public void setup() {
@@ -252,5 +264,21 @@ public class GameServiceTest {
         assertEquals(2, lobby.getUsers().size());
         assertTrue(lobby.getUsers().stream().anyMatch(u -> u.getUsername().equals("username")));
     }
-    
+/*
+    @Test
+    void getNextPictureGenerator() throws Exception {
+        List<User> users = generateUsers(2);
+        Game game = new Game();
+
+        for(User user: users){
+            game.addPlayer(user);
+        }
+
+        game.startGame();
+
+        game.selectPictureGenerator();
+        game.selectPictureGenerator();
+        assertThrows(ResponseStatusException.class, game::selectPictureGenerator);
+    }
+    */
 }
