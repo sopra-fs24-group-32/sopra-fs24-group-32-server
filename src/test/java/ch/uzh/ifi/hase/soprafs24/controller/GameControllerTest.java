@@ -329,5 +329,48 @@ public class GameControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.score").value(0));        
     }
-    
+
+    @Test
+    public void generatePictureByDallE_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        Long invalidGameIdNull = null;
+        String textPrompt = "A picture of a cat";
+
+        mockMvc.perform(post("/game/image/{invalidGameId}", invalidGameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(textPrompt))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/game/image/{invalidGameIdNull}", invalidGameIdNull)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(textPrompt))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void generatePictureByDallE_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        String textPrompt = "A picture of a cat";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/game/image/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(textPrompt))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void generatePictureByDallE_WhenTextPromptIsEmpty_ShouldReturnBadRequest() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        String emptyTextPrompt = "";
+
+        mockMvc.perform(post("/game/image/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emptyTextPrompt))
+                .andExpect(status().isBadRequest());
+    }
 }

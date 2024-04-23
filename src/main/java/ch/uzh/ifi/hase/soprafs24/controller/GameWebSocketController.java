@@ -190,7 +190,7 @@ public class GameWebSocketController {
     public ResponseEntity<String> generatePictureDallE(@PathVariable Long gameId, @RequestBody String text_prompt) throws Exception {
 
         if (text_prompt == null || text_prompt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image prompt provided by the player is null or empty");
         }
 
         if (gameId == null || gameId == 0) {
@@ -198,6 +198,9 @@ public class GameWebSocketController {
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
+        if (!lobby.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
 
         String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
 
