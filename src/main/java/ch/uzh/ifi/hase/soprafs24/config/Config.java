@@ -38,9 +38,13 @@ public class Config {
                 if (inputStream == null) {
                     throw new FileNotFoundException("app.yaml file not found in the root of the project directory");
                 }
+                System.out.println(inputStream);
+                System.out.println("inputStream");
 
                 Yaml yaml = new Yaml(new Constructor(Map.class));
                 Map<String, Object> yamlProps = yaml.load(inputStream);
+
+                System.out.println(yamlProps);
 
                 // Assuming the API key is under env_variables in the YAML structure
                 Map<String, String> envVariables = (Map<String, String>) yamlProps.get("env_variables");
