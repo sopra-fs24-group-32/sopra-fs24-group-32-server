@@ -54,9 +54,18 @@ jobs:
 
       - name: Setup API Key
         run: |
+          cd ..
+          cd ..
           echo "env_variables:" >> app.yaml
           echo "  ENV: 'prod'" >> app.yaml
           echo "  DALL_E_API_KEY: 'sali'" >> app.yaml
+          cat app.yaml  # Output the contents for debugging
+
+      - name: Verify Setup
+        run: |
+          pwd  # Prints the current directory
+          ls -la  # Lists files in the current directory
+
           
 
       - name: Test and analyze
