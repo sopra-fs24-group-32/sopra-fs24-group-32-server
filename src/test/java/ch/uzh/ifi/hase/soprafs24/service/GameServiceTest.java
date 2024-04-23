@@ -291,5 +291,45 @@ public class GameServiceTest {
         assertEquals(0, game.getUsers().size());
     }
 
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenUserTokenIsEmptyOrNull() throws Exception {
+        Long gameId = 1L;
+        String emptyUserToken = "";
+        String nullUserToken = null;
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, emptyUserToken);
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, nullUserToken);
+        });
+
+        String expectedMessage = "UserToken is null or empty";
+        String actualMessageEmptyToken = exception.getMessage();
+        String actualMessageNullToken = exception2.getMessage();
+
+        assertTrue(actualMessageEmptyToken.contains(expectedMessage));
+        assertTrue(actualMessageNullToken.contains(expectedMessage));
+    }
+
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenGameDoesNotExist() throws Exception {
+        Long gameId = 1L;
+        String userToken = "valid-token";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, userToken);
+        });
+
+        String expectedMessage = "Lobby not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+    }
+
     
 }
