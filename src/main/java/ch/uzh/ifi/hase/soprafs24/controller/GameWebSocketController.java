@@ -47,33 +47,12 @@ public class GameWebSocketController {
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
-    GameWebSocketController(GameService gameService, UserService userService, UserRepository userRepository, GameRepository gameRepository,
-                            SimpMessagingTemplate simpMessagingTemplate) {
+    GameWebSocketController(GameService gameService, UserService userService, UserRepository userRepository, GameRepository gameRepository) {
         this.gameService = gameService;
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
         this.userService = userService;
-        this.simpMessagingTemplate = simpMessagingTemplate;
     }
-
-    // @MessageMapping("/lobby/create")  // client.send("/app/lobby/create", {}, JSON.stringify(userToken))
-    // public ResponseEntity<GameGetDTO> createGame(String userToken) {
-    //     try {
-    //         log.info("Request to create new game with userToken: " + userToken);
-    //         Game createdLobby = gameService.createLobby(userToken);
-    //         GameGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(createdLobby);
-    //         simpMessagingTemplate.convertAndSend("/topic/lobby/create", lobbyGetDTO);
-    //         log.info("Game created successfully");
-    //         return new ResponseEntity<>(lobbyGetDTO, HttpStatus.CREATED);
-    //     } catch (ResponseStatusException e) {
-    //         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
-    //     } catch (Exception e) {
-    //         throw new RuntimeException("Could not create lobby:", e);
-    //     }
-    // }
 
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -90,13 +69,6 @@ public class GameWebSocketController {
         throw new RuntimeException("Could not create lobby:", e);
         }
     }   
-
-    // @PutMapping("lobby/update/{id}")
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // @ResponseBody
-    // public void updateLobby(GamePostDTO gamePostDTO){
-
-    // }
 
    @PostMapping("/lobby/join/{invitationCodes}")
    @ResponseStatus(HttpStatus.OK)
@@ -164,32 +136,8 @@ public class GameWebSocketController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
     }
 
-    // @MessageMapping("/lobby/{id}")
-    // public ResponseEntity<GameGetDTO> getLobby(@DestinationVariable Long id) {
-
-    //     if (id == null || id == 0) {
-    //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
-    //     }
-
-    //     try {
-    //         log.info("Request to get lobby with id: " + id);
-    //         Game lobby = gameService.findById(id);
-
-    //         if (lobby == null) {
-    //             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found");
-    //         }
-
-    //         GameGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(lobby);
-    //         simpMessagingTemplate.convertAndSend("/topic/lobby/" + id, lobby);
-    //         log.info("Lobby found successfully");
-    //         return new ResponseEntity<>(lobbyGetDTO, HttpStatus.OK);
-    //     } catch (Exception e) {
-    //         throw new RuntimeException("Could not get lobby:", e);
-    //     }
-    // }
-
    @PutMapping("/lobby/update/{id}")
-   @ResponseStatus(HttpStatus.CREATED)
+   @ResponseStatus(HttpStatus.OK)
    @ResponseBody
    public Game updateGameSettings(@PathVariable Long id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException, JsonMappingException, JsonProcessingException {
 
@@ -262,7 +210,7 @@ public class GameWebSocketController {
     public ResponseEntity<String> generatePictureDallE(@PathVariable Long gameId, @RequestBody String text_prompt) throws Exception {
 
         if (text_prompt == null || text_prompt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image prompt provided by the player is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image prompt provided by the player is null or empty");
         }
 
         if (gameId == null || gameId == 0) {
@@ -270,6 +218,9 @@ public class GameWebSocketController {
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
+        if (!lobby.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
 
         String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
 

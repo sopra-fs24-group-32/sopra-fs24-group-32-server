@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.SimpleUserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
@@ -54,7 +55,7 @@ public class SocketController {
 
     @MessageMapping("/lobby/startgame")
     @SendTo("/game/public")
-    public UserGetDTO startGame(@Payload Long id){
+    public SimpleUserGetDTO startGame(@Payload Long id){
 
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
@@ -62,18 +63,8 @@ public class SocketController {
 
         gameService.startGameLobby(id);
 
-        User nextPictureGenerator = gameService.getNextPictureGenerator(id);
-
-        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(nextPictureGenerator);
+        String nextPictureGenerator = gameService.getNextPictureGenerator(id);
+        User newUser = new User(nextPictureGenerator, null);
+        return DTOMapper.INSTANCE.convertEntityToSimpleUserGetDTO(newUser);
     }
-
-
-    /*
-    @MessageMapping("game/role")
-    @SendTo("game/{userId}")
-    public Role getRole(@Payload String userId, @DestinationVariable String userId){
-
-    }
-
-     */
 }

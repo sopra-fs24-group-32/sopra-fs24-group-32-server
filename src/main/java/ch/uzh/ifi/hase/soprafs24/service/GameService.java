@@ -20,9 +20,12 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class GameService {
@@ -50,26 +53,6 @@ public class GameService {
     public List<Game> getAllGames() {
         return games;
     }
-
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // HERE IS THE WRONG PLACE FOR FIND FUNCTIONS!!! THESE HAVE TO BE PLACED IN THE GAMEREPOSITORY.JAVA SEE EXAMPLES THERE
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//    public Game findById(Long id) throws ResponseStatusException{
-//             for (Game game : games) {
-//                 if (game.getId().equals(id)) {
-//                     return game;
-//                 }
-//             }
-//         return null;
-//    }
-//    public Lobby findByLobbyInvitationCodes(String invitationCodes) {
-//        for (Map.Entry<Long, Lobby> entry : lobbies.entrySet()) {
-//            if (entry.getValue().getInvitationCodes().equals(invitationCodes)) {
-//                return entry.getValue();
-//            }
-//        }
-//        return null; // Return null if lobby is not found
-//    }
 
 
     public GameGetDTO getGame(Long gameId) {
@@ -240,7 +223,7 @@ public class GameService {
     return lobby;
    }
 
-   public User getNextPictureGenerator(Long id){
+   public String getNextPictureGenerator(Long id){
        if (id == null || id == 0) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
        }
@@ -248,7 +231,7 @@ public class GameService {
        Game game = gameRepository.findById(id)
                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
-       User nextPictureGenerator = game.selectPictureGenerator();
+       String nextPictureGenerator = game.selectPictureGenerator();
 
        gameRepository.save(game);
        gameRepository.flush();
@@ -265,7 +248,12 @@ public class GameService {
     if (mappedPrompt == null || mappedPrompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
         }
+
+    System.out.println(mappedPrompt);
+
     String imgUrl = dallE.generatePicture(mappedPrompt);
+
+    System.out.println(imgUrl);
     dallE.setInputPhrase(mappedPrompt);
     dallE.setImageUrl(imgUrl);
     
@@ -301,7 +289,7 @@ public class GameService {
         }
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
         
         Game game = gameRepository.findById(gameId)

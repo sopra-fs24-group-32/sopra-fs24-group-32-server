@@ -44,6 +44,10 @@ public class DallE {
 
         String apiKey = Config.getApiKey();
 
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "API key not found");
+        }
+
         Request request = new Request.Builder()
                     .url(API_URL)
                     .post(body)
