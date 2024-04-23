@@ -60,6 +60,7 @@ public class Config {
                 }
             }
         }
+        System.out.println(apiKey);
         return apiKey;
     }
 }
