@@ -173,13 +173,15 @@ public class Game {
     }
 
     public User selectPictureGenerator(){
-        if(!this.remaininPictureGenerators.isEmpty()){
-            int randomNum = ThreadLocalRandom.current().nextInt(0, remaininPictureGenerators.size());
-            System.out.println(randomNum);
-            System.out.println(Arrays.toString(remaininPictureGenerators.toArray()));
-            return this.remaininPictureGenerators.remove(randomNum);
-        }else{
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
+        synchronized (remaininPictureGenerators) {
+            if (!this.remaininPictureGenerators.isEmpty()) {
+                int randomNum = ThreadLocalRandom.current().nextInt(0, remaininPictureGenerators.size());
+                System.out.println(randomNum);
+                System.out.println(Arrays.toString(remaininPictureGenerators.toArray()));
+                return this.remaininPictureGenerators.remove(randomNum);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
+            }
         }
     }
 
