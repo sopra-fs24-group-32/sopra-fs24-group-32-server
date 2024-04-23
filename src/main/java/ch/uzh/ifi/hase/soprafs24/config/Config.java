@@ -13,13 +13,15 @@ public class Config {
     }
 
     public static String getApiKey() {
-        // Check if running in production by looking for a specific environment variable
-        if (dotenv != null) {
-            return dotenv.get("DALL_E_API_KEY");
+        // Get API key from environment variable
+        String apiKey = System.getenv("DALL_E_API_KEY");
+        if (apiKey != null) {
+            return apiKey;
         } else {
-            return SecretManagerAccess.getSecret("451955966414", "dall_e_api_key");
+            System.out.println("API Key not found in environment variables.");
+            return ""; // Handle the error appropriately
         }
-
     }
+
 }
 

@@ -52,6 +52,11 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+      - name: Setup API Key
+        run: |
+          sed -i 's/DALL_E_API_KEY: ''/DALL_E_API_KEY: '${{ secrets.DALL_E_API_KEY }}'/' app.yaml
+        shell: bash
+
       - name: Test and analyze
         run: ./gradlew test jacocoTestReport sonar
         env:
