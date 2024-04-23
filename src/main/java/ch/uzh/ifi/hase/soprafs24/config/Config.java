@@ -31,15 +31,17 @@ public class Config {
                 return "";
             }
         } else {
+            System.out.println("inputStream1");
             InputStream inputStream = null;
             try {
                 // Load the properties file
+                System.out.println("inputStream2");
                 inputStream = Config.class.getClassLoader().getResourceAsStream("app.yaml");
                 if (inputStream == null) {
                     throw new FileNotFoundException("app.yaml file not found in the root of the project directory");
                 }
                 System.out.println(inputStream);
-                System.out.println("inputStream");
+                System.out.println("inputStream3");
 
                 Yaml yaml = new Yaml(new Constructor(Map.class));
                 Map<String, Object> yamlProps = yaml.load(inputStream);
