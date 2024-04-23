@@ -53,6 +53,18 @@ public class SocketController {
         }
     }
 
+    @MessageMapping("/continueGame")
+    @SendTo("/game/public")
+    public SimpleUserGetDTO continueGame(@Payload Long id){
+        if(id == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
+        }
+
+        String nextPictureGenerator = gameService.getNextPictureGenerator(id);
+        User newUser = new User(nextPictureGenerator, null);
+        return DTOMapper.INSTANCE.convertEntityToSimpleUserGetDTO(newUser);
+    }
+
     @MessageMapping("/lobby/startgame")
     @SendTo("/game/public")
     public SimpleUserGetDTO startGame(@Payload Long id){
