@@ -8,13 +8,13 @@ public class SecretManagerAccess {
         // Initialize client that will be used to send requests. This client only needs to be created
         // once, and can be reused for multiple requests.
         try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
-            SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "latest");
+            SecretVersionName secretVersionName = SecretVersionName.of(projectId, secretId, "1");
             // Access the secret version.
             AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
             // Return the payload.
             return response.getPayload().getData().toStringUtf8();
         } catch (Exception e) {
-            System.out.println("Failed to access secret version: " + e);
+            e.printStackTrace();
             return "";
         }
     }

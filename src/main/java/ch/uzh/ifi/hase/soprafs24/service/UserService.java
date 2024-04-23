@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -54,43 +55,35 @@ public class UserService {
   }
 
 
-  public void loginUser(String username, String password) {
-    User user = userRepository.findByUsername(username);
-    User newUser = new User();
-    newUser.setUsername(username);
-    newUser.setPassword(password);
+    public void loginUser(User userToLogin) {
+        Optional<User> userOptional = userRepository.findById(userToLogin.getId());
 
-    if (user.equals(newUser)){
-      user.setStatus(UserStatus.ONLINE);
-      user.setIsLoggedIn(true);
-      userRepository.save(user);
-      userRepository.flush();
-      return;
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            user.setStatus(UserStatus.ONLINE);
+
+            userRepository.save(user);
+            userRepository.flush();
+        }
     }
 
-    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong password or username");
-  }
+    public void logoutUser(User userToLogout) {
+        Optional<User> userBeforeOptional = userRepository.findById(userToLogout.getId());
 
-  public User findByUsername(String username) {
-    List<User> users = userRepository.findAll();
-    User findUser = new User();
-    for (int i=0; i<users.size(); i++){
-      if (users.get(i).getUsername().equals(username)){
-        findUser = users.get(i);
-      }
+        if (userBeforeOptional.isPresent()) {
+            User userBefore = userBeforeOptional.get();
+            userToLogout.setStatus(UserStatus.OFFLINE);
+            userToLogout.setPassword(userBefore.getPassword());
+            userToLogout.setUsername(userBefore.getUsername());
+            userToLogout.setBirthDay(userBefore.getBirthDay());
+        }
+        // saves the given entity but data is only persisted in the database once
+        // flush() is called
+        userToLogout = userRepository.save(userToLogout);
+        userRepository.flush();
     }
-    return findUser;
-  }
 
-  public User findByToken(String userToken) throws Exception{
-      List<User> users = userRepository.findAll();
-      for (int i=0; i<users.size(); i++){
-          if (users.get(i).getUserToken().equals(userToken)){
-              return users.get(i);
-          }
-      }
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
-  }
 
   // This method didn't work, I implemented the functionality directly in the user repository
 
