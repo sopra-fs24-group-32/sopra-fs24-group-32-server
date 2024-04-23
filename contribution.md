@@ -40,3 +40,26 @@ all the players in the lobby automatically get forwarded to either the page to p
 ## Roger
 Implemented image generation with DALL-E. Issue #16
 Implemented ChatGPT assesment of the input and guess #55.
+
+# Week 17.04 - 24.04
+
+## Eric
+
+
+## Eduard
+Fixed the frontend for Image generation and Guessing the description so everybody sees the image. issue #34 #13
+Only player with its turn to generate an image is shown the input description screen: #14
+Only players to guess is shown the right screen: issue #12
+Scoring points based on speed and correctness: issue #31
+Frontend for Scoreboard: issues #42 and #40 (still needs to check compatibility with backend for next round)
+
+
+## Nicolas S.
+
+
+
+## Nicolas H.
+
+
+## Roger
+
