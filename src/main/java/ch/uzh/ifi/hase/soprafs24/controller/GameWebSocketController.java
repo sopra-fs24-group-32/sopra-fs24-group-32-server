@@ -34,6 +34,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
+// import simp messaging template
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 
 
 @RestController
@@ -46,6 +49,10 @@ public class GameWebSocketController {
 
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
 
     GameWebSocketController(GameService gameService, UserService userService, UserRepository userRepository, GameRepository gameRepository) {
         this.gameService = gameService;
