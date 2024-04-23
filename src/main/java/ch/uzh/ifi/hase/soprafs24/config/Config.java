@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.config;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.hibernate.boot.cfgxml.internal.ConfigLoader;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -35,16 +37,21 @@ public class Config {
         } else {
                 try {
                     // Load the properties file (assuming app.yaml is actually app.properties format)
-                    InputStream inputStream = new FileInputStream("../../../../../app.yaml");
+                    InputStream inputStream = ConfigLoader.class.getClassLoader().getResourceAsStream("app.yaml");
                     Yaml yaml = new Yaml(new Constructor(Map.class));
                     Map<String, Object> yamlProps = yaml.load(inputStream);
+                    if (inputStream == null) {
+                        throw new FileNotFoundException("app.yaml file not found in the root of the project directory");
+                    }
 
                     // Assuming the API key is under env_variables in the YAML structure
                     Map<String, String> envVariables = (Map<String, String>) yamlProps.get("env_variables");
                     apiKey = envVariables.get("DALL_E_API_KEY");
-                } catch (IOException e) {
-                    System.err.println("Error loading properties file: " + e.getMessage());
-                }
+                }  catch (FileNotFoundException e) {
+            System.err.println("app.yaml file not found: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error reading app.yaml: " + e.getMessage());
+        }
         }
         return apiKey;
     }
