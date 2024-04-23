@@ -22,8 +22,6 @@ public class Config {
     }
 
     public static String getApiKey() {
-        System.out.println(System.getProperty("user.dir"));
-
         String apiKey = null;
         if (dotenv != null) {
             try {

@@ -37,7 +37,7 @@ jobs:
   #       run: ./gradlew build sonar --info
   #       env:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} echo "  DALL_E_API_KEY: '${{ secrets.DALL_E_API_KEY }}'" >> app.yaml
   test:
     name: Test and Sonarqube
     runs-on: ubuntu-latest
@@ -56,7 +56,8 @@ jobs:
         run: |
           echo "env_variables:" >> app.yaml
           echo "  ENV: 'prod'" >> app.yaml
-          echo "  DALL_E_API_KEY: '${{ secrets.DALL_E_API_KEY }}'" >> app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" >> app.yaml
+          
 
       - name: Test and analyze
         run: ./gradlew test jacocoTestReport sonar
