@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -244,6 +246,88 @@ public class GameControllerTest {
         } catch (Exception e) {
         throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        Long invalidGameIdNull = null;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+
+        mockMvc.perform(put("/game/chatgpt/{invalidGameId}", invalidGameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(put("/game/chatgpt/{invalidGameIdNull}", invalidGameIdNull)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenUserTokenIsEmpty_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        String emptyUserToken = "{\"userToken\":\"\"}";
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", emptyUserToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenPlayerGuessedEmpty_ShouldReturnZeroPoint() throws Exception {
+        Long gameId = 1L;
+        String username = "owner";
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, username);
+
+        User user = new User();
+        user.setUsername(username);
+        game.addPlayer(user);
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("");
+        chatGPTPostDTO.setTimeGuessSubmitted(30);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(0));        
     }
     
 }
