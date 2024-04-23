@@ -19,6 +19,8 @@ public class Config {
     }
 
     public static String getApiKey() {
+        System.out.println(System.getProperty("java.class.path"));
+
         String apiKey = null;
         if (dotenv != null) {
             try {
