@@ -15,6 +15,7 @@ public class Config {
     public static String getApiKey() {
         // Get API key from environment variable
         String apiKey = System.getenv("DALL_E_API_KEY");
+            System.out.println(apiKey);
         if (apiKey != null) {
             return apiKey;
         } else {

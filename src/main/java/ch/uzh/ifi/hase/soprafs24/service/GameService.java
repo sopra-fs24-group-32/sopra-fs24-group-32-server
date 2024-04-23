@@ -275,7 +275,12 @@ public class GameService {
     if (mappedPrompt == null || mappedPrompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Text prompt provided by the player is null or empty");
         }
+
+    System.out.println(mappedPrompt);
+
     String imgUrl = dallE.generatePicture(mappedPrompt);
+
+    System.out.println(imgUrl);
     dallE.setInputPhrase(mappedPrompt);
     dallE.setImageUrl(imgUrl);
     
