@@ -53,7 +53,8 @@ public class Game {
     @Column(nullable = false)
     private String lobbyId;
 
-    private Iterator<User> iterator;
+    // @Column(nullable = false)
+    // private Iterator<User> iterator;
 
     // Constructors
     public Game() {}
@@ -163,11 +164,11 @@ public class Game {
         }
         gameStarted = true;
 
-        Collections.shuffle(this.users);
-        this.iterator = this.users.iterator();
+        // Collections.shuffle(this.users);
+        // this.iterator = this.users.iterator();
 
-        // this.remaininPictureGenerators = new ArrayList<>(this.users);
-        // Collections.shuffle(this.remaininPictureGenerators);
+        this.remaininPictureGenerators = new ArrayList<>(this.users);
+        Collections.shuffle(this.remaininPictureGenerators);
 
     }
 
@@ -182,12 +183,12 @@ public class Game {
         }
     }
 
-    public User nextPictureGenerator(){
-        if (!iterator.hasNext()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
-        }
-        return iterator.next();
-    }
+    // public User nextPictureGenerator(){
+    //     if (!iterator.hasNext()) {
+    //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
+    //     }
+    //     return iterator.next();
+    // }
 
     public boolean gameHasStarted() {
         return gameStarted;
