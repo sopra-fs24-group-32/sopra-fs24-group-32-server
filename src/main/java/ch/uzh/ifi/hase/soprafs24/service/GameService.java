@@ -20,9 +20,12 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class GameService {
@@ -250,7 +253,7 @@ public class GameService {
     return lobby;
    }
 
-   public User getNextPictureGenerator(Long id){
+   public String getNextPictureGenerator(Long id){
        if (id == null || id == 0) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
        }
@@ -258,7 +261,7 @@ public class GameService {
        Game game = gameRepository.findById(id)
                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
-       User nextPictureGenerator = game.selectPictureGenerator();
+       String nextPictureGenerator = game.selectPictureGenerator();
 
        gameRepository.save(game);
        gameRepository.flush();

@@ -3,12 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.*;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +82,9 @@ public interface DTOMapper {
   @Mapping(source = "email", target = "email")
   @Mapping(source = "picture", target = "picture")
   UserGetDTO convertEntityToUserGetDTO(User user);
+
+  @Mapping(source = "username", target = "username")
+  SimpleUserGetDTO convertEntityToSimpleUserGetDTO(User user);
 
   @Mapping(source = "playerGuessed", target = "playerGuessed")
   // @Mapping(source = "timeGuessSubmitted", target = "timeGuessSubmitted")

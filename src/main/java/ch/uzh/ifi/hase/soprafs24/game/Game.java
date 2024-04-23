@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.*;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -39,9 +40,11 @@ public class Game {
     @JsonManagedReference
     private List<User> users = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "game")
-    @JsonManagedReference
-    private List<User>  remaininPictureGenerators = new ArrayList<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "game_remaining_picture_generators", joinColumns = @JoinColumn(name = "game_id"))
+    @Column(name = "remaining_picture_generator")
+    private Set<String> remaininPictureGenerators = new HashSet<>();
+
 
     @Column(nullable = false)
     private int amtOfRounds;
@@ -151,6 +154,7 @@ public class Game {
         return sb.toString();
     }
 
+    @Transactional
     public void startGame() {
         if(users.size() < 2){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not enough players in lobby");
@@ -160,17 +164,31 @@ public class Game {
         }
         gameStarted = true;
 
-        this.remaininPictureGenerators = new ArrayList<>(this.users);
-        Collections.shuffle(this.remaininPictureGenerators);
+        List<User> users = new ArrayList<>(this.users);
 
+        for(User user: users){
+            this.remaininPictureGenerators.add(user.getUsername());
+        }
     }
 
-    public User selectPictureGenerator(){
+
+    @Transactional
+    public String selectPictureGenerator(){
         if(!this.remaininPictureGenerators.isEmpty()){
-            int randomNum = ThreadLocalRandom.current().nextInt(0, remaininPictureGenerators.size());
-            System.out.println(randomNum);
-            System.out.println(Arrays.toString(remaininPictureGenerators.toArray()));
-            return this.remaininPictureGenerators.remove(randomNum);
+            int size = remaininPictureGenerators.size();
+            int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+            int i = 0;
+            String username = null;
+            for(String user : remaininPictureGenerators) {
+                if (i == item) {
+                    username = user;
+                    break;
+                }
+                i++;
+            }
+
+            remaininPictureGenerators.remove(username);
+            return username;
         }else{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
         }
