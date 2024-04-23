@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 public class Config {
     private static Dotenv dotenv;
@@ -19,7 +22,7 @@ public class Config {
     }
 
     public static String getApiKey() {
-        System.out.println(System.getProperty("java.class.path"));
+        System.out.println(System.getProperty("user.dir"));
 
         String apiKey = null;
         if (dotenv != null) {
@@ -36,7 +39,12 @@ public class Config {
             try {
                 // Load the properties file
                 System.out.println("inputStream2");
-                inputStream = Config.class.getClassLoader().getResourceAsStream("app.yaml");
+                File file = new File("app.yaml");
+                if (file.exists()) {
+                    inputStream = new FileInputStream(file);
+                } else {
+                    System.out.println("File not found!");
+                }
                 if (inputStream == null) {
                     throw new FileNotFoundException("app.yaml file not found in the root of the project directory");
                 }
