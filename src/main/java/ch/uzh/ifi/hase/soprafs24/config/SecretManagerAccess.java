@@ -14,7 +14,7 @@ public class SecretManagerAccess {
             // Return the payload.
             return response.getPayload().getData().toStringUtf8();
         } catch (Exception e) {
-            System.out.println("Failed to access secret version: " + e);
+            e.printStackTrace();
             return "";
         }
     }
