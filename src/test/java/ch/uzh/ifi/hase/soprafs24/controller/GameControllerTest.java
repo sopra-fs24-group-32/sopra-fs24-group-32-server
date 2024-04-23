@@ -229,7 +229,6 @@ public class GameControllerTest {
         Long gameId = 1L;
         String userToken = "{\"userToken\":\"valid-token\"}";
 
-        // Mock the gameRepository to return empty Optional
         when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/game/leave/{gameId}", gameId)
@@ -237,15 +236,14 @@ public class GameControllerTest {
                 .content(userToken))
                 .andExpect(status().isNotFound());
     }
-    
-        // Utility method to convert an object to JSON string
-        private String asJsonString(Object object) {
-                try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                return objectMapper.writeValueAsString(object);
-                } catch (Exception e) {
-                throw new RuntimeException(e);
-                }
+
+    private String asJsonString(Object object) {
+        try {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(object);
+        } catch (Exception e) {
+        throw new RuntimeException(e);
         }
+    }
     
 }

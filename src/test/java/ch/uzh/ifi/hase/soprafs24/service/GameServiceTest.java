@@ -331,5 +331,52 @@ public class GameServiceTest {
 
     }
 
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenUserIsNotInGame() throws Exception {
+        Long gameId = 1L;
+        String userToken = "valid-token";
+        User user = new User();
+        user.setUsername("username");
+
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken(userToken)).thenReturn(user);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, userToken);
+        });
+
+        String expectedMessage = "User not found in the game";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
+    }
+
+    @Test
+    public void playerLeaveGame_ShouldThrowExceptionWhenGameIdIsNullOrZero() throws Exception {
+        Long gameIdNull = null;
+        Long gameIdZero = 0L;
+
+        String userToken = "valid-token";
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameIdNull, userToken);
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameIdZero, userToken);
+        });
+
+        String expectedMessage = "Game ID is null or zero";
+        String actualMessageNull = exception.getMessage();
+        String actualMessageZero = exception2.getMessage();
+
+        assertTrue(actualMessageNull.contains(expectedMessage));
+        assertTrue(actualMessageZero.contains(expectedMessage));
+    
+    }
+
     
 }

@@ -296,7 +296,7 @@ public class GameService {
         }
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
         
         Game game = gameRepository.findById(gameId)
