@@ -44,6 +44,10 @@ Implemented ChatGPT assesment of the input and guess #55.
 # Week 17.04 - 24.04
 
 ## Eric
+After selecting the rounds to play the user can click on a save button to save the settings, or cancel to discard them. #44
+By clicking on a field in the lobby creation page, the host can select the number of rounds to play. #1
+By clicking on a field in the lobby creation page, the user can select the amount of seconds a player should have at disposal to enter their guess. #45
+Made OpenAI key available in production env
 
 
 ## Eduard
