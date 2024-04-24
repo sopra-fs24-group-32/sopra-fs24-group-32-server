@@ -59,7 +59,10 @@ Frontend for Scoreboard: issues #42 and #40 (still needs to check compatibility 
 
 
 ## Nicolas S.
-
+Fixed mistakes from last week
+display quick info of user when hovering over user in Lobby #20
+User can add mail and profile pic + updated profile update call #22
+added some tests for User Service - will add more when merged the proile update branch with main
 
 
 ## Nicolas H.
