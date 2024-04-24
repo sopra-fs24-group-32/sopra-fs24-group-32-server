@@ -66,4 +66,4 @@ Frontend for Scoreboard: issues #42 and #40 (still needs to check compatibility 
 
 
 ## Roger
-
+Implemented game service and controller tests.
