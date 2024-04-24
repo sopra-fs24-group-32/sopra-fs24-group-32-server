@@ -25,34 +25,26 @@ public class Config {
         String apiKey = null;
         if (dotenv != null) {
             try {
-                apiKey = System.getenv("DALL_E_API_KEY");
-                System.out.println(apiKey);
+                apiKey = dotenv.get("DALL_E_API_KEY");
             } catch (Exception e) {
                 e.printStackTrace();
                 return "";
             }
         } else {
-            System.out.println("inputStream1");
             InputStream inputStream = null;
             try {
                 // Load the properties file
-                System.out.println("inputStream2");
                 File file = new File("app.yaml");
                 if (file.exists()) {
                     inputStream = new FileInputStream(file);
                 } else {
-                    System.out.println("File not found!");
                 }
                 if (inputStream == null) {
                     throw new FileNotFoundException("app.yaml file not found in the root of the project directory");
                 }
-                System.out.println(inputStream);
-                System.out.println("inputStream3");
 
                 Yaml yaml = new Yaml(new Constructor(Map.class));
                 Map<String, Object> yamlProps = yaml.load(inputStream);
-
-                System.out.println(yamlProps);
 
                 // Assuming the API key is under env_variables in the YAML structure
                 Map<String, String> envVariables = (Map<String, String>) yamlProps.get("env_variables");
@@ -72,7 +64,6 @@ public class Config {
                 }
             }
         }
-        System.out.println(apiKey);
         return apiKey;
     }
 }
