@@ -54,9 +54,18 @@ jobs:
 
       - name: Setup API Key
         run: |
+          echo "env_variables:" > app.yaml
+          echo "  ENV: 'prod'" >> app.yaml          
           echo "env_variables:" > ./app.yaml
-          echo "  ENV: 'prod'" > ./app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > ./app.yaml
+          echo "  ENV: 'prod'" >> ./app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" > ./../../app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" >> ./../../app.yaml          
+          echo "  DALL_E_API_KEY: 'sali'" > ../../app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" >> ../../app.yaml          
+          echo "  DALL_E_API_KEY: 'sali'" > ../app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" >> ../app.yaml          
+          echo "  DALL_E_API_KEY: 'sali'" > ./../app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" >> ./../app.yaml
           cat app.yaml  # Output the contents for debugging
 
       - name: Print Environment Info
