@@ -63,7 +63,9 @@ Frontend for Scoreboard: issues #42 and #40 (still needs to check compatibility 
 
 
 ## Nicolas H.
-
+Used the Websockets to implement the game continuation management. When the host decides to start the next round
+the server randomly picks a user out of the users who have not generated an image yet issue #84, issue #86.
+The clients then get forwarded to the page to create an image or guess the input of an image respectively, issue #85.
 
 ## Roger
 Implemented game service and controller tests.
