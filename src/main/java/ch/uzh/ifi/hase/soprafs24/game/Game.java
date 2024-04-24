@@ -199,7 +199,7 @@ public class Game {
 
         float timeLeft = timeLimit - timeGuessSubmitted;
         float bonusPoints = 0;
-
+        
         if (timeLeft <= 0) {
             return 0;
         } else {
@@ -210,7 +210,8 @@ public class Game {
                 bonusPoints = 0.10f;
             }
 
-            int finalPointsAwarded = (int) (pointsFromChatGPT + (pointsFromChatGPT * bonusPoints));
+            int finalPointsAwarded = (int) Math.round(pointsFromChatGPT + (pointsFromChatGPT * bonusPoints));
+            System.out.println("------------ChatGPT points: " + pointsFromChatGPT + " Final score after scaling: " + finalPointsAwarded);
             return finalPointsAwarded;
         }
     }
