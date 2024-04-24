@@ -9,6 +9,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  key:
+    name: Test and Sonarqube
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Install Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Write API Key to app.yaml
+        run: ./write_api_key.sh
+        env:
+          DALL_E_API_KEY: ${{ secrets.DALL_E_API_KEY }}
+
   # build:
   #   name: Build and analyze
   #   runs-on: ubuntu-latest
@@ -51,64 +70,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
-
-      - name: Setup API Key1
-        run: |
-          echo "env_variables:" > app.yaml
-          echo "  ENV: 'prod'" > app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > app.yaml
-
-      - name: Setup API Key2
-        run: |
-          echo "env_variables:" > ../../app.yaml
-          echo "  ENV: 'prod'" > ../../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > ../../app.yaml
-
-      - name: Setup API Key3
-        run: |
-          echo "env_variables:" > ./../../app.yaml
-          echo "  ENV: 'prod'" > ./../../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > ./../../app.yaml
-
-      - name: Setup API Key4
-        run: |
-          echo "env_variables:" > ../app.yaml
-          echo "  ENV: 'prod'" > ../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > ../app.yaml
-
-      - name: Setup API Key5
-        run: |
-          echo "env_variables:" > ./../app.yaml
-          echo "  ENV: 'prod'" > ./../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > ./../app.yaml
-
-
-
-      - name: Print Environment Info
-        run: |
-          pwd
-          echo "Listing directory contents:"
-          ls -la
-          echo "Contents of app.yaml:"
-          cat ./app.yaml
-
-      - name: Debugging File Operations
-        run: |
-          set -e  # Exit immediately if a command exits with a non-zero status.
-          echo "Printing working directory:"
-          pwd
-          echo "Listing contents of current directory:"
-          ls -la
-          echo "Checking if app.yaml exists in the expected directory:"
-          if [ -f app.yaml ]; then
-            echo "app.yaml found, displaying contents:"
-            cat app.yaml
-          else
-            echo "app.yaml not found in $(pwd)"
-          fi
-
-
-          
 
       - name: Test and analyze
         run: ./gradlew test jacocoTestReport sonar
