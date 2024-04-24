@@ -10,26 +10,26 @@ on:
 
 jobs:
   key:
-    name: Write API key
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v4
-
-      - name: Install Java 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - name: Set execute permission for the write_api_key.sh script
-        run: chmod +x ./write_api_key.sh
-
-      - name: Write API Key to app.yaml
-        run: ./write_api_key.sh
-        env:
-          DALL_E_API_KEY: ${{ secrets.DALL_E_API_KEY }}
+#    name: Write API key
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout repository code
+#        uses: actions/checkout@v4
+#
+#      - name: Install Java 17
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: "temurin"
+#          java-version: "17"
+#
+#      - name: Set execute permission for the write_api_key.sh script
+#        run: chmod +x ./write_api_key.sh
+#
+#      - name: Write API Key to app.yaml
+#        run: ./write_api_key.sh
+#        env:
+#          DALL_E_API_KEY: ${{ secrets.DALL_E_API_KEY }}
 
   # build:
   #   name: Build and analyze
@@ -88,6 +88,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set execute permission for the write_api_key.sh script
+        run: chmod +x ./write_api_key.sh
+
+      - name: Write API Key to app.yaml
+        run: ./write_api_key.sh
+        env:
+          DALL_E_API_KEY: ${{ secrets.DALL_E_API_KEY }}
 
       - name: Deploy to App Engine
         id: deploy
