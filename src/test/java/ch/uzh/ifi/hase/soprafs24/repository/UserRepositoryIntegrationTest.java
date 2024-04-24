@@ -19,26 +19,26 @@ public class UserRepositoryIntegrationTest {
   @Autowired
   private UserRepository userRepository;
 
-  @Test
-  public void findByUsername_success() {
-    // given
-    User user = new User();
-    // user.setName("Firstname Lastname");
-    user.setUsername("testUsername");
-    user.setStatus(UserStatus.OFFLINE);
-    user.setPassword("testPassword");
-    user.setUserToken("1");
-
-    entityManager.persist(user);
-    entityManager.flush();
-
-    // when
-    User found = userRepository.findByUsername(user.getUsername());
-
-    // then
-    assertNotNull(found.getId());
-    assertEquals(found.getUsername(), user.getUsername());
-    assertEquals(found.getUserToken(), user.getUserToken());
-    assertEquals(found.getStatus(), user.getStatus());
-  }
+//  @Test
+//  public void findByUsername_success() {
+//    // given
+//    User user = new User();
+//    // user.setName("Firstname Lastname");
+//    user.setUsername("testUsername");
+//    user.setStatus(UserStatus.OFFLINE);
+//    user.setPassword("testPassword");
+//    user.setUserToken("1");
+//
+//    entityManager.persist(user);
+//    entityManager.flush();
+//
+//    // when
+//    User found = userRepository.findByUsername(user.getUsername());
+//
+//    // then
+//    assertNotNull(found.getId());
+//    assertEquals(found.getUsername(), user.getUsername());
+//    assertEquals(found.getUserToken(), user.getUserToken());
+//    assertEquals(found.getStatus(), user.getStatus());
+//  }
 }

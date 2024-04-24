@@ -1,4 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
+
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
@@ -15,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Base64;
 
 /**
  * User Service
@@ -122,25 +125,6 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-  public User updateUser(int id, User user) throws Exception {
-    User reqUser = this.getUserById(id);
-    if (!user.getUsername().isBlank()){
-      checkIfUserExists(user);
-      reqUser.setUsername(user.getUsername());
-    }
-    if (user.getBirthDay() != null){
-      reqUser.setBirthDay(user.getBirthDay());
-    }
-    reqUser.setPassword(this.getUserById(id).getPassword());
-    reqUser.setUserToken(UUID.randomUUID().toString());
-    reqUser.setStatus(UserStatus.ONLINE);
-    reqUser.setIsLoggedIn(true);
-
-    userRepository.save(reqUser);
-    userRepository.flush();
-    return reqUser;
-  }
-
   public User getUserById(int id) {
     List<User> users = userRepository.findAll();
     User u = new User();
@@ -158,6 +142,59 @@ public class UserService {
     u.setIsLoggedIn(false);
     return u;
   }
+
+  
+  @Transactional
+  public User updateUser(Long id, UserPostDTO updatedUserDTO) {
+      
+      // Find the existing user by id
+      User existingUser = userRepository.findById(id).orElseThrow(
+          () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + id));
+  
+      if (updatedUserDTO.getUsername() != null && !updatedUserDTO.getUsername().isEmpty()) {
+          // Check if username is already taken by another user
+      //    Optional<User> userByNewUsername = userRepository.findByUsername(updatedUserDTO.getUsername());
+      //    if (userByNewUsername.isPresent() && !userByNewUsername.get().getId().equals(id)) {
+      //        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+      //            "Username " + updatedUserDTO.getUsername() + " is already taken.");
+      //    }
+          existingUser.setUsername(updatedUserDTO.getUsername());
+      }
+      
+      if (updatedUserDTO.getEmail() != null && !updatedUserDTO.getEmail().isEmpty()) {
+      //  Optional<User> userByNewEmail = userRepository.findByEmail(updatedUserDTO.getEmail());
+      //  if (userByNewEmail.isPresent() && !userByNewEmail.get().getId().equals(id)) {
+      //      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+      //          "Email " + updatedUserDTO.getEmail() + " is already taken.");
+      //  }
+        existingUser.setEmail(updatedUserDTO.getEmail());
+      }
+  
+      if (updatedUserDTO.getBirthDay() != null) {
+          existingUser.setBirthDay(updatedUserDTO.getBirthDay());
+      }
+      
+          
+      System.out.println("Picture received: " + updatedUserDTO.getPicture());
+      if (updatedUserDTO.getPicture() != null) {
+          System.out.println("Updating profile picture with new data (size: " + updatedUserDTO.getPicture().length + " bytes)");
+          byte[] pictureData = Base64.getDecoder().decode(updatedUserDTO.getPicture());
+          System.out.println("Picture data: " + Base64.getEncoder().encodeToString(pictureData));
+          existingUser.setPicture(pictureData);
+      }
+  
+      // Regenerate token and set user status
+      existingUser.setUserToken(UUID.randomUUID().toString());
+      existingUser.setStatus(UserStatus.ONLINE);
+      existingUser.setIsLoggedIn(true);
+  
+      userRepository.save(existingUser);
+      System.out.println("User updated successfully: " + existingUser);
+      return existingUser;
+  }
+  
+  
+
 
   /**
    * This is a helper method that will check the uniqueness criteria of the

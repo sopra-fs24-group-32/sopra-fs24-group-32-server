@@ -40,6 +40,13 @@ public class User implements Serializable {
   @Column(nullable = false, unique = true)
   private String username;
 
+  @Column(nullable = true, unique = true)
+  private String email;
+
+  @Column(name = "picture")
+  @Lob
+  private byte[] picture;
+
   @Column(nullable = false, unique = true)
   private String userToken;
 
@@ -65,10 +72,6 @@ public class User implements Serializable {
 
   @Column(nullable = false)
   private String password;
-
-  private String email;
-
-   private String picture;
 
   public User() {}
     public User(String username, String password){
@@ -102,11 +105,11 @@ public class User implements Serializable {
     this.email = email;
   }
 
-  public String getPicture() {
+  public byte[] getPicture() {
     return picture;
   }
 
-  public void setPicture(String picture) {
+  public void setPicture(byte[] picture) {
     this.picture = picture;
   }
 

@@ -124,5 +124,14 @@ public class UserController {
         }
     }
 
+    @PutMapping("/users/{id}")
+    public ResponseEntity<UserGetDTO> updateUser(@PathVariable Long id, @RequestBody UserPostDTO userPostDTO) {
+    
+    System.out.println("Picture received: " + userPostDTO.getPicture());
 
+
+    User userToUpdate = userService.updateUser(id, userPostDTO);
+    UserGetDTO updatedUserGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(userToUpdate);
+    return new ResponseEntity<>(updatedUserGetDTO, HttpStatus.OK);
+    }
 }

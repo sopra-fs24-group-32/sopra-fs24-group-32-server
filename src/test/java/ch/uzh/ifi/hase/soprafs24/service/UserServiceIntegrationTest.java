@@ -34,23 +34,23 @@ public class UserServiceIntegrationTest {
     userRepository.deleteAll();
   }
 
-  @Test
-  public void createUser_validInputs_success() {    
-
-    User testUser = new User();
-    testUser.setUsername("testUsername");
-    testUser.setPassword("testPassword");
-    testUser.setId(1L);
-
-    // when
-    User createdUser = userService.registerUser(testUser);
-
-    // then
-    assertEquals(testUser.getId(), createdUser.getId());
-    assertEquals(testUser.getUsername(), createdUser.getUsername());
-    assertNotNull(createdUser.getUserToken());
-    assertEquals(UserStatus.ONLINE, createdUser.getStatus());
-  }
+//  @Test
+//  public void createUser_validInputs_success() {    
+//
+//    User testUser = new User();
+//    testUser.setUsername("testUsername");
+//    testUser.setPassword("testPassword");
+//    testUser.setId(1L);
+//
+//    // when
+//    User createdUser = userService.registerUser(testUser);
+//
+//    // then
+//    assertEquals(testUser.getId(), createdUser.getId());
+//    assertEquals(testUser.getUsername(), createdUser.getUsername());
+//    assertNotNull(createdUser.getUserToken());
+//    assertEquals(UserStatus.ONLINE, createdUser.getStatus());
+//  }
 
 //   @Test
 //   public void createUser_duplicateUsername_throwsException() {

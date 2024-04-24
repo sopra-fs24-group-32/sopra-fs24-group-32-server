@@ -40,3 +40,8 @@ all the players in the lobby automatically get forwarded to either the page to p
 ## Roger
 Implemented image generation with DALL-E. Issue #16
 Implemented ChatGPT assesment of the input and guess #55.
+
+
+## Nicolas S.
+Hover over lobby members -> displays info Issue #20
+

@@ -15,7 +15,7 @@ public class UserGetDTO {
   private LocalDateTime createDate;
   private Date birthday;
   private String email;
-  private String picture;
+  private byte[] picture;
   private String userToken;
   private Integer score=0;
 
@@ -43,11 +43,11 @@ public class UserGetDTO {
     this.email = email;
   }
 
-  public String getPicture() {
+  public byte[] getPicture() {
     return picture;
   }
 
-  public void setPicture(String picture) {
+  public void setPicture(byte[] picture) {
     this.picture = picture;
   }
 
