@@ -21,6 +21,6 @@ fi
 CONTENT="env_variables:\n  ENV: 'prod'\n  DALL_E_API_KEY: '$DALL_E_API_KEY'"
 
 # Write the content to the app.yaml
-echo -e "$CONTENT" > $APP_YAML_PATH
+echo "$CONTENT" >> $APP_YAML_PATH
 
 echo "API key has been written to $APP_YAML_PATH"
