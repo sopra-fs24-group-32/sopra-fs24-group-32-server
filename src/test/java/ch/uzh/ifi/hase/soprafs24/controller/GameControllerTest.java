@@ -197,8 +197,20 @@ public class GameControllerTest {
     public void playerLeaveTheGameShouldProcessCorrectly() throws Exception {
         Long gameId = 1L;
         String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+        User user = new User();
+        user.setUsername("player1");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
 
-        when(gameRepository.findById(gameId)).thenReturn(Optional.of(new Game())); 
+        User user2 = new User();
+        user2.setUsername("player2");
+        user2.setUserToken("valid-token2");
+        game.addPlayer(user2);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game)); 
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(userRepository.findByUserToken("valid-token2")).thenReturn(user2);
 
         mockMvc.perform(post("/game/leave/{gameId}", gameId)
                 .contentType(MediaType.APPLICATION_JSON)

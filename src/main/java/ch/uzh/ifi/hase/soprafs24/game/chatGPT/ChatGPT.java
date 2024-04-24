@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ch.uzh.ifi.hase.soprafs24.config.Config;
-import ch.uzh.ifi.hase.soprafs24.config.SecretManagerAccess;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -13,12 +12,10 @@ import okhttp3.Response;
 import okhttp3.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.cdimascio.dotenv.Dotenv;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 public class ChatGPT {
@@ -32,6 +29,9 @@ public class ChatGPT {
     public float rateInputs(String originalText, String playerGuessed) throws IOException {
 
         String apiKey = Config.getApiKey();
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "API key not found. Value: " + apiKey);
+        }
 
 
         OkHttpClient client = new OkHttpClient();

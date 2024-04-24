@@ -12,8 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.json.JSONArray;
 import java.util.concurrent.TimeUnit;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 public class DallE {
     
     private static final String API_URL = "https://api.openai.com/v1/images/generations";
@@ -45,7 +43,7 @@ public class DallE {
         String apiKey = Config.getApiKey();
 
         if (apiKey == null || apiKey.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "API key not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "API key not found. Value: " + apiKey);
         }
 
         Request request = new Request.Builder()

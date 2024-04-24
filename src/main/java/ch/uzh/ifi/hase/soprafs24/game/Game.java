@@ -89,6 +89,9 @@ public class Game {
 
     public void removePlayer(User user) {
         if (user != null && users.contains(user)) {
+            if (user.getUsername().equals(lobbyOwner)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot remove the lobby owner from the game");
+            }
             users.remove(user);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in the game");
@@ -211,7 +214,7 @@ public class Game {
             }
 
             int finalPointsAwarded = (int) Math.round(pointsFromChatGPT + (pointsFromChatGPT * bonusPoints));
-            System.out.println("------------ChatGPT points: " + pointsFromChatGPT + " Final score after scaling: " + finalPointsAwarded);
+            System.out.println("Assesment:------------ChatGPT points: " + pointsFromChatGPT + " Final score after scaling: " + finalPointsAwarded);
             return finalPointsAwarded;
         }
     }
