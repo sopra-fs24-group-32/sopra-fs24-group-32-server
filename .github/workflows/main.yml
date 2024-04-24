@@ -23,6 +23,9 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+      - name: Set execute permission for the write_api_key.sh script
+        run: chmod +x ./write_api_key.sh
+
       - name: Write API Key to app.yaml
         run: ./write_api_key.sh
         env:
