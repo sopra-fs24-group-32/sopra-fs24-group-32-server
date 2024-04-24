@@ -52,21 +52,37 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Setup API Key
+      - name: Setup API Key1
         run: |
           echo "env_variables:" > app.yaml
-          echo "  ENV: 'prod'" >> app.yaml          
-          echo "env_variables:" > ./app.yaml
-          echo "  ENV: 'prod'" >> ./app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" > ./../../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" >> ./../../app.yaml          
+          echo "  ENV: 'prod'" > app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" > app.yaml
+
+      - name: Setup API Key2
+        run: |
+          echo "env_variables:" > ../../app.yaml
+          echo "  ENV: 'prod'" > ../../app.yaml
           echo "  DALL_E_API_KEY: 'sali'" > ../../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" >> ../../app.yaml          
+
+      - name: Setup API Key3
+        run: |
+          echo "env_variables:" > ./../../app.yaml
+          echo "  ENV: 'prod'" > ./../../app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" > ./../../app.yaml
+
+      - name: Setup API Key4
+        run: |
+          echo "env_variables:" > ../app.yaml
+          echo "  ENV: 'prod'" > ../app.yaml
           echo "  DALL_E_API_KEY: 'sali'" > ../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" >> ../app.yaml          
+
+      - name: Setup API Key5
+        run: |
+          echo "env_variables:" > ./../app.yaml
+          echo "  ENV: 'prod'" > ./../app.yaml
           echo "  DALL_E_API_KEY: 'sali'" > ./../app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" >> ./../app.yaml
-          cat app.yaml  # Output the contents for debugging
+
+
 
       - name: Print Environment Info
         run: |
