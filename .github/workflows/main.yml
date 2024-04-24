@@ -10,7 +10,7 @@ on:
 
 jobs:
   key:
-    name: Test and Sonarqube
+    name: Write API key
     runs-on: ubuntu-latest
 
     steps:
@@ -61,7 +61,7 @@ jobs:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
   #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} echo "  DALL_E_API_KEY: '${{ secrets.DALL_E_API_KEY }}'" >> app.yaml
   test:
-    name: Test and Sonarqube
+    name: Tests
     runs-on: ubuntu-latest
 
     steps:
