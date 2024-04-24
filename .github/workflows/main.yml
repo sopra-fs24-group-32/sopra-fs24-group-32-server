@@ -54,10 +54,9 @@ jobs:
 
       - name: Setup API Key
         run: |
-          cd ..
-          echo "env_variables:" >> app.yaml
-          echo "  ENV: 'prod'" >> app.yaml
-          echo "  DALL_E_API_KEY: 'sali'" >> app.yaml
+          echo "env_variables:" > ./app.yaml
+          echo "  ENV: 'prod'" > ./app.yaml
+          echo "  DALL_E_API_KEY: 'sali'" > ./app.yaml
           cat app.yaml  # Output the contents for debugging
 
       - name: Print Environment Info
@@ -66,7 +65,7 @@ jobs:
           echo "Listing directory contents:"
           ls -la
           echo "Contents of app.yaml:"
-          cat app.yaml
+          cat ./app.yaml
 
       - name: Debugging File Operations
         run: |
