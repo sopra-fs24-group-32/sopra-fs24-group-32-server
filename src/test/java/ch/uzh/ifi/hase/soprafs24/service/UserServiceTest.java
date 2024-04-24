@@ -9,9 +9,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+
+import java.util.Optional;
+import java.util.UUID;
+import java.util.List;
+
 
 public class UserServiceTest {
 
@@ -83,6 +93,83 @@ public class UserServiceTest {
     assertThrows(ResponseStatusException.class, () -> userService.registerUser(testUser));
   }
 
+  @Test
+    public void loginUser_existingUser_userStatusUpdated() {
+        // given
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
+
+        // when
+        userService.loginUser(testUser);
+
+        // then
+        verify(userRepository, times(1)).save(testUser);
+        assertEquals(UserStatus.ONLINE, testUser.getStatus());
+    }
+
+    @Test
+    public void logoutUser_existingUser_userStatusUpdated() {
+        // given
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
+
+        // when
+        userService.logoutUser(testUser);
+
+        // then
+        verify(userRepository, times(1)).save(testUser);
+        assertEquals(UserStatus.OFFLINE, testUser.getStatus());
+    }
+
+    @Test
+    public void findByToken_existingToken_userReturned() {
+        // given
+        String token = UUID.randomUUID().toString();
+        testUser.setUserToken(token);
+        when(userRepository.findAll()).thenReturn(List.of(testUser));
+
+        // when
+        User foundUser = userService.findByToken(token);
+
+        // then
+        assertNotNull(foundUser);
+        assertEquals(testUser.getId(), foundUser.getId());
+    }
+
+
+    // I add some updateUserTests as soon as I merge the branch with func that also updates mail + picture
+    //@Test
+    //public void updateUser_validInput_userUpdated() {
+    //    // given
+    //    when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
+    //    User updatedUser = new User();
+    //    updatedUser.setUsername("newUsername");
+    //
+    //    // when
+    //    try {
+    //        User result = userService.updateUser(1, updatedUser);
+    //
+    //        // then
+    //        verify(userRepository, times(1)).save(testUser);
+    //        assertEquals(updatedUser.getUsername(), result.getUsername());
+    //    } catch (Exception e) {
+    //        // Handle any exceptions thrown during the test
+    //        fail("Exception thrown: " + e.getMessage());
+    //    }
+    //}
+    
+
+    @Test
+    public void getUserById_existingId_userReturned() {
+        // given
+        when(userRepository.findAll()).thenReturn(List.of(testUser));
+
+        // when
+        User result = userService.getUserById(1);
+
+        // then
+        assertNotNull(result);
+        assertEquals(testUser.getId(), result.getId());
+    }
+
 //   @Test
 //     public void logout_user_test() throws Exception {
 //       userService.createUser(testUser);
@@ -90,5 +177,7 @@ public class UserServiceTest {
 //       User u = userService.logoutUser(Math.toIntExact(new Long(testUser.getId())));
 //       assertEquals(UserStatus.OFFLINE,u.getStatus());
 //   }
+
+  
 
 }
