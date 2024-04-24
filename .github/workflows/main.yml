@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  key:
+#  key:
 #    name: Write API key
 #    runs-on: ubuntu-latest
 #
