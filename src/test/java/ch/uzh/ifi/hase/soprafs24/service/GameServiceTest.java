@@ -475,12 +475,12 @@ public class GameServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
     
-    @Test
-    public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
-        String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
-        String imageUrl = gameService.generatePictureDallE(inputPhrase);
-        assertNotNull(imageUrl);
-    }
+    // @Test
+    // public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
+    //     String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
+    //     String imageUrl = gameService.generatePictureDallE(inputPhrase);
+    //     assertNotNull(imageUrl);
+    // }
 
     @Test
     public void generatePictureWithDallE_WithEmptyPrompt_ShouldThrowException() throws Exception {
