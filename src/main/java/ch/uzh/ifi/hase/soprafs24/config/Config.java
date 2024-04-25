@@ -27,7 +27,8 @@ public class Config {
             try {
                 apiKey = dotenv.get("DALL_E_API_KEY");
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Error reading API key from environment variables: " + e.getMessage());
+                // e.printStackTrace();
                 return "";
             }
         } else {
