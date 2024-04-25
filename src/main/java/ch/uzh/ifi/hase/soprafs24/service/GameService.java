@@ -67,15 +67,26 @@ public class GameService {
 
 
     //create a lobby
-    public Game createLobby(String userToken) throws Exception {
+    public Game createLobby(String userToken, GamePostDTO gamePostDTO) throws Exception {
+        // Validate the amount of rounds
+        int amtOfRounds = gamePostDTO.getAmtOfRounds();
+        if (amtOfRounds < 1) {
+            throw new IllegalArgumentException("There must be at least one round.");
+        }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
-        // Extract the userToken from the Map
-        String mappedToken = map.get("userToken");
+        // Validate the time limit
+        float timeLimit = gamePostDTO.getTimeLimit();
+        if (timeLimit < 5 || timeLimit > 100) {
+            throw new IllegalArgumentException("Time limit must be between 5 seconds and 100 Seconds.");
+        }
 
-        
-        User lobbyOwner = userRepository.findByUserToken(mappedToken);
+        //Validate max amount of users
+        int maxAmtUsers = gamePostDTO.getMaxAmtUsers();
+        if (maxAmtUsers < 2) {
+            throw new IllegalArgumentException("The maximum number of users cannot be less than 2.");
+        }
+
+        User lobbyOwner = userRepository.findByUserToken(userToken);
 
         if (lobbyOwner == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
@@ -88,6 +99,10 @@ public class GameService {
         newGame.setLobbyOwner(lobbyOwner.getUsername());
         newGame.setId(nextId);
         nextId++;
+
+        newGame.setMaxAmtUsers(maxAmtUsers);
+        newGame.setAmtOfRounds(amtOfRounds);
+        newGame.setTimeLimit(timeLimit);
 
         gameRepository.save(newGame);
         gameRepository.flush();

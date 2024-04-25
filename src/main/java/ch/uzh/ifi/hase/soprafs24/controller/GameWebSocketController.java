@@ -65,10 +65,10 @@ public class GameWebSocketController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public ResponseEntity<GameGetDTO> createGame(@RequestBody String userToken) {
+    public ResponseEntity<GameGetDTO> createGame(@RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) {
     try {
         User user = userRepository.findByUserToken(userToken);
-        Game createdLobby = gameService.createLobby(userToken);
+        Game createdLobby = gameService.createLobby(userToken, gamePostDTO);
         GameGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(createdLobby);
         return new ResponseEntity<>(lobbyGetDTO, HttpStatus.CREATED);
     } catch (ResponseStatusException e) {

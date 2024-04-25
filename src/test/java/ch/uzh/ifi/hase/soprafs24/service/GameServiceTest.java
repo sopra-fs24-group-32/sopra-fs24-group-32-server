@@ -120,14 +120,19 @@ public class GameServiceTest {
         newUser.setUserToken("userToken2");
         newUser.setUsername("user2");
 
-        String userToken = "{\"userToken\":\"userToken\"}";
+        String userToken = "userToken";
         String userToken2 = "{\"userToken\":\"userToken2\"}";
 
 
         when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
         when(userRepository.findByUserToken("userToken2")).thenReturn(newUser);
 
-        Game lobby = gameService.createLobby(userToken);
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
+
+        Game lobby = gameService.createLobby(userToken, validGamePostDTO);
         User player1 = new User();
         lobby.addPlayer(player1);;
         lobby.setTimeLimit(15f);
@@ -171,11 +176,16 @@ public class GameServiceTest {
         lobbyOwner.setUserToken("userToken");
         lobbyOwner.setUsername("lobbyOwner");
 
-        String userToken = "{\"userToken\":\"userToken\"}";
+        String userToken = "userToken";
 
         when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 
-        Game lobby = gameService.createLobby(userToken);
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
+
+        Game lobby = gameService.createLobby(userToken, validGamePostDTO);
 
         // Assert
         assertNotNull(lobby);
@@ -245,13 +255,18 @@ public class GameServiceTest {
         user.setUserToken("userToken");
         user.setUsername("username");
 
-        String ownerToken = "{\"userToken\":\"ownerToken\"}";
+        String ownerToken = "ownerToken";
         String userToken = "{\"userToken\":\"userToken\"}";
 
         when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
         when(userRepository.findByUserToken("userToken")).thenReturn(user);
 
-        Game lobby = gameService.createLobby(ownerToken);
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
+
+        Game lobby = gameService.createLobby(ownerToken, validGamePostDTO);
 
         when(gameRepository.findByLobbyInvitationCode(lobby.getLobbyInvitationCode())).thenReturn(lobby);
 

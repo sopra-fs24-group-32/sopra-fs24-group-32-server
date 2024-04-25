@@ -10,8 +10,15 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import java.util.Optional;
+import java.util.List;
+import java.util.Collections;
+import static org.mockito.ArgumentMatchers.anyLong;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -97,34 +105,39 @@ public class GameControllerTest {
     }
 
 
-//     // Test creating a lobby
+
     @Test
     public void createLobbyAndUserTokenIsNullOrEmpty() throws Exception {
-        // Prepare an empty UserPostDTO
+
         User emptyUser = new User();
         emptyUser.setUsername("owner");
-        emptyUser.setUserToken(""); // Set an empty userToken
+        emptyUser.setUserToken("");
         
         User nullUser = new User();
         nullUser.setUsername("ownerNull");
-        nullUser.setUserToken(null); // Set a null userToken
+        nullUser.setUserToken(null);
 
         String emptyToken = "{\"userToken\":\"\"}";
         String nullToken = "{\"userToken\":null}";
 
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
+
         when(userRepository.findByUserToken("")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists"));
         when(userRepository.findByUserToken(null)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists"));
         
-        given(gameService.createLobby(emptyToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
-        given(gameService.createLobby(nullToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
+        given(gameService.createLobby(emptyToken, validGamePostDTO)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
+        given(gameService.createLobby(nullToken, validGamePostDTO)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
         
-        // Test for the empty userToken
+
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(emptyToken))
                 .andExpect(status().isBadRequest());
         
-        // Test for the null userToken
+
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(nullToken))
@@ -138,18 +151,23 @@ public class GameControllerTest {
         String username = "owner";
         long id = 1L;
 
-        User user = new User(); // Assuming User has a setter for username
+        User user = new User();
         user.setUsername(username);
         user.setUserToken(userToken);
+
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
 
         Game lobby = new Game(id, username); // Assuming Lobby has an appropriate constructor
 
         given(userRepository.findByUserToken(userToken)).willReturn(user);
-        given(gameService.createLobby(userToken)).willReturn(lobby);
+        given(gameService.createLobby(userToken, validGamePostDTO)).willReturn(lobby);
 
-        mockMvc.perform(post("/lobby/create")
+        mockMvc.perform(post("/lobby/create").header("userToken", userToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(userToken))
+                .content(asJsonString(validGamePostDTO)))
                 .andExpect(status().isCreated());
         }
 
@@ -157,9 +175,9 @@ public class GameControllerTest {
         @Test
         public void updateLobbyWithValidParameters() throws Exception {
                 Long id = 1L;
-                String userToken = "validToken"; // A valid user token for the test
+                String userToken = "validToken";
 
-                // Creating DTO and Game instances for the test
+
                 GamePostDTO validGamePostDTO = new GamePostDTO();
                 validGamePostDTO.setTimeLimit(20F);
                 validGamePostDTO.setAmtOfRounds(10);
@@ -174,26 +192,45 @@ public class GameControllerTest {
 
                 Optional<Game> optionalLobby = Optional.of(lobby);
 
-                // Mocking userRepository to validate the userToken
+
                 User user = new User();
                 user.setUsername("owner");
                 user.setUserToken(userToken);
                 doReturn(user).when(userRepository).findByUserToken(userToken);
 
-                // Mocking gameRepository.findById to return the Optional<Game> with the lobby
+
                 doReturn(optionalLobby).when(gameRepository).findById(id);
 
-                // Mocking gameService.updateGameSettings to return the updatedLobby
+
                 doReturn(updatedLobby).when(gameService).updateGameSettings(id, validGamePostDTO);
 
-                // Perform the PUT request with the userToken in the header
+
                 mockMvc.perform(put("/lobby/update/{id}", id)
-                        .header("userToken", userToken) // Including the userToken in the request header
+                        .header("userToken", userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(validGamePostDTO)))
-                        .andExpect(status().isOk()); // Ensure the status is HttpStatus.CREATED as per your controller annotation
+                        .andExpect(status().isOk());
         }
-    
+
+        @Test
+        public void getAllLobbies_NoLobbiesFound_ReturnsEmptyList() throws Exception {
+            when(gameService.getAllGames()).thenReturn(Collections.emptyList());
+
+            mockMvc.perform(get("/lobbies")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
+
+
+        @Test
+        public void getLobbyById_NotFound_ReturnsNotFound() throws Exception {
+            when(gameRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+            mockMvc.perform(get("/lobby/{id}", 1L))
+                    .andExpect(status().isNotFound());
+        }
+
     @Test
     public void playerLeaveTheGameShouldProcessCorrectly() throws Exception {
         Long gameId = 1L;
@@ -430,7 +467,7 @@ public class GameControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test 
+    @Test
     public void getPictureGeneratedByDallE_WhenGameFound_ShouldReturnImageUrl() throws Exception {
         Long gameId = 1L;
         String imageUrl = "https://example.com/cat.jpg";
