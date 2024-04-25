@@ -442,4 +442,138 @@ public class GameControllerTest {
         mockMvc.perform(get("/game/image/{gameId}", gameId))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameFoundButNoImageGenerated_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.getImageGeneratedByDallE()).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No image generated"));
+
+        mockMvc.perform(get("/game/image/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFound_ShouldReturnScore() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("A picture of a cat");
+        chatGPTPostDTO.setTimeGuessSubmitted(10);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(6);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(7));
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFoundGuessSubmittedLate_ShouldReturnScore() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        int score = 6;
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("A picture of a cat");
+        chatGPTPostDTO.setTimeGuessSubmitted(25);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(score);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(score));
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFoundEmptyGuess_ShouldReturnScoreZero() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        int score = 0;
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("");
+        chatGPTPostDTO.setTimeGuessSubmitted(10);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(score);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(score));
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFoundNullGuess_ShouldReturnScoreZero() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        int score = 0;
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed(null);
+        chatGPTPostDTO.setTimeGuessSubmitted(30);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(score);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(score));
+
+    }
 }
