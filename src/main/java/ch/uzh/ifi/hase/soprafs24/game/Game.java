@@ -53,6 +53,8 @@ public class Game {
     @Column(nullable = false)
     private String lobbyId;
 
+    private static final SecureRandom RANDOMForPlayer = new SecureRandom();
+
     // Constructors
     public Game() {}
 
@@ -177,23 +179,13 @@ public class Game {
 
     }
 
-    public String selectPictureGenerator(){
-        if(!this.remaininPictureGenerators.isEmpty()){
-            int size = remaininPictureGenerators.size();
-            int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
-            int i = 0;
-            String username = null;
-            for(String user : remaininPictureGenerators) {
-                if (i == item) {
-                    username = user;
-                    break;
-                }
-                i++;
-            }
-
+    public String selectPictureGenerator() {
+        if (!this.remaininPictureGenerators.isEmpty()) {
+            List<String> generators = new ArrayList<>(remaininPictureGenerators);
+            String username = generators.get(RANDOMForPlayer.nextInt(generators.size()));
             remaininPictureGenerators.remove(username);
             return username;
-        }else{
+        } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
         }
     }
