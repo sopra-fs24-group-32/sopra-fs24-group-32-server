@@ -35,6 +35,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import java.beans.Transient;
 import java.io.IOException;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.Optional;
+
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -42,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -175,6 +182,47 @@ public class UserControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 }
+
+@Test
+public void getAllUsers_ReturnsUserList() throws Exception {
+    List<User> allUsers = Arrays.asList(new User("user1", "pass1"), new User("user2", "pass2"));
+    List<UserGetDTO> allUserDTOs = allUsers.stream()
+                                           .map(user -> DTOMapper.INSTANCE.convertEntityToUserGetDTO(user))
+                                           .collect(Collectors.toList());
+
+    when(userService.getAllUsers()).thenReturn(allUsers);
+
+    mockMvc.perform(get("/users")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].username", is("user1")))
+            .andExpect(jsonPath("$[1].username", is("user2")));
+}
+
+@Test
+public void getUserById_UserExists_ReturnsUser() throws Exception {
+    User user = new User("user1", "pass1");
+    user.setId(1L);
+    UserGetDTO userDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+    mockMvc.perform(get("/users/{id}", 1L)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.username", is("user1")));
+}
+
+@Test
+public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
+    when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+    mockMvc.perform(get("/users/{id}", 1L))
+            .andExpect(status().isNotFound());
+}
+
+
 
 
   @Test

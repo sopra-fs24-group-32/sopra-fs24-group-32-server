@@ -10,8 +10,15 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import java.util.Optional;
+import java.util.List;
+import java.util.Collections; 
+import static org.mockito.ArgumentMatchers.anyLong;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -193,7 +201,26 @@ public class GameControllerTest {
                         .content(asJsonString(validGamePostDTO)))
                         .andExpect(status().isOk()); // Ensure the status is HttpStatus.CREATED as per your controller annotation
         }
-    
+       
+        @Test
+        public void getAllLobbies_NoLobbiesFound_ReturnsEmptyList() throws Exception {
+            when(gameService.getAllGames()).thenReturn(Collections.emptyList());
+        
+            mockMvc.perform(get("/lobbies")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
+
+
+        @Test
+        public void getLobbyById_NotFound_ReturnsNotFound() throws Exception {
+            when(gameRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+            mockMvc.perform(get("/lobby/{id}", 1L))
+                    .andExpect(status().isNotFound());
+        }             
+
     @Test
     public void playerLeaveTheGameShouldProcessCorrectly() throws Exception {
         Long gameId = 1L;
