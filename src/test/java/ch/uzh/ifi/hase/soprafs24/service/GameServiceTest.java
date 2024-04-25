@@ -2,9 +2,12 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
@@ -30,10 +33,8 @@ public class GameServiceTest {
     private UserService userService;
     private UserRepository userRepository;
     private GameRepository gameRepository;
-
     @Mock
     private ChatGPT chatGPT;
-
     @Mock
     private DallE dallE;
 
@@ -42,7 +43,7 @@ public class GameServiceTest {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
         gameRepository = mock(GameRepository.class);
-        gameService = new GameService(userRepository, gameRepository, userService);
+        gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
     }
 
     @Test
@@ -508,24 +509,61 @@ public class GameServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
-    // @Test
-    // public void evaluatePlayerGuessWithChatGPT_WithValidInputs_ShouldReturnSimilarityScore() throws Exception {
-    //     String originalText = "cat on the floor";
-    //     String playerGuessed = "cat on the floor";
-    //     float chatGPTResult = 0.95f;
-    //     int expectedPoints = 6; 
+    @Test
+    public void evaluatePlayerGuessWithChatGPT_WithValidInputs_ShouldReturnSimilarityScore() throws Exception {
+        String originalText = "cat on the floor";
+        String playerGuessed = "cat on the ground";
+        float chatGPTResult = 0.85f;
+        int expectedPoints = 6; 
 
-    //     DallE dallE = mock(DallE.class);
-    //     dallE.setInputPhrase(originalText);
-    //     ChatGPT chatGPT = mock(ChatGPT.class);
+        DallE dallE = mock(DallE.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
 
-    //     when(dallE.getInputPhrase()).thenReturn(originalText);
-    //     when(chatGPT.rateInputs(originalText, playerGuessed)).thenReturn(chatGPTResult);
-    //     when(chatGPT.convertSimilarityScoreToPoints(chatGPTResult)).thenReturn(expectedPoints);
+        when(dallE.getInputPhrase()).thenReturn(originalText);
+        when(chatGPT.rateInputs(originalText, playerGuessed)).thenReturn(chatGPTResult);
+        when(chatGPT.convertSimilarityScoreToPoints(chatGPTResult)).thenReturn(expectedPoints);
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+        int pointsAwarded = gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
+        assertEquals(expectedPoints, pointsAwarded);
+    }
 
-    //     int pointsAwarded = gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
-    //     assertEquals(expectedPoints, pointsAwarded);
-    // }
+    @Test
+    public void evaluatePlayerGuessWithChatGPT_WithIncorrectGuess_ShouldReturnZero() throws Exception {
+        String originalText = "cat on the floor";
+        String playerGuessed = "dog on the floor";
+        float chatGPTResult = 0.45f;
+        int expectedPoints = 0;
+
+        DallE dallE = mock(DallE.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        when(dallE.getInputPhrase()).thenReturn(originalText);
+        when(chatGPT.rateInputs(originalText, playerGuessed)).thenReturn(chatGPTResult);
+        when(chatGPT.convertSimilarityScoreToPoints(chatGPTResult)).thenReturn(expectedPoints);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+        int pointsAwarded = gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
+        assertEquals(expectedPoints, pointsAwarded);
+    }
+
+    @Test
+    public void evaluatePlayerGuessWithChatGPT_WithSimilarGuess_ShouldReturnFour() throws Exception {
+        String originalText = "cat on the floor";
+        String playerGuessed = "cat on the ground";
+        float chatGPTResult = 0.70f;
+        int expectedPoints = 4;
+
+        DallE dallE = mock(DallE.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        when(dallE.getInputPhrase()).thenReturn(originalText);
+        when(chatGPT.rateInputs(originalText, playerGuessed)).thenReturn(chatGPTResult);
+        when(chatGPT.convertSimilarityScoreToPoints(chatGPTResult)).thenReturn(expectedPoints);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+        int pointsAwarded = gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
+        assertEquals(expectedPoints, pointsAwarded);
+    }
 
     @Test
     public void evaluatePlayerGuessWithChatGPT_WithEmptyOrNullPlayerGuess_ShouldReturnZero() throws Exception {
@@ -537,9 +575,10 @@ public class GameServiceTest {
         int expectedEmptyPoints = 0;
 
         DallE dallE = mock(DallE.class);
-        dallE.setInputPhrase(originalText);
 
         when(dallE.getInputPhrase()).thenReturn(originalText);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
         int pointsAwardedEmpty = gameService.evaluatePlayerGuessWithChatGPT(emptyPlayerGuessed);
         int pointsAwardedNull = gameService.evaluatePlayerGuessWithChatGPT(nullPlayerGuessed);
@@ -547,4 +586,92 @@ public class GameServiceTest {
         assertEquals(expectedEmptyPoints, pointsAwardedEmpty);
         assertEquals(expectedNullPoints, pointsAwardedNull);
     }
+
+    @Test
+    public void getNextPictureGenerator_WithInvalidGameId_ShouldThrowException() {
+        Long invalidGameId = 22L;
+        when(gameRepository.findById(invalidGameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.getNextPictureGenerator(invalidGameId);
+        });
+
+        String expectedMessage = "Lobby not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void getNextPictureGenerator_WithGameIdAndGameExists_ShouldReturnNextPlayer() throws Exception {
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+
+        User player1 = new User();
+        player1.setUserToken("userToken1");
+        player1.setUsername("player1");
+
+        User player2 = new User();
+        player2.setUserToken("userToken2");
+        player2.setUsername("player2");
+
+        game.addPlayer(player1);
+        game.addPlayer(player2);
+
+        Set<String> remaininPictureGenerators = new HashSet<>();
+        remaininPictureGenerators.add("player1");
+        remaininPictureGenerators.add("player2");
+        game.setRemaininPictureGenerators(remaininPictureGenerators);
+
+        // game.s
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        String selectedPlayer = gameService.getNextPictureGenerator(gameId);
+
+        assertNotNull(selectedPlayer);
+        assertEquals(1, remaininPictureGenerators.size());
+        verify(gameRepository).findById(gameId);
+        verify(gameRepository).save(game);
+        verify(gameRepository).flush();
+    }
+
+    @Test
+    public void getNextPictureGenerator_WithGameIdAndAllPlayersSelected_ShouldThrowException() {
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+
+        User player1 = new User();
+        player1.setUserToken("userToken1");
+        player1.setUsername("player1");
+
+        User player2 = new User();
+        player2.setUserToken("userToken2");
+        player2.setUsername("player2");
+
+        Set<String> remaininPictureGenerators = new HashSet<>();
+        remaininPictureGenerators.add("player1");
+        remaininPictureGenerators.add("player2");
+        game.setRemaininPictureGenerators(remaininPictureGenerators);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        String selectedPlayer1 = gameService.getNextPictureGenerator(gameId);
+        String selectedPlayer2 = gameService.getNextPictureGenerator(gameId);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.getNextPictureGenerator(gameId);
+        });
+
+        String expectedMessage = "All the users have already created a picture once";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+        assertNotNull(selectedPlayer1);
+        assertNotNull(selectedPlayer2);
+    }
+
 }

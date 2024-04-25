@@ -33,6 +33,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -377,7 +378,7 @@ public class GameControllerTest {
     }
 
     @Test
-    public void generatePictureByDallE_WhenTextPromptIsEmpty_ShouldReturnBadRequest() throws Exception {
+    public void generatePictureByDallE_WhenTextPromptIsEmptyOrNull_ShouldReturnBadRequest() throws Exception {
         Long gameId = 1L;
         Game game = new Game(gameId, "owner");
 
@@ -388,5 +389,57 @@ public class GameControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(emptyTextPrompt))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void generatePictureByDallE_WhenTextPromptIsValid_ShouldReturnImageUrl() throws Exception {
+        Long gameId = 1L;
+        String textPrompt = "A picture of a cat";
+        String imageUrl = "https://example.com/cat.jpg";
+
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.generatePictureDallE(textPrompt)).thenReturn(imageUrl);
+
+        mockMvc.perform(post("/game/image/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(textPrompt))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        Long invalidGameIdNull = null;
+
+        mockMvc.perform(get("/game/image/{invalidGameId}", invalidGameId))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/game/image/{invalidGameIdNull}", invalidGameIdNull))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+
+        when(gameRepository.findById(gameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+
+        mockMvc.perform(get("/game/image/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test 
+    public void getPictureGeneratedByDallE_WhenGameFound_ShouldReturnImageUrl() throws Exception {
+        Long gameId = 1L;
+        String imageUrl = "https://example.com/cat.jpg";
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.getImageGeneratedByDallE()).thenReturn(imageUrl);
+
+        mockMvc.perform(get("/game/image/{gameId}", gameId))
+                .andExpect(status().isOk());
     }
 }

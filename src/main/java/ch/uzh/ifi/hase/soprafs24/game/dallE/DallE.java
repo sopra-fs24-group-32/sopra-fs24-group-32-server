@@ -8,10 +8,12 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.json.JSONArray;
 import java.util.concurrent.TimeUnit;
 
+@Component
 public class DallE {
     
     private static final String API_URL = "https://api.openai.com/v1/images/generations";

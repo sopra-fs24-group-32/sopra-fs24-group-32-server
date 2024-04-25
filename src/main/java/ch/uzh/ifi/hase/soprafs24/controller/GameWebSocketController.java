@@ -12,6 +12,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -257,7 +258,6 @@ public class GameWebSocketController {
         if (pictureGenerated == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to get image with DALL-E");
         }
-
         return new ResponseEntity<>(pictureGenerated, HttpStatus.OK);
     }
 

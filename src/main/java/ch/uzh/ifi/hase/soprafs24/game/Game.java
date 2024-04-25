@@ -112,6 +112,11 @@ public class Game {
 //        round.setGame(null);
 //    }
 
+    public Set<String> getRemaininPictureGenerators() { 
+        return remaininPictureGenerators; }
+    public void setRemaininPictureGenerators(Set<String> remaininPictureGenerators) { 
+        this.remaininPictureGenerators = remaininPictureGenerators; }
+
     public boolean isGameStarted() { return gameStarted; }
 
     public void setGameStarted(boolean gameStarted) { this.gameStarted = gameStarted; }
