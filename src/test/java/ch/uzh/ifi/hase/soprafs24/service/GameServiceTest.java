@@ -120,7 +120,7 @@ public class GameServiceTest {
         newUser.setUserToken("userToken2");
         newUser.setUsername("user2");
 
-        String userToken = "{\"userToken\":\"userToken\"}";
+        String userToken = "userToken";
         String userToken2 = "{\"userToken\":\"userToken2\"}";
 
 
@@ -176,7 +176,7 @@ public class GameServiceTest {
         lobbyOwner.setUserToken("userToken");
         lobbyOwner.setUsername("lobbyOwner");
 
-        String userToken = "{\"userToken\":\"userToken\"}";
+        String userToken = "userToken";
 
         when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 
@@ -255,7 +255,7 @@ public class GameServiceTest {
         user.setUserToken("userToken");
         user.setUsername("username");
 
-        String ownerToken = "{\"userToken\":\"ownerToken\"}";
+        String ownerToken = "ownerToken";
         String userToken = "{\"userToken\":\"userToken\"}";
 
         when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
