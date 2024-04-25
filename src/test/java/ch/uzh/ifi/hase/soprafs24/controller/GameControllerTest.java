@@ -105,17 +105,17 @@ public class GameControllerTest {
     }
 
 
-//     // Test creating a lobby
+
     @Test
     public void createLobbyAndUserTokenIsNullOrEmpty() throws Exception {
-        // Prepare an empty UserPostDTO
+
         User emptyUser = new User();
         emptyUser.setUsername("owner");
-        emptyUser.setUserToken(""); // Set an empty userToken
+        emptyUser.setUserToken("");
         
         User nullUser = new User();
         nullUser.setUsername("ownerNull");
-        nullUser.setUserToken(null); // Set a null userToken
+        nullUser.setUserToken(null);
 
         String emptyToken = "{\"userToken\":\"\"}";
         String nullToken = "{\"userToken\":null}";
@@ -126,13 +126,13 @@ public class GameControllerTest {
         given(gameService.createLobby(emptyToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
         given(gameService.createLobby(nullToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
         
-        // Test for the empty userToken
+
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(emptyToken))
                 .andExpect(status().isBadRequest());
         
-        // Test for the null userToken
+
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(nullToken))
@@ -146,11 +146,11 @@ public class GameControllerTest {
         String username = "owner";
         long id = 1L;
 
-        User user = new User(); // Assuming User has a setter for username
+        User user = new User();
         user.setUsername(username);
         user.setUserToken(userToken);
 
-        Game lobby = new Game(id, username); // Assuming Lobby has an appropriate constructor
+        Game lobby = new Game(id, username);
 
         given(userRepository.findByUserToken(userToken)).willReturn(user);
         given(gameService.createLobby(userToken)).willReturn(lobby);
@@ -165,9 +165,9 @@ public class GameControllerTest {
         @Test
         public void updateLobbyWithValidParameters() throws Exception {
                 Long id = 1L;
-                String userToken = "validToken"; // A valid user token for the test
+                String userToken = "validToken";
 
-                // Creating DTO and Game instances for the test
+
                 GamePostDTO validGamePostDTO = new GamePostDTO();
                 validGamePostDTO.setTimeLimit(20F);
                 validGamePostDTO.setAmtOfRounds(10);
@@ -182,24 +182,24 @@ public class GameControllerTest {
 
                 Optional<Game> optionalLobby = Optional.of(lobby);
 
-                // Mocking userRepository to validate the userToken
+ 
                 User user = new User();
                 user.setUsername("owner");
                 user.setUserToken(userToken);
                 doReturn(user).when(userRepository).findByUserToken(userToken);
 
-                // Mocking gameRepository.findById to return the Optional<Game> with the lobby
+
                 doReturn(optionalLobby).when(gameRepository).findById(id);
 
-                // Mocking gameService.updateGameSettings to return the updatedLobby
+
                 doReturn(updatedLobby).when(gameService).updateGameSettings(id, validGamePostDTO);
 
-                // Perform the PUT request with the userToken in the header
+
                 mockMvc.perform(put("/lobby/update/{id}", id)
-                        .header("userToken", userToken) // Including the userToken in the request header
+                        .header("userToken", userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(validGamePostDTO)))
-                        .andExpect(status().isOk()); // Ensure the status is HttpStatus.CREATED as per your controller annotation
+                        .andExpect(status().isOk());
         }
        
         @Test
