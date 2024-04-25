@@ -10,8 +10,15 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import java.util.Optional;
+import java.util.List;
+import java.util.Collections;
+import static org.mockito.ArgumentMatchers.anyLong;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -33,6 +41,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -96,17 +105,17 @@ public class GameControllerTest {
     }
 
 
-//     // Test creating a lobby
+
     @Test
     public void createLobbyAndUserTokenIsNullOrEmpty() throws Exception {
-        // Prepare an empty UserPostDTO
+
         User emptyUser = new User();
         emptyUser.setUsername("owner");
-        emptyUser.setUserToken(""); // Set an empty userToken
+        emptyUser.setUserToken("");
         
         User nullUser = new User();
         nullUser.setUsername("ownerNull");
-        nullUser.setUserToken(null); // Set a null userToken
+        nullUser.setUserToken(null);
 
         String emptyToken = "{\"userToken\":\"\"}";
         String nullToken = "{\"userToken\":null}";
@@ -122,13 +131,13 @@ public class GameControllerTest {
         given(gameService.createLobby(emptyToken, validGamePostDTO)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
         given(gameService.createLobby(nullToken, validGamePostDTO)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
         
-        // Test for the empty userToken
+
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(emptyToken))
                 .andExpect(status().isBadRequest());
         
-        // Test for the null userToken
+
         mockMvc.perform(post("/lobby/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(nullToken))
@@ -142,7 +151,7 @@ public class GameControllerTest {
         String username = "owner";
         long id = 1L;
 
-        User user = new User(); // Assuming User has a setter for username
+        User user = new User();
         user.setUsername(username);
         user.setUserToken(userToken);
 
@@ -166,9 +175,9 @@ public class GameControllerTest {
         @Test
         public void updateLobbyWithValidParameters() throws Exception {
                 Long id = 1L;
-                String userToken = "validToken"; // A valid user token for the test
+                String userToken = "validToken";
 
-                // Creating DTO and Game instances for the test
+
                 GamePostDTO validGamePostDTO = new GamePostDTO();
                 validGamePostDTO.setTimeLimit(20F);
                 validGamePostDTO.setAmtOfRounds(10);
@@ -183,26 +192,45 @@ public class GameControllerTest {
 
                 Optional<Game> optionalLobby = Optional.of(lobby);
 
-                // Mocking userRepository to validate the userToken
+
                 User user = new User();
                 user.setUsername("owner");
                 user.setUserToken(userToken);
                 doReturn(user).when(userRepository).findByUserToken(userToken);
 
-                // Mocking gameRepository.findById to return the Optional<Game> with the lobby
+
                 doReturn(optionalLobby).when(gameRepository).findById(id);
 
-                // Mocking gameService.updateGameSettings to return the updatedLobby
+
                 doReturn(updatedLobby).when(gameService).updateGameSettings(id, validGamePostDTO);
 
-                // Perform the PUT request with the userToken in the header
+
                 mockMvc.perform(put("/lobby/update/{id}", id)
-                        .header("userToken", userToken) // Including the userToken in the request header
+                        .header("userToken", userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(validGamePostDTO)))
-                        .andExpect(status().isOk()); // Ensure the status is HttpStatus.CREATED as per your controller annotation
+                        .andExpect(status().isOk());
         }
-    
+
+        @Test
+        public void getAllLobbies_NoLobbiesFound_ReturnsEmptyList() throws Exception {
+            when(gameService.getAllGames()).thenReturn(Collections.emptyList());
+
+            mockMvc.perform(get("/lobbies")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
+
+
+        @Test
+        public void getLobbyById_NotFound_ReturnsNotFound() throws Exception {
+            when(gameRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+            mockMvc.perform(get("/lobby/{id}", 1L))
+                    .andExpect(status().isNotFound());
+        }
+
     @Test
     public void playerLeaveTheGameShouldProcessCorrectly() throws Exception {
         Long gameId = 1L;
@@ -387,7 +415,7 @@ public class GameControllerTest {
     }
 
     @Test
-    public void generatePictureByDallE_WhenTextPromptIsEmpty_ShouldReturnBadRequest() throws Exception {
+    public void generatePictureByDallE_WhenTextPromptIsEmptyOrNull_ShouldReturnBadRequest() throws Exception {
         Long gameId = 1L;
         Game game = new Game(gameId, "owner");
 
@@ -398,5 +426,191 @@ public class GameControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(emptyTextPrompt))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void generatePictureByDallE_WhenTextPromptIsValid_ShouldReturnImageUrl() throws Exception {
+        Long gameId = 1L;
+        String textPrompt = "A picture of a cat";
+        String imageUrl = "https://example.com/cat.jpg";
+
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.generatePictureDallE(textPrompt)).thenReturn(imageUrl);
+
+        mockMvc.perform(post("/game/image/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(textPrompt))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        Long invalidGameIdNull = null;
+
+        mockMvc.perform(get("/game/image/{invalidGameId}", invalidGameId))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/game/image/{invalidGameIdNull}", invalidGameIdNull))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+
+        when(gameRepository.findById(gameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+
+        mockMvc.perform(get("/game/image/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameFound_ShouldReturnImageUrl() throws Exception {
+        Long gameId = 1L;
+        String imageUrl = "https://example.com/cat.jpg";
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.getImageGeneratedByDallE()).thenReturn(imageUrl);
+
+        mockMvc.perform(get("/game/image/{gameId}", gameId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameFoundButNoImageGenerated_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.getImageGeneratedByDallE()).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No image generated"));
+
+        mockMvc.perform(get("/game/image/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFound_ShouldReturnScore() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("A picture of a cat");
+        chatGPTPostDTO.setTimeGuessSubmitted(10);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(6);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(7));
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFoundGuessSubmittedLate_ShouldReturnScore() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        int score = 6;
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("A picture of a cat");
+        chatGPTPostDTO.setTimeGuessSubmitted(25);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(score);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(score));
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFoundEmptyGuess_ShouldReturnScoreZero() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        int score = 0;
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed("");
+        chatGPTPostDTO.setTimeGuessSubmitted(10);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(score);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(score));
+
+    }
+
+    @Test
+    public void evaluateGuessesByChatGPT_WhenGameFoundNullGuess_ShouldReturnScoreZero() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+        game.addPlayer(user);
+        game.setTimeLimit(30);
+
+        int score = 0;
+
+        ChatGPTPostDTO chatGPTPostDTO = new ChatGPTPostDTO();
+        chatGPTPostDTO.setPlayerGuessed(null);
+        chatGPTPostDTO.setTimeGuessSubmitted(30);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+        when(gameService.evaluatePlayerGuessWithChatGPT(chatGPTPostDTO.getPlayerGuessed())).thenReturn(score);
+
+        mockMvc.perform(put("/game/chatgpt/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(chatGPTPostDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.score").value(score));
+
     }
 }

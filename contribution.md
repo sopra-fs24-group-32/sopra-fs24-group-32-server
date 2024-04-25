@@ -72,3 +72,18 @@ The clients then get forwarded to the page to create an image or guess the input
 
 ## Roger
 Implemented game service and controller tests.
+
+# Week 24.04 - 01.05
+
+## Eric
+
+## Eduard
+Scoreboard Ranking and winning player is highlighted in Gold after every round #40. 
+Points are rewarded after guessing and timelimit reached #74. 
+Speed is considered for point calculations #73.
+
+## Nicolas S.
+
+## Nicolas H.
+
+## Roger

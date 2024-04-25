@@ -14,7 +14,8 @@ public class SecretManagerAccess {
             // Return the payload.
             return response.getPayload().getData().toStringUtf8();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error reading secret from Secret Manager: " + e.getMessage());
+            // e.printStackTrace();
             return "";
         }
     }
