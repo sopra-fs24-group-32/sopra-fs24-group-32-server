@@ -106,17 +106,10 @@ public class UserService {
           throw e;
       }
     }
-  // This method didn't work, I implemented the functionality directly in the user repository
 
-//  public User findByUserToken(String userToken){
-//      List<User> users = userRepository.findAll();
-//      for (int i=0; i<users.size(); i++){
-//          if (users.get(i).getUserToken().equals(userToken)){
-//              return users.get(i);
-//          }
-//      }
-//      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists");
-//  }
+  public User findByUsername(String username) {
+    return userRepository.findByUsername(username);
+  }
 
   public List<User> getAllUsers() {
     return this.userRepository.findAll();

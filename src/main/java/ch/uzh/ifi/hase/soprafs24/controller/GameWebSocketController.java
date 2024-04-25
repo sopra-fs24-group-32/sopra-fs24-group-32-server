@@ -299,6 +299,8 @@ public class GameWebSocketController {
         userRepository.save(user);
         userRepository.flush();
 
+        System.out.print("Player name: " + user.getUsername() + " Time taken to submit guess: " + timeGuessSubmitted + " Guess: " + playerGuessed + " ChatGPT Score: " + score + " Scaled score: " + scaledScore);
+
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
     }

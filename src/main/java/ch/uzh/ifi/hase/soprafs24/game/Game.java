@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.*;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
+
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -54,6 +56,11 @@ public class Game {
     private String lobbyId;
 
     private static final SecureRandom RANDOMForPlayer = new SecureRandom();
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "game_picture_generator_queue", joinColumns = @JoinColumn(name = "game_id"))
+    @Column(name = "picture_generator")
+    private List<String> pictureGeneratorQueue = new ArrayList<>();
+    private int currentRound = 0;
 
     // Constructors
     public Game() {}
@@ -99,20 +106,6 @@ public class Game {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in the game");
         }
     }
-    
-    
-
-//    public List<Round> getRounds() { return rounds; }
-
-//    public void addRound(Round round) {
-//        rounds.add(round);
-//        round.setGame(this);
-//    }
-//
-//    public void removeRound(Round round) {
-//        rounds.remove(round);
-//        round.setGame(null);
-//    }
 
     public Set<String> getRemaininPictureGenerators() { 
         return remaininPictureGenerators; }
@@ -127,8 +120,6 @@ public class Game {
     public void setLobbyInvitationCode(String lobbyInvitationCode) {
         this.lobbyInvitationCode = lobbyInvitationCode;
     }
-
-    // Additional methods...
 
     public void addPlayer(User user) throws Exception {
         if(user == null){
@@ -178,16 +169,27 @@ public class Game {
         }
 
     }
-
+    @Transactional
     public String selectPictureGenerator() {
-        if (!this.remaininPictureGenerators.isEmpty()) {
-            List<String> generators = new ArrayList<>(remaininPictureGenerators);
-            String username = generators.get(RANDOMForPlayer.nextInt(generators.size()));
-            remaininPictureGenerators.remove(username);
-            return username;
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All the users have already created a picture once");
+        if (gameStarted && currentRound >= amtOfRounds) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played");
         }
+
+        if (pictureGeneratorQueue.isEmpty()) {
+            if (this.remaininPictureGenerators.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No remaining picture generators");
+            }
+            // Refill the queue if empty
+            pictureGeneratorQueue.addAll(this.remaininPictureGenerators);
+        }
+
+        int index = RANDOMForPlayer.nextInt(pictureGeneratorQueue.size());
+        String selectedGenerator = pictureGeneratorQueue.remove(index);
+        
+        currentRound++;
+        System.out.println("---------------Current round-----------: " + currentRound);
+
+        return selectedGenerator;
     }
 
     public boolean gameHasStarted() {
@@ -211,7 +213,6 @@ public class Game {
             }
 
             int finalPointsAwarded = (int) Math.round(pointsFromChatGPT + (pointsFromChatGPT * bonusPoints));
-            System.out.println("Assesment:------------ChatGPT points: " + pointsFromChatGPT + " Final score after scaling: " + finalPointsAwarded);
             return finalPointsAwarded;
         }
     }

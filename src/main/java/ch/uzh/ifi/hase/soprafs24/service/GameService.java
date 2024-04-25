@@ -225,7 +225,7 @@ public class GameService {
 
     return lobby;
    }
-
+   @Transactional
    public String getNextPictureGenerator(Long id){
        if (id == null || id == 0) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
@@ -235,6 +235,10 @@ public class GameService {
                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
        String nextPictureGenerator = game.selectPictureGenerator();
+
+       if (nextPictureGenerator == null) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played. Game is over.");
+       }
 
        gameRepository.save(game);
        gameRepository.flush();
@@ -283,6 +287,7 @@ public class GameService {
         } else {
             float chatGPTResult = chatGPT.rateInputs(originalText, playerGuessed);
             int pointsAwarded = chatGPT.convertSimilarityScoreToPoints(chatGPTResult);
+            System.out.println("ChatGPT similarity score: " + chatGPTResult);
             return pointsAwarded;
         }
     }
