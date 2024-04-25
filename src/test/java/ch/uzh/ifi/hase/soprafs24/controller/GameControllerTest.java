@@ -111,11 +111,16 @@ public class GameControllerTest {
         String emptyToken = "{\"userToken\":\"\"}";
         String nullToken = "{\"userToken\":null}";
 
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
+
         when(userRepository.findByUserToken("")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists"));
         when(userRepository.findByUserToken(null)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists"));
         
-        given(gameService.createLobby(emptyToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
-        given(gameService.createLobby(nullToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
+        given(gameService.createLobby(emptyToken, validGamePostDTO)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
+        given(gameService.createLobby(nullToken, validGamePostDTO)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty"));
         
         // Test for the empty userToken
         mockMvc.perform(post("/lobby/create")
@@ -141,14 +146,19 @@ public class GameControllerTest {
         user.setUsername(username);
         user.setUserToken(userToken);
 
+        GamePostDTO validGamePostDTO = new GamePostDTO();
+        validGamePostDTO.setTimeLimit(20F);
+        validGamePostDTO.setAmtOfRounds(10);
+        validGamePostDTO.setMaxAmtUsers(10);
+
         Game lobby = new Game(id, username); // Assuming Lobby has an appropriate constructor
 
         given(userRepository.findByUserToken(userToken)).willReturn(user);
-        given(gameService.createLobby(userToken)).willReturn(lobby);
+        given(gameService.createLobby(userToken, validGamePostDTO)).willReturn(lobby);
 
-        mockMvc.perform(post("/lobby/create")
+        mockMvc.perform(post("/lobby/create").header("userToken", userToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(userToken))
+                .content(asJsonString(validGamePostDTO)))
                 .andExpect(status().isCreated());
         }
 
