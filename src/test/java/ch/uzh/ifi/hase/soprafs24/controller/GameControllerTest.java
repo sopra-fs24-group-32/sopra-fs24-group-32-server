@@ -35,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -611,6 +612,72 @@ public class GameControllerTest {
                 .content(asJsonString(chatGPTPostDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.score").value(score));
+
+    }
+
+    @Test
+    public void startGame_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+
+        mockMvc.perform(post("/lobby/start/{invalidGameId}", invalidGameId))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void startGame_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+
+        mockMvc.perform(post("/lobby/start/{gameId}", gameId)
+                .header("userToken", userToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void startGame_WhenUserTokenIsEmpty_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+
+        String emptyUserToken = "{\"userToken\":\"\"}";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists"));
+
+        mockMvc.perform(post("/lobby/start/{gameId}", gameId)
+                .header("userToken", emptyUserToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void startGame_WhenGameFound_ShouldReturnGameStarted() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        User user = new User();
+        user.setUsername("owner");
+        user.setUserToken("valid-token");
+
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+
+        mockMvc.perform(post("/lobby/start/{gameId}", gameId)
+                .header("userToken", userToken))
+                .andExpect(status().isOk());
 
     }
 }
