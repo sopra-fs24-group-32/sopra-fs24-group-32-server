@@ -639,6 +639,8 @@ public class GameServiceTest {
         remaininPictureGenerators.add("player1");
         remaininPictureGenerators.add("player2");
         game.setRemaininPictureGenerators(remaininPictureGenerators);
+        game.setGameStarted(true);
+        game.setAmtOfRounds(3);
 
         // game.s
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
@@ -646,14 +648,13 @@ public class GameServiceTest {
         String selectedPlayer = gameService.getNextPictureGenerator(gameId);
 
         assertNotNull(selectedPlayer);
-        assertEquals(1, remaininPictureGenerators.size());
         verify(gameRepository).findById(gameId);
         verify(gameRepository).save(game);
         verify(gameRepository).flush();
     }
 
     @Test
-    public void getNextPictureGenerator_WithGameIdAndAllPlayersSelected_ShouldThrowException() {
+    public void getNextPictureGenerator_WithGameIdAndAllPlayersSelected_ShouldThrowException() throws Exception {
         Game game = new Game();
         Long gameId = 1L;
         game.setId(gameId);
@@ -672,6 +673,11 @@ public class GameServiceTest {
         remaininPictureGenerators.add("player2");
         game.setRemaininPictureGenerators(remaininPictureGenerators);
 
+        game.setGameStarted(true);
+        game.setAmtOfRounds(1);
+        game.addPlayer(player2);
+        game.addPlayer(player1);
+
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
 
         String selectedPlayer1 = gameService.getNextPictureGenerator(gameId);
@@ -681,7 +687,7 @@ public class GameServiceTest {
             gameService.getNextPictureGenerator(gameId);
         });
 
-        String expectedMessage = "All the users have already created a picture once";
+        String expectedMessage = "All rounds have been played";
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));

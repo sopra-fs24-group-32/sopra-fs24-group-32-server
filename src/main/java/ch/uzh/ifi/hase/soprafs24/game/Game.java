@@ -61,6 +61,7 @@ public class Game {
     @Column(name = "picture_generator")
     private List<String> pictureGeneratorQueue = new ArrayList<>();
     private int currentRound = 0;
+    private int countNumPlayed = 0;
 
     // Constructors
     public Game() {}
@@ -162,36 +163,57 @@ public class Game {
         }
         gameStarted = true;
 
-        List<User> users = new ArrayList<>(this.users);
-
         for(User user: users){
             this.remaininPictureGenerators.add(user.getUsername());
         }
 
     }
+
     @Transactional
     public String selectPictureGenerator() {
-        if (gameStarted && currentRound >= amtOfRounds) {
+        removeDuplicateUsers();
+        if (!gameStarted) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started yet");
+        }
+        if (currentRound >= amtOfRounds) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played");
         }
 
         if (pictureGeneratorQueue.isEmpty()) {
-            if (this.remaininPictureGenerators.isEmpty()) {
+            if (remaininPictureGenerators.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No remaining picture generators");
             }
-            // Refill the queue if empty
-            pictureGeneratorQueue.addAll(this.remaininPictureGenerators);
+            // Refill the queue from remaining generators
+            pictureGeneratorQueue.addAll(remaininPictureGenerators);
         }
 
+        // Select and remove a generator from the queue
         int index = RANDOMForPlayer.nextInt(pictureGeneratorQueue.size());
         String selectedGenerator = pictureGeneratorQueue.remove(index);
-        
-        currentRound++;
-        System.out.println("---------------Current round-----------: " + currentRound);
+
+        // Increment played count and check for round completion
+        countNumPlayed++;
+        if (countNumPlayed % users.size() == 0) {
+            currentRound++;
+            System.out.println("-----------------Current round: " + currentRound + " / " + amtOfRounds + "Total number of played so far: " + countNumPlayed );
+            if (currentRound < amtOfRounds) {
+                pictureGeneratorQueue.addAll(remaininPictureGenerators);
+            }
+        }
 
         return selectedGenerator;
     }
 
+    public void removeDuplicateUsers() {
+        for (int i = 0; i < users.size(); i++) {
+            for (int j = i + 1; j < users.size(); j++) {
+                if (users.get(i).getUsername().equals(users.get(j).getUsername())) {
+                    users.remove(j);
+                    j--;
+                }
+            }
+        }
+    }
     public boolean gameHasStarted() {
         return gameStarted;
     }
