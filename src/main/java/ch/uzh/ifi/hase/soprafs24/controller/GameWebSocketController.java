@@ -253,7 +253,7 @@ public class GameWebSocketController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
         }
 
-        String pictureGenerated =  gameService.getImageGeneratedByDallE();
+        String pictureGenerated =  gameService.getImageGeneratedByDallE(gameId);
 
         if (pictureGenerated == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to get image with DALL-E");

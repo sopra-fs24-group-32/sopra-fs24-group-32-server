@@ -475,7 +475,7 @@ public class GameControllerTest {
         Game game = new Game(gameId, "owner");
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.getImageGeneratedByDallE()).thenReturn(imageUrl);
+        when(gameService.getImageGeneratedByDallE(1L)).thenReturn(imageUrl);
 
         mockMvc.perform(get("/game/image/{gameId}", gameId))
                 .andExpect(status().isOk());
@@ -487,7 +487,7 @@ public class GameControllerTest {
         Game game = new Game(gameId, "owner");
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.getImageGeneratedByDallE()).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No image generated"));
+        when(gameService.getImageGeneratedByDallE(1L)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "No image generated"));
 
         mockMvc.perform(get("/game/image/{gameId}", gameId))
                 .andExpect(status().isNotFound());

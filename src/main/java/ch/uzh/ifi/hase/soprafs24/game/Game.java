@@ -55,6 +55,9 @@ public class Game {
     @Column(nullable = false)
     private String lobbyId;
 
+    @Column
+    private int playersInLobby = 0;
+
     private static final SecureRandom RANDOMForPlayer = new SecureRandom();
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "game_picture_generator_queue", joinColumns = @JoinColumn(name = "game_id"))
@@ -134,6 +137,7 @@ public class Game {
         }
         user.setScore(0);
         users.add(user);
+        this.playersInLobby += 1;
         user.setGame(this);
     }
 
@@ -202,6 +206,10 @@ public class Game {
         }
 
         return selectedGenerator;
+    }
+
+    public int getPlayersInLobby(){
+        return this.playersInLobby;
     }
 
     public void removeDuplicateUsers() {

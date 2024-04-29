@@ -281,9 +281,23 @@ public class GameService {
     
     }
 
-    public String getImageGeneratedByDallE() {
+    //We make sure that all the players whos turn it is to guess the input have received the image before
+    //setting the imageURL in dallE to an empty string again
+    //amtOfPlayersInLobby-1 since the creator of the picture does not use this function to receive the picture
+    public String getImageGeneratedByDallE(Long gameId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
         String imgUrl = dallE.getImageUrl();
-        dallE.setImageUrl("");
+
+        int amtPlayersInLobby = game.getPlayersInLobby();
+        int amtPlayersReceivedPicture = dallE.getAmtOfUsersRequestedThePicture();
+
+        if(amtPlayersInLobby-1 == amtPlayersReceivedPicture){
+            dallE.setAmtOfUsersRequestedThePictureByOne(0);
+            dallE.setImageUrl("");
+        }
+
         return imgUrl;
     }
 
