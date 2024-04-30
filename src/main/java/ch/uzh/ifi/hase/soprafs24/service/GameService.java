@@ -331,5 +331,20 @@ public class GameService {
         gameRepository.save(game);
         // gameRepository.flush();
     }
+
+    public void playerLeaveCurrentLobby(String userToken) throws Exception {
+        User user = userRepository.findByUserToken(userToken);
+
+        System.out.println("UserToken:");
+        System.out.println(userToken);
+
+        if(user == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with userToken has not been found");
+        }
+
+        Game currentLobby = user.getGame();
+
+        this.leaveLobby(currentLobby.getId(), userToken);
+    }
 }
         

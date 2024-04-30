@@ -330,4 +330,22 @@ public class GameWebSocketController {
         gameService.playerLeaveGame(gameId, mappedToken);
     }
 
+    @PostMapping("/lobby/leaveCurrentLobby")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void playerLeaveHisCurrentLobby(@RequestBody String jsonUserToken) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(jsonUserToken, Map.class);
+        // Extract the userToken from the Map
+        String userToken = map.get("userToken");
+
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
+        }
+
+        gameService.playerLeaveCurrentLobby(userToken);
+    }
+
+
 }
