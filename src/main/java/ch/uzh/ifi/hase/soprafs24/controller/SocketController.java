@@ -66,6 +66,8 @@ public class SocketController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
         }
 
+        gameService.resetDallEsImageURL();
+
         String nextPictureGenerator = gameService.getNextPictureGenerator(id);
         User newUser = new User(nextPictureGenerator, null);
         return DTOMapper.INSTANCE.convertEntityToSimpleUserGetDTO(newUser);
