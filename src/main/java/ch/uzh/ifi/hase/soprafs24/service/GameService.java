@@ -209,10 +209,11 @@ public class GameService {
         if (!game.getUsers().contains(user)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not in the specified lobby");
         }
-    
         game.removePlayer(user);
         gameRepository.save(game);
-
+        User foundUser = userRepository.findByUsername(user.getUsername());
+        user.setGame(null);
+        userRepository.save(user);
         return game;
     } catch (Exception e) {
         System.out.println("Error during leaveLobby: " + e.getMessage());
@@ -281,24 +282,13 @@ public class GameService {
     
     }
 
-    //We make sure that all the players whos turn it is to guess the input have received the image before
-    //setting the imageURL in dallE to an empty string again
-    //amtOfPlayersInLobby-1 since the creator of the picture does not use this function to receive the picture
-    public String getImageGeneratedByDallE(Long gameId) {
-        Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+    public String getImageGeneratedByDallE() {
+        return dallE.getImageUrl();
+    }
 
-        String imgUrl = dallE.getImageUrl();
-
-        int amtPlayersInLobby = game.getPlayersInLobby();
-        int amtPlayersReceivedPicture = dallE.getAmtOfUsersRequestedThePicture();
-
-        if(amtPlayersInLobby-1 == amtPlayersReceivedPicture){
-            dallE.setAmtOfUsersRequestedThePictureByOne(0);
-            dallE.setImageUrl("");
-        }
-
-        return imgUrl;
+    //gets triggered after each round so that players don't fetch the old picture
+    public void resetDallEsImageURL(){
+        dallE.setImageUrl("");
     }
 
     public int evaluatePlayerGuessWithChatGPT(String playerGuessed) throws Exception{

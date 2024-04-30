@@ -37,7 +37,7 @@ public class Game {
     @Column(nullable = false)
     private boolean gameStarted = false;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "game")
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true, mappedBy = "game")
     @JsonManagedReference
     private List<User> users = new ArrayList<>();
 
@@ -113,6 +113,8 @@ public class Game {
 
     public Set<String> getRemaininPictureGenerators() { 
         return remaininPictureGenerators; }
+
+
     public void setRemaininPictureGenerators(Set<String> remaininPictureGenerators) { 
         this.remaininPictureGenerators = remaininPictureGenerators; }
 

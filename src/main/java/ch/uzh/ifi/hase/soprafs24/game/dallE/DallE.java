@@ -21,7 +21,6 @@ public class DallE {
     private final OkHttpClient client;
     private String inputPhrase;
     private String imageUrl;
-    private int amtOfUsersRequestedThePicture = 0;
 
     public DallE() {
         this.client = new OkHttpClient().newBuilder()
@@ -79,21 +78,10 @@ public class DallE {
     }
 
     public String getImageUrl() {
-        if(this.imageUrl != null && !this.imageUrl.isEmpty()){
-            this.amtOfUsersRequestedThePicture += 1;
-        }
         return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public void setAmtOfUsersRequestedThePictureByOne(int amt){
-        this.amtOfUsersRequestedThePicture  = amt;
-    }
-
-    public int getAmtOfUsersRequestedThePicture(){
-        return this.amtOfUsersRequestedThePicture;
     }
 }
