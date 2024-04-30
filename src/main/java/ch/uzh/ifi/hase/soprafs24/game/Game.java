@@ -63,6 +63,7 @@ public class Game {
     @CollectionTable(name = "game_picture_generator_queue", joinColumns = @JoinColumn(name = "game_id"))
     @Column(name = "picture_generator")
     private List<String> pictureGeneratorQueue = new ArrayList<>();
+    @Column
     private int currentRound = 0;
     private int countNumPlayed = 0;
 
@@ -212,6 +213,14 @@ public class Game {
 
     public int getPlayersInLobby(){
         return this.playersInLobby;
+    }
+
+    public void setCurrentRound(int currentRound) {
+        this.currentRound = currentRound;
+    }
+
+    public int getCurrentRound() {
+        return currentRound;
     }
 
     public void removeDuplicateUsers() {
