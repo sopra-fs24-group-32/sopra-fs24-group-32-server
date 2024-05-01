@@ -37,7 +37,7 @@ public class Game {
     @Column(nullable = false)
     private boolean gameStarted = false;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true, mappedBy = "game")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "game")
     @JsonManagedReference
     private List<User> users = new ArrayList<>();
 
@@ -103,10 +103,14 @@ public class Game {
 
     public void removePlayer(User user) {
         if (user != null && users.contains(user)) {
+            /*
             if (user.getUsername().equals(lobbyOwner)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot remove the lobby owner from the game");
             }
+
+             */
             users.remove(user);
+            user.deleteGame(this);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in the game");
         }
