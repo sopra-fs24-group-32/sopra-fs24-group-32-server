@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.entity;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
+import org.checkerframework.checker.units.qual.C;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -176,6 +177,11 @@ public class User implements Serializable {
 
   public void setGame(Game game) {
     this.game = game;
+  }
+
+  public void deleteGame(Game game){
+      this.game = null;
+      game.getUsers().remove(this);
   }
 
   @Override

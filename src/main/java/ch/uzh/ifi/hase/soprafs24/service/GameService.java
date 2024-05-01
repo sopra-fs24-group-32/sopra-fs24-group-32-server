@@ -21,10 +21,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -345,6 +342,81 @@ public class GameService {
         Game currentLobby = user.getGame();
 
         this.leaveLobby(currentLobby.getId(), userToken);
+    }
+
+    public void gameIsFinishedLeaveLobby(Long lobbyId, String userToken) throws Exception {
+        try {
+            if (userToken == null || userToken.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+            }
+
+            if (lobbyId == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
+            }
+
+            User user = userRepository.findByUserToken(userToken);
+            if (user == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+            }
+
+            Optional<Game> optionalGame = gameRepository.findById(lobbyId);
+
+            if(!optionalGame.isPresent()){
+                user.setGame(null);
+                userRepository.save(user);
+                return;
+            }
+
+            Game game = optionalGame.get();
+
+
+            if (!game.getUsers().contains(user)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not in the specified lobby");
+            }
+            game.removePlayer(user);
+            gameRepository.save(game);
+            user.setGame(null);
+            userRepository.save(user);
+        } catch (Exception e) {
+            System.out.println("Error during leaveLobby: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void deleteLobby(Long gameId, String userToken){
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
+        }
+
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+        User user = userRepository.findByUserToken(userToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+        }
+
+        if(!Objects.equals(game.getLobbyOwner(), user.getUsername())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only host is allowed to delete lobby");
+        }
+
+        List<User> users = game.getUsers();
+        List<User> copyUsers = new ArrayList<>(users);
+
+        for(User player: copyUsers) {
+            player.deleteGame(game);
+            userRepository.save(player);
+        }
+        userRepository.flush();
+
+        game.getUsers().clear();
+
+        gameRepository.delete(game);
+
     }
 }
         

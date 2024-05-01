@@ -347,5 +347,52 @@ public class GameWebSocketController {
         gameService.playerLeaveCurrentLobby(userToken);
     }
 
+    @PostMapping("/finishedGame/leave/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void playerLeavesLobbyAfterGame(@PathVariable Long gameId, @RequestBody String userToken) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+        if (mappedToken == null || mappedToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
+        }
+        gameService.gameIsFinishedLeaveLobby(gameId, mappedToken);
+    }
+
+    @PostMapping("/deleteLobby/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void deleteLobbyLobbyAfterGame(@PathVariable Long gameId, @RequestBody String userToken) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+        if (mappedToken == null || mappedToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
+        }
+        gameService.deleteLobby(gameId, mappedToken);
+    }
+
+    @PostMapping("/resetImageURL")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void resetImageURL() throws Exception {
+        gameService.resetDallEsImageURL();
+    }
+
+
+
 
 }
