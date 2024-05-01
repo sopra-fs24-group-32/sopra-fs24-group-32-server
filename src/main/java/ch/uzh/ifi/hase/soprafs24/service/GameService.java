@@ -450,8 +450,9 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only host is allowed to remove player from lobby");
         }
 
-        game.ownerRemovePlayer(user);;
+        game.ownerRemovePlayer(user);
         gameRepository.save(game);
-        gameRepository.flush();}
+        gameRepository.flush();
+    }
 }
         

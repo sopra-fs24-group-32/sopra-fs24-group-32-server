@@ -695,4 +695,262 @@ public class GameServiceTest {
         assertNotNull(selectedPlayer2);
     }
 
+    @Test
+    public void hostRemovePlayerFromLobby_WithValidGameIdAndTokens_ShouldRemovePlayerSuccessfully() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player1 = new User();
+        player1.setUserToken("userToken2");
+        player1.setUsername("player1");
+
+        User player2 = new User();
+        player2.setUserToken("userToken3");
+        player2.setUsername("player2");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(player1);
+        game.addPlayer(player2);
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player1);
+        when(userRepository.findByUserToken("userToken3")).thenReturn(player2);
+
+        gameService.hostRemovePlayerFromLobby(gameId, lobbyOwner.getUserToken(), player2.getUserToken());
+        // Assert
+        assertNotNull(game);
+        assertEquals(2, game.getUsers().size());
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithPlayerEmptyOrNullToken_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        User player1EmptyToken = new User();
+        player1EmptyToken.setUserToken("");
+        player1EmptyToken.setUsername("player1");
+
+        User player2NullToken = new User();
+        player2NullToken.setUserToken(null);
+        player2NullToken.setUsername("player2");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken(player1EmptyToken.getUserToken())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+        when(userRepository.findByUserToken(player2NullToken.getUserToken())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(gameId, lobbyOwner.getUserToken(), player1EmptyToken.getUserToken());
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(gameId, lobbyOwner.getUserToken(), player2NullToken.getUserToken());
+        });
+
+        String expectedMessage = "UserToken is null or empty";
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithGameIdIsNullOrZerro_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player);
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(null, "userToken", "userToken2");
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(0L, "userToken", "userToken2");
+        });
+
+        String expectedMessage = "Game ID is null or zero";
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithGameDoesNotExist_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long invalidGameId = 22L;
+        game.setId(1L);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(invalidGameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(invalidGameId, "userToken", "userToken2");
+        });
+
+        String expectedMessage = "Lobby not found";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithUserDoesNotExist_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("invalidToken")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist"));
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(gameId, "userToken", "invalidToken");
+        });
+
+        String expectedMessage = "User with sent userToken does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithUserIsNotInGame_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(gameId, "userToken", "userToken2");
+        });
+
+        String expectedMessage = "User not found in the game";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    // @Test
+    // public void hostRemovePlayerFromLobby_WithUserIsLobbyOwner_ShouldThrowException() throws Exception {
+    //     User lobbyOwner = new User();
+    //     lobbyOwner.setUserToken("userToken");
+    //     lobbyOwner.setUsername("lobbyOwner");
+
+    //     Game game = new Game();
+    //     Long gameId = 1L;
+    //     game.setId(gameId);
+    //     game.setLobbyOwner("lobbyOwner");
+    //     game.addPlayer(lobbyOwner);
+
+    //     when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+    //     when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+
+    //     Exception exception = assertThrows(ResponseStatusException.class, () -> {
+    //         gameService.hostRemovePlayerFromLobby(gameId, "userToken", "userToken");
+    //     });
+
+    //     String expectedMessage = "As the lobby owner, you cannot be removed by another player.";
+    //     String actualMessage = exception.getMessage();
+
+    //     assertTrue(actualMessage.contains(expectedMessage));
+    // }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithPlayerTryRejoin_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+        game.addPlayer(player);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player);
+
+        gameService.hostRemovePlayerFromLobby(gameId, "userToken", "userToken2");
+
+        // player tries to rejoin, should throw exception
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            game.addPlayer(player);
+        });
+        String expectedMessage = "You have been removed from the lobby by the host. Sorry, you cannot rejoin.";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
 }
