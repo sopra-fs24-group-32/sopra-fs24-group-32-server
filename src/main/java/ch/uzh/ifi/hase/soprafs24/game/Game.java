@@ -188,10 +188,14 @@ public class Game {
 
         if (pictureGeneratorQueue.isEmpty()) {
             if (remaininPictureGenerators.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No remaining picture generators");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No remaining picture generators.");
             }
             // Refill the queue from remaining generators
             pictureGeneratorQueue.addAll(remaininPictureGenerators);
+        }
+
+        if (users.size() < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough players in the game. There should be at least 2 players.");
         }
 
         // Select and remove a generator from the queue
