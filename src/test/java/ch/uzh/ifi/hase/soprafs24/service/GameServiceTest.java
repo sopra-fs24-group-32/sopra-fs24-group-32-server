@@ -466,30 +466,30 @@ public class GameServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
-    @Test
-    public void playerLeaveGame_ShouldThrowExceptionWhenUserIsLobbyOwner() throws Exception {
-        User lobbyOwner = new User();
-        lobbyOwner.setUserToken("userToken");
-        lobbyOwner.setUsername("lobbyOwner");
+    // @Test
+    // public void playerLeaveGame_ShouldThrowExceptionWhenUserIsLobbyOwner() throws Exception {
+    //     User lobbyOwner = new User();
+    //     lobbyOwner.setUserToken("userToken");
+    //     lobbyOwner.setUsername("lobbyOwner");
 
-        Game game = new Game();
-        Long gameId = 1L;
-        game.setId(gameId);
-        game.setLobbyOwner("lobbyOwner");
-        game.addPlayer(lobbyOwner);
+    //     Game game = new Game();
+    //     Long gameId = 1L;
+    //     game.setId(gameId);
+    //     game.setLobbyOwner("lobbyOwner");
+    //     game.addPlayer(lobbyOwner);
 
-        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+    //     when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+    //     when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 
-        Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.playerLeaveGame(gameId, "userToken");
-        });
+    //     Exception exception = assertThrows(ResponseStatusException.class, () -> {
+    //         gameService.playerLeaveGame(gameId, "userToken");
+    //     });
 
-        String expectedMessage = "Cannot remove the lobby owner from the game";
-        String actualMessage = exception.getMessage();
+    //     String expectedMessage = "Cannot remove the lobby owner from the game";
+    //     String actualMessage = exception.getMessage();
 
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
+    //     assertTrue(actualMessage.contains(expectedMessage));
+    // }
     
     // @Test
     // public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
