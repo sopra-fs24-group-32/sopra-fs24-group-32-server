@@ -66,6 +66,10 @@ public class Game {
     @Column
     private int currentRound = 0;
     private int countNumPlayed = 0;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "list_of_removed_players", joinColumns = @JoinColumn(name = "game_id"))
+    @Column(name = "remove_player")
+    private List<String> listOfRemovedPlayers = new ArrayList<>();
 
     // Constructors
     public Game() {}
@@ -116,6 +120,11 @@ public class Game {
         }
     }
 
+    public void ownerRemovePlayer(User user) {
+        removePlayer(user);
+        listOfRemovedPlayers.add(user.getUsername());
+    }
+
     public Set<String> getRemaininPictureGenerators() { 
         return remaininPictureGenerators; }
 
@@ -142,6 +151,13 @@ public class Game {
         if(users.size() == maxAmtUsers){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users in lobby already reached");
         }
+        if (gameStarted) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+        }
+        if (listOfRemovedPlayers.contains(user.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You have been removed from the lobby by the host. Sorry, you cannot rejoin.");
+        }
+
         user.setScore(0);
         users.add(user);
         this.playersInLobby += 1;

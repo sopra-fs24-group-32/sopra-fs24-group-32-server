@@ -673,10 +673,10 @@ public class GameServiceTest {
         remaininPictureGenerators.add("player2");
         game.setRemaininPictureGenerators(remaininPictureGenerators);
 
-        game.setGameStarted(true);
         game.setAmtOfRounds(1);
         game.addPlayer(player2);
         game.addPlayer(player1);
+        game.setGameStarted(true);
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
 

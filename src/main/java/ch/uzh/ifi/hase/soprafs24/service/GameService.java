@@ -419,5 +419,39 @@ public class GameService {
         gameRepository.flush();
 
     }
+
+    public void hostRemovePlayerFromLobby(Long gameId, String hostToken, String userToken){
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserToken is null or empty");
+        }
+
+        if (hostToken == null || hostToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "HostToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
+        }
+
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+        User user = userRepository.findByUserToken(userToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+        }
+
+        User host = userRepository.findByUserToken(hostToken);
+        if (host == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Host with sent hostToken does not exist");
+        }
+
+        if(!Objects.equals(game.getLobbyOwner(), host.getUsername())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only host is allowed to remove player from lobby");
+        }
+
+        game.ownerRemovePlayer(user);;
+        gameRepository.save(game);
+        gameRepository.flush();}
 }
         
