@@ -416,6 +416,7 @@ public class GameService {
         game.getUsers().clear();
 
         gameRepository.delete(game);
+        gameRepository.flush();
 
     }
 }
