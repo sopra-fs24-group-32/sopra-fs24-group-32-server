@@ -392,7 +392,31 @@ public class GameWebSocketController {
         gameService.resetDallEsImageURL();
     }
 
+    @PostMapping("/hostRemovePlayer/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void hostRemovePlayer(@PathVariable Long gameId, @RequestHeader("userToken") String hostToken, @RequestBody String playerToken) throws Exception {
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(playerToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+        if (mappedToken == null || mappedToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+        }
 
+        ObjectMapper hostObjectMapper = new ObjectMapper();
+        Map<String, String> hostMap = hostObjectMapper.readValue(hostToken, Map.class);
+        // Extract the hostToken from the Map
+        String hostMappedToken = hostMap.get("userToken");
+        if (hostMappedToken == null || hostMappedToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "hostToken is null or empty");
+        }
+
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
+        }
+        gameService.hostRemovePlayerFromLobby(gameId, hostMappedToken, mappedToken);
+    }
 
 }
