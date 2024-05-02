@@ -1,14 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
+import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
@@ -43,7 +43,35 @@ public class GameServiceTest {
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
         gameRepository = mock(GameRepository.class);
+        dallE = mock(DallE.class);
         gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+    }
+
+    private User createUser(String number) {
+        String username = "username" + number;
+        String password = "password" + number;
+
+        User newUser = new User(username, password);
+        newUser.setStatus(UserStatus.ONLINE);
+        newUser.setIsLoggedIn(true);
+        newUser.setUserToken(UUID.randomUUID().toString());
+
+        userRepository.save(newUser);
+        userRepository.flush();
+
+        return newUser;
+    }
+
+    public Game createGame(int amtOfUsers) throws Exception {
+        long LobbyId = 1L;
+        Game game = new Game();
+        game.setId(LobbyId);
+        for(int i = 0; i<amtOfUsers; i++){
+            game.addPlayer(createUser(String.valueOf(i)));
+        }
+        gameRepository.save(game);
+        gameRepository.flush();
+        return game;
     }
 
     @Test
@@ -490,7 +518,7 @@ public class GameServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
     }
-    
+
     // @Test
     // public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
     //     String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
@@ -695,4 +723,22 @@ public class GameServiceTest {
         assertNotNull(selectedPlayer2);
     }
 
+    //TEST LEAVE LOBBY FUNCTIONALITY
+    @Test
+    public void playerLeaveCurrentLobby() throws Exception {
+        Game game = createGame(3);
+        User userToRemove = game.getUsers().get(1);
+
+        when(userRepository.findByUserToken(userToRemove.getUserToken())).thenReturn(userToRemove);
+        when(gameRepository.findById(game.getId())).thenReturn(Optional.of(game));
+
+        gameService.playerLeaveCurrentLobby(userToRemove.getUserToken());
+
+        assert !game.getUsers().contains(userToRemove);
+        assert userToRemove.getGame() == null;
+        assert userRepository.findByUserToken(userToRemove.getUserToken()) == userToRemove;
+    }
+
+    //ToDo: test  getImageGeneratedByDallE extensively!!
+    //ToDo: create integration tests for repositories?
 }
