@@ -306,6 +306,10 @@ public class GameService {
         }
     }
 
+    public String getLastImageDescription() {
+        return dallE.getInputPhrase();
+    }
+
     public void playerLeaveGame(Long gameId, String userToken) throws Exception {
 
         if (userToken == null || userToken.isEmpty()) {
