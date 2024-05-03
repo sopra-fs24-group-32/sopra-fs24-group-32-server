@@ -101,7 +101,7 @@ public class GameServiceTest {
         when(gameRepository.findByLobbyInvitationCode("-1")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with id -1 does not exist"));
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-           gameService.joinLobby("-1", userToken);
+            gameService.joinLobby("-1", userToken);
         });
 
         String expectedMessage = "Lobby with id -1 does not exist";
@@ -196,11 +196,11 @@ public class GameServiceTest {
 
     // @Test
     // public void testUpdateGame() throws Exception {
-        
+
     //     User lobbyOwen = new User();
     //     lobbyOwen.setUserToken("ownerToken");
     //     lobbyOwen.setUsername("owner");
-            
+
     //     when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
 
     //     Game lobby = gameService.createLobby("ownerToken");
@@ -332,7 +332,7 @@ public class GameServiceTest {
         player2NullToken.setUserToken(null);
         player2NullToken.setUsername("player2");
 
-        
+
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
         when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
@@ -490,7 +490,7 @@ public class GameServiceTest {
 
     //     assertTrue(actualMessage.contains(expectedMessage));
     // }
-    
+
     // @Test
     // public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
     //     String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
@@ -533,7 +533,7 @@ public class GameServiceTest {
         String originalText = "cat on the floor";
         String playerGuessed = "cat on the ground";
         float chatGPTResult = 0.85f;
-        int expectedPoints = 6; 
+        int expectedPoints = 6;
 
         DallE dallE = mock(DallE.class);
         ChatGPT chatGPT = mock(ChatGPT.class);
@@ -1237,4 +1237,7 @@ public class GameServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
     }
+}
+
+
 }
