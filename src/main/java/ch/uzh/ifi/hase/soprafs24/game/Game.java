@@ -1,8 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.round.Round;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,7 +13,6 @@ import javax.transaction.Transactional;
 
 import java.security.SecureRandom;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Entity
 @Table(name = "game")
@@ -245,6 +242,14 @@ public class Game {
 
     public int getCurrentRound() {
         return currentRound;
+    }
+
+    public void setListOfRemovedPlayers(List<String> listOfRemovedPlayers) {
+        this.listOfRemovedPlayers = listOfRemovedPlayers;
+    }
+
+    public List<String> getListOfRemovedPlayers() {
+        return listOfRemovedPlayers;
     }
 
     public void removeDuplicateUsers() {

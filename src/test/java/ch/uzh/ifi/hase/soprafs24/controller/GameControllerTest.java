@@ -680,4 +680,131 @@ public class GameControllerTest {
                 .andExpect(status().isOk());
 
     }
+
+    @Test
+    public void playerLeaveHisCurrentLobby_WithValidParameters() throws Exception {
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/lobby/leaveCurrentLobby")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void playerLeaveHisCurrentLobby_WhenUserTokenIsEmpty_ShouldReturnNotFound() throws Exception {
+        String emptyUserToken = "{\"userToken\":\"\"}";
+
+        mockMvc.perform(post("/lobby/leaveCurrentLobby")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(emptyUserToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void playerLeaveHisCurrentLobby_WhenUserTokenIsNull_ShouldReturnNotFound() throws Exception {
+        String nullUserToken = "{\"userToken\":null}";
+
+        mockMvc.perform(post("/lobby/leaveCurrentLobby")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(nullUserToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    
+    @Test
+    public void playerLeavesLobbyAfterGame_WithValidParameters() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/finishedGame/leave/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void playerLeavesLobbyAfterGame_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/finishedGame/leave/{invalidGameId}", invalidGameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deleteLobbyLobbyAfterGame_WithValidParameters() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/deleteLobby/{gameId}", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteLobbyLobbyAfterGame_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+        Long invalidGameId = 0L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/deleteLobby/{invalidGameId}", invalidGameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void resetImageURL() throws Exception {
+        mockMvc.perform(post("/resetImageURL")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithGameDoesNotExist_ShouldThrowException() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        String hostToken = "{\"hostToken\":\"host-token\"}";
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"))
+                .when(gameService)
+                .hostRemovePlayerFromLobby(gameId, hostToken, userToken);
+
+        mockMvc.perform(post("/hostRemovePlayer/{gameId}", gameId)
+                .header("userToken", hostToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithHostTokenIsEmpty_ShouldThrowException() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        String emptyHostToken = "{\"userToken\":\"\"}";
+
+        mockMvc.perform(post("/hostRemovePlayer/{gameId}", gameId)
+                .header("userToken", emptyHostToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithValidParam() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        String hostToken = "{\"userToken\":\"host-token\"}";
+
+        mockMvc.perform(post("/hostRemovePlayer/{gameId}", gameId)
+                .header("userToken", hostToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+    }
 }
