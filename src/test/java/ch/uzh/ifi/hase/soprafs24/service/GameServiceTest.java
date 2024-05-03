@@ -1238,6 +1238,3 @@ public class GameServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
 }
-
-
-}
