@@ -439,6 +439,14 @@ public class GameWebSocketController {
         if (gameId == null || gameId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
+
+        User user = userService.findByToken(mappedToken);
+        
+        // Convert the user who left to a DTO to be sent to the subscribed clients
+        UserGetDTO userKicked = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        simpMessagingTemplate.convertAndSend("/game/kick", userKicked);
+
+
         gameService.hostRemovePlayerFromLobby(gameId, hostMappedToken, mappedToken);
     }
 
