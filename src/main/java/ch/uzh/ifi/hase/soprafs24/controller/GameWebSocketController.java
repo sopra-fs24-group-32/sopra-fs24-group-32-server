@@ -305,6 +305,29 @@ public class GameWebSocketController {
         return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
     }
 
+    @GetMapping("/game/lastDescription/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ResponseEntity<String> getLastImageDescription(@PathVariable Long gameId) throws Exception {
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID is null or empty");
+        }
+
+        Optional<Game> gameOptional = gameRepository.findById(gameId);
+        if (!gameOptional.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        }
+
+        Game game = gameOptional.get();
+        String lastDescription = gameService.getLastImageDescription();
+
+        if (lastDescription == null || lastDescription.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(lastDescription, HttpStatus.OK);
+    }
+
     @PostMapping("/game/leave/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -416,6 +439,14 @@ public class GameWebSocketController {
         if (gameId == null || gameId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
+
+        User user = userService.findByToken(mappedToken);
+        
+        // Convert the user who left to a DTO to be sent to the subscribed clients
+        UserGetDTO userKicked = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        simpMessagingTemplate.convertAndSend("/game/kick", userKicked);
+
+
         gameService.hostRemovePlayerFromLobby(gameId, hostMappedToken, mappedToken);
     }
 

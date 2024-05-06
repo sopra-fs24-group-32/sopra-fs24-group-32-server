@@ -45,8 +45,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 @WebMvcTest(GameWebSocketController.class)
 public class GameControllerTest {
@@ -613,6 +613,42 @@ public class GameControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.score").value(score));
 
+    }
+
+    @Test
+    public void getLastImageDescription_WhenGameNotFound_ShouldReturnNotFoundStatus() throws Exception {
+        Long gameId = 1L;
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/game/lastDescription/{gameId}", gameId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getLastImageDescription_WhenGameFoundButDescriptionIsNull_ShouldReturnNoContentStatus() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.getLastImageDescription()).thenReturn("");
+
+        mockMvc.perform(get("/game/lastDescription/{gameId}", gameId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void getLastImageDescription_WhenGameFoundAndDescriptionExists_ShouldReturnDescription() throws Exception {
+        Long gameId = 1L;
+        Game game = new Game(gameId, "owner");
+        String expectedDescription = "A scenic mountain landscape";
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(gameService.getLastImageDescription()).thenReturn(expectedDescription);
+
+        mockMvc.perform(get("/game/lastDescription/{gameId}", gameId))
+                .andExpect(status().isOk())
+                .andExpect(content().string(expectedDescription));
     }
 
     @Test

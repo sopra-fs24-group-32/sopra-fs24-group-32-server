@@ -1237,4 +1237,22 @@ public class GameServiceTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
     }
+
+    @Test
+    public void testGetLastImageDescription_WhenDescriptionIsSet_ShouldReturnDescription() {
+        String expectedDescription = "A beautiful sunset over the ocean";
+        DallE dallE = mock(DallE.class);
+        when(dallE.getInputPhrase()).thenReturn(expectedDescription);
+
+        UserRepository userRepository = mock(UserRepository.class);
+        GameRepository gameRepository = mock(GameRepository.class);
+        UserService userService = mock(UserService.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+
+        String actualDescription = gameService.getLastImageDescription();
+
+        assertEquals(expectedDescription, actualDescription, "The returned image description should match the expected value.");
+    }
 }
