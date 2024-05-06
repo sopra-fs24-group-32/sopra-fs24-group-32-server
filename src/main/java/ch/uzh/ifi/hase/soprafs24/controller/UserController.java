@@ -121,8 +121,27 @@ public class UserController {
         } else {
             // Optionally handle the case where the user is not found
             System.out.println("No user found with the provided token.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found with the provided token.");
         }
     }
+
+  @PutMapping("/users/update/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public ResponseEntity<UserGetDTO> updateUser(@PathVariable Long id, @RequestBody UserPostDTO userPostDTO) throws Exception {
+    if (id == null || id == 0) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID cannot be null");
+    }
+    User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    user.setUsername(userPostDTO.getUsername());
+    user.setBirthDay(userPostDTO.getBirthDay());
+
+    userService.updateUser(id, user);
+
+    UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    return new ResponseEntity<>(userGetDTO, HttpStatus.OK);
+
+  }
 
 
 }
