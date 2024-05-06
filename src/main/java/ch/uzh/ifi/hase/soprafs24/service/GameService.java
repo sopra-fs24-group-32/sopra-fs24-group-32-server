@@ -364,16 +364,8 @@ public class GameService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
             }
 
-            Optional<Game> optionalGame = gameRepository.findById(lobbyId);
-
-            if(!optionalGame.isPresent()){
-                user.setGame(null);
-                userRepository.save(user);
-                return;
-            }
-
-            Game game = optionalGame.get();
-
+            Game game = gameRepository.findById(lobbyId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
             if (!game.getUsers().contains(user)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not in the specified lobby");

@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
@@ -102,6 +104,32 @@ public class SocketControllerTest {
 
         assertNotNull(dto);
         verify(gameService).startGameLobby(gameId);
+    }
+
+    @Test
+    public void startGame_WithLobbyIdNull_ShouldThrowResponseStatusException() {
+        Long gameId = null;
+
+        assertThrows(ResponseStatusException.class, () -> socketController.startGame(gameId));
+    }
+
+    @Test
+    public void startGame_WithNextPictureGeneratorNull_ShouldThrowResponseStatusException() {
+        Long gameId = 1L;
+        Game mockGame = new Game();
+        mockGame.setId(gameId);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(mockGame));
+        when(gameService.getNextPictureGenerator(gameId)).thenReturn(null);
+
+        gameService.startGameLobby(gameId);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.startGame(gameId);
+        });
+
+        assertTrue(exception instanceof ResponseStatusException);
+        assertEquals(HttpStatus.BAD_REQUEST, ((ResponseStatusException)exception).getStatus());
+
     }
 
 

@@ -10,8 +10,10 @@ import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import java.util.Optional;
 import java.util.Collections;
-import static org.mockito.ArgumentMatchers.anyLong;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.hamcrest.Matchers.hasSize;
@@ -677,7 +679,6 @@ public class GameControllerTest {
 
         User user = new User();
         user.setUsername("owner");
-        user.setUserToken("valid-token");
 
         String emptyUserToken = "{\"userToken\":\"\"}";
 
@@ -933,5 +934,157 @@ public class GameControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void createdLobby_WithFindUserByTokenNull_ShouldReturnNotFound() throws Exception {
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        when(userService.findByToken("valid-token"))
+            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+
+        mockMvc.perform(post("/lobby/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+public void updateGameSettings_WithValidParameters_ShouldReturnOk() throws Exception {
+    Long gameId = 1L;
+    String userToken = "valid-token";  // Just the token value if used in header
+    Game game = new Game(gameId, "owner");
+
+    User mockUser = new User();
+    mockUser.setUsername("owner");
+    mockUser.setUserToken(userToken);
+
+    when(userRepository.findByUserToken(userToken)).thenReturn(mockUser);
+    when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+    GamePostDTO gamePostDTO = new GamePostDTO();
+    gamePostDTO.setTimeLimit(20F);
+    gamePostDTO.setAmtOfRounds(10);
+    gamePostDTO.setMaxAmtUsers(10);
+
+    Game updatedGame = new Game(gameId, "owner");
+    updatedGame.setTimeLimit(20F); // Assuming such a setter exists
+    when(gameService.updateGameSettings(gameId, gamePostDTO)).thenReturn(updatedGame);
+
+    mockMvc.perform(put("/lobby/update/{gameId}", gameId)
+            .header("userToken", userToken)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(asJsonString(gamePostDTO)))
+            .andExpect(status().isOk());
+}
+
+@Test
+public void updateGameSettings_WithGameIdNull_ShouldReturnBadRequest() throws Exception {
+
+        String userToken= "{\"userToken\":\"valid-token\"}";
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(20F);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(10);
+
+        User mockUser = new User();
+        mockUser.setUsername("owner");
+        mockUser.setUserToken(userToken);
+
+        when(userRepository.findByUserToken("valid-token")).thenReturn(mockUser);
+
+        when(gameRepository.findById(0L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/lobby/update/{gameId}", 0L)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(gamePostDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateGameSettings_WithUserTokenEmpty_ShouldReturnBadRequest() throws Exception {
+        Long gameId = 1L;
+        String emptyUserToken = "{\"userToken\":\"\"}";
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(20F);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(10);
+
+        mockMvc.perform(put("/lobby/update/{gameId}", gameId)
+                .header("userToken", emptyUserToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(gamePostDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void updateGameSettings_WithUserNotFound_ShouldReturnNotFound() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(20F);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(10);
+
+        when(userRepository.findByUserToken("valid-token"))
+            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+
+        mockMvc.perform(put("/lobby/update/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(gamePostDTO)))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    public void updateGameSettings_WithUserNotHost_ShouldReturnForbidden() throws Exception {
+        Long gameId = 1L;
+        String userToken = "valid-token";
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(20F);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(10);
+
+        User mockUser = new User();
+        mockUser.setUsername("testUser");
+        mockUser.setUserToken("valid-token");
+
+        Game game = new Game(gameId, "owner");
+        game.addPlayer(mockUser);
+
+        when(userRepository.findByUserToken("valid-token")).thenReturn(mockUser);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        mockMvc.perform(put("/lobby/update/{gameId}", gameId)
+                .header("userToken", userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(gamePostDTO)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void startGame_WithUserNotHost_ShouldReturnForbidden() throws Exception {
+        Long gameId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        User mockUser = new User();
+        mockUser.setUsername("testUser");
+        mockUser.setUserToken("valid-token");
+
+        Game game = new Game(gameId, "owner");
+        game.addPlayer(mockUser);
+
+        when(userRepository.findByUserToken("valid-token")).thenReturn(mockUser);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        mockMvc.perform(post("/lobby/start/{gameId}", gameId)
+                .header("userToken", userToken))
+                .andExpect(status().isForbidden());
+
+    }
 
 }

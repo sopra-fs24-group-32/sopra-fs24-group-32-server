@@ -3,7 +3,6 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
@@ -40,6 +39,8 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -494,6 +495,28 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
               .content(asJsonString(userPostDTO)))
               .andExpect(status().isNotFound());
   }
+
+  @Test
+   public void loginUser_WithNonExistentUsername_ShouldReturnNotFound() throws Exception {
+        UserPostDTO userPostDTO = new UserPostDTO();
+        userPostDTO.setUsername("nonExistentUsername");
+        userPostDTO.setPassword("password");
+
+        when(userRepository.findByUsername("nonExistentUsername")).thenReturn(null); // Ensure username does not exist
+
+        mockMvc.perform(post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPostDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
+    }
+
+    @Test
+    public void logoutUser_WithNullId_ShouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/users/logout/{id}", 0L)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 
 
   /**

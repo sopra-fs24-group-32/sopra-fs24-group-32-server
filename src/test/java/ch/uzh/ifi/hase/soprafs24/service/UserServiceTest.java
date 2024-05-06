@@ -13,14 +13,13 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 
-import java.util.Optional;
-import java.util.UUID;
-import java.util.List;
+import java.util.*;
 
 
 public class UserServiceTest {
@@ -122,6 +121,8 @@ public class UserServiceTest {
     @Test
     public void findByToken_existingToken_userReturned() {
         // given
+        List<User> userList = new ArrayList<>();
+        userList.add(testUser); 
         String token = UUID.randomUUID().toString();
         testUser.setUserToken(token);
         when(userRepository.findAll()).thenReturn(List.of(testUser));
@@ -133,6 +134,8 @@ public class UserServiceTest {
         assertNotNull(foundUser);
         assertEquals(testUser.getId(), foundUser.getId());
     }
+
+    
 
 
     // I add some updateUserTests as soon as I merge the branch with func that also updates mail + picture
@@ -155,6 +158,39 @@ public class UserServiceTest {
     //        fail("Exception thrown: " + e.getMessage());
     //    }
     //}
+
+    @Test
+    public void getAllUsers_noUsers_emptyListReturned() {
+        // given
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // when
+        List<User> result = userService.getAllUsers();
+
+        // then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void getAllUsers_existingUsers_listWithUsersReturned() {
+        when(userRepository.findAll()).thenReturn(List.of(testUser));
+
+        List<User> result = userService.getAllUsers();
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    public void findByUsername_existingUsername_userReturned() {
+        when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+        User result = userService.findByUsername("testUsername");
+
+        assertNotNull(result);
+        assertEquals(testUser.getId(), result.getId());
+    }
     
 
     @Test

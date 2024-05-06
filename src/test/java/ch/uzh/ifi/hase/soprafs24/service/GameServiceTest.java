@@ -601,16 +601,23 @@ public class GameServiceTest {
     //     assertTrue(actualMessage.contains(expectedMessage));
     // }
 
-    // @Test
-    // public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
-    //     String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
-    //     // mock DALLE
-    //     DallE dallE = mock(DallE.class);
-    //     when(dallE.getInputPhrase()).thenReturn("A picture of a cat");
-    //     // when(dallE.generatePictureDallE("A picture of a cat")).thenReturn("https://www.google.com");
-    //     String imageUrl = gameService.generatePictureDallE(inputPhrase);
-    //     assertNotNull(imageUrl);
-    // }
+    @Test
+    public void generatePictureWithDallE_WithValidPrompt_ShouldReturnImageUrl() throws Exception {
+        // Setup
+        String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
+        String expectedUrl = "https://example.com/cat.jpg";
+
+        DallE dallE = mock(DallE.class);
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT); 
+
+        when(dallE.generatePicture("A picture of a cat")).thenReturn(expectedUrl);
+
+        String imageUrl = gameService.generatePictureDallE(inputPhrase);
+
+        assertNotNull(imageUrl);
+        assertEquals(expectedUrl, imageUrl);
+        verify(dallE).generatePicture("A picture of a cat");
+    }
 
     @Test
     public void generatePictureWithDallE_WithEmptyPrompt_ShouldThrowException() throws Exception {
@@ -2147,5 +2154,96 @@ public class GameServiceTest {
 
         assertTrue(actualMessage1.contains(expectedMessage));
         assertTrue(actualMessage2.contains(expectedMessage));
+    }
+
+    @Test
+    public void leaveLobby_WithGameNotFound_ShouldThrowException() throws Exception {
+        Long gameId = 1L;
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameId, "userToken");
+        });
+
+        String expectedMessage = "Lobby with ID " + gameId + " does not exist";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void leaveLobby_WithUserNotInTheLobby_ShouldThrowException() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        User user2 = new User();
+        user2.setUserToken("userToken2");
+        user2.setUsername("user2");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("user");
+        game.addPlayer(user);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(user2);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameId, "userToken2");
+        });
+
+        String expectedMessage = "User is not in the specified lobby";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void gameIsFinishedLeaveLobby_WithUserNotExist_ShouldThrowException() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("user");
+        game.addPlayer(user);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.gameIsFinishedLeaveLobby(gameId, "userToken2");
+        });
+
+        String expectedMessage = "User does not exist";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void gameIsFinishedLeaveLobby_WithLobbyNotPresent_ShouldThrowException() throws Exception {
+        Long gameId = 1L;
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.gameIsFinishedLeaveLobby(gameId, "userToken");
+        });
+
+        String expectedMessage = "Lobby not found";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 }

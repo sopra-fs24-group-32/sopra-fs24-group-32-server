@@ -83,17 +83,18 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public User loginUser(@RequestBody UserPostDTO userPostDTO) {
-        // convert API user to internal representation
-        User user = userRepository.findByUsername(userPostDTO.getUsername());
-        if (!Objects.equals(userRepository.findByUsername(userPostDTO.getUsername()).getPassword(), userPostDTO.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "wrong password for" + userPostDTO.getUsername());
-        }
-        if (user != null) {
-            userService.loginUser(user);
-            return user;
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user exists with username: " + userPostDTO.getUsername());
-        }
+      User user = userRepository.findByUsername(userPostDTO.getUsername());
+    
+      if (user == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user exists with username: " + userPostDTO.getUsername());
+      }
+  
+      if (!Objects.equals(userRepository.findByUsername(userPostDTO.getUsername()).getPassword(), userPostDTO.getPassword())) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong password or username");
+      }
+  
+      userService.loginUser(user);
+      return user;
     }
 
   @PostMapping("/users/logout/{id}")
@@ -101,7 +102,7 @@ public class UserController {
     @ResponseBody
     public void logoutUser(@PathVariable Long id)
     {
-      if (id == null) {
+      if (id == null || id == 0) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID cannot be null");
       }
 
