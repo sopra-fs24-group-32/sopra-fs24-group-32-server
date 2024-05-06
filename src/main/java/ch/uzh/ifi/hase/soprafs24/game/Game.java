@@ -112,6 +112,9 @@ public class Game {
              */
             users.remove(user);
             user.deleteGame(this);
+            if (remaininPictureGenerators.contains(user.getUsername())) {
+                remaininPictureGenerators.remove(user.getUsername());
+            }
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in the game");
         }

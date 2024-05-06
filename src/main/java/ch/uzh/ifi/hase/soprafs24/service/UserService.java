@@ -40,7 +40,7 @@ public class UserService {
   public User registerUser(User newUser) {
     
     checkIfUserExists(newUser);
-    
+
     newUser.setStatus(UserStatus.ONLINE);
     newUser.setIsLoggedIn(true);
     newUser.setUserToken(UUID.randomUUID().toString());
@@ -58,6 +58,10 @@ public class UserService {
     public void loginUser(User userToLogin) {
         Optional<User> userOptional = userRepository.findById(userToLogin.getId());
 
+        if (!userOptional.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+        }
+
         if (userOptional.isPresent()) {
             User user = userOptional.get();
 
@@ -70,6 +74,9 @@ public class UserService {
 
     public void logoutUser(User userToLogout) {
         Optional<User> userBeforeOptional = userRepository.findById(userToLogout.getId());
+        if (!userBeforeOptional.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
+        }
 
         if (userBeforeOptional.isPresent()) {
             User userBefore = userBeforeOptional.get();
@@ -115,8 +122,9 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-  public User updateUser(int id, User user) throws Exception {
-    User reqUser = this.getUserById(id);
+  public User updateUser(Long id, User user) throws Exception {
+    // User reqUser = this.getUserById(id);
+    User reqUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     if (!user.getUsername().isBlank()){
       checkIfUserExists(user);
       reqUser.setUsername(user.getUsername());
@@ -124,7 +132,7 @@ public class UserService {
     if (user.getBirthDay() != null){
       reqUser.setBirthDay(user.getBirthDay());
     }
-    reqUser.setPassword(this.getUserById(id).getPassword());
+    reqUser.setPassword(user.getPassword());
     reqUser.setUserToken(UUID.randomUUID().toString());
     reqUser.setStatus(UserStatus.ONLINE);
     reqUser.setIsLoggedIn(true);
