@@ -17,7 +17,6 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
@@ -194,55 +193,117 @@ public class GameServiceTest {
     }
 
 
-    // @Test
-    // public void testUpdateGame() throws Exception {
+    @Test
+    public void testUpdateGame() throws Exception {
 
-    //     User lobbyOwen = new User();
-    //     lobbyOwen.setUserToken("ownerToken");
-    //     lobbyOwen.setUsername("owner");
+        User lobbyOwen = new User();
+        lobbyOwen.setUserToken("ownerToken");
+        lobbyOwen.setUsername("owner");
+        lobbyOwen.setId(1L);
 
-    //     when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        Game lobby = new Game();
+        lobby.setId(1L);
+        lobby.setLobbyOwner("owner");
 
-    //     Game lobby = gameService.createLobby("ownerToken");
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(lobby));
 
-    //     GamePostDTO gamePostDTO = new GamePostDTO();
-    //     gamePostDTO.setTimeLimit(15.0f);
-    //     gamePostDTO.setAmtOfRounds(7);
-    //     gamePostDTO.setMaxAmtUsers(12);
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(15.0f);
+        gamePostDTO.setAmtOfRounds(7);
+        gamePostDTO.setMaxAmtUsers(12);
 
-    //     when(gameRepository.findById(lobby.getId())).thenReturn(lobby);
+        Game updatedLobby = gameService.updateGameSettings(lobby.getId(), gamePostDTO);
 
-    //     Game updatedLobby = gameService.updateGameSettings(lobby.getId(), gamePostDTO);
+        // Assert
+        assertNotNull(updatedLobby);
+        assertEquals(15.0f, updatedLobby.getTimeLimit());
+        assertEquals(7, updatedLobby.getAmtOfRounds());
+        assertEquals(12, updatedLobby.getMaxAmtUsers());
+    }
 
-    //     // Assert
-    //     assertNotNull(updatedLobby);
-    //     assertEquals(15.0f, updatedLobby.getTimeLimit());
-    //     assertEquals(7, updatedLobby.getAmtOfRounds());
-    //     assertEquals(12, updatedLobby.getMaxAmtUsers());
-    // }
+    @Test
+    public void testUpdateGameIllegalArgument_NumberOfRounds() throws Exception {
 
-    // @Test
-    // public void testUpdateGameIllegalArgument() throws Exception {
+        User lobbyOwen = new User();
+        lobbyOwen.setUserToken("ownerToken");
+        lobbyOwen.setUsername("owner");
 
-    //     User lobbyOwen = new User();
-    //     lobbyOwen.setUserToken("ownerToken");
-    //     lobbyOwen.setUsername("owner");
+        Game lobby = new Game();
+        lobby.setId(1L);
+        lobby.setLobbyOwner("owner");
 
-    //     when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(lobby));
 
-    //     Game lobby = gameService.createLobby("ownerToken");
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(15.0f);
+        gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
+        gamePostDTO.setMaxAmtUsers(12);
 
-    //     GamePostDTO gamePostDTO = new GamePostDTO();
-    //     gamePostDTO.setTimeLimit(15.0f);
-    //     gamePostDTO.setAmtOfRounds(0);      //illegal number of rounds
-    //     gamePostDTO.setMaxAmtUsers(12);
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.updateGameSettings(lobby.getId(), gamePostDTO);
+        }, "There must be at least one round.");
+    }
 
-    //     when(gameRepository.findById(lobby.getId())).thenReturn(lobby);
+    @Test
+    public void testUpdateGameIllegalArgument_TimeLimit() throws Exception {
 
-    //     assertThrows(IllegalArgumentException.class, () -> {
-    //         gameService.updateGameSettings(lobby.getId(), gamePostDTO);
-    //     }, "There must be at least one round.");
-    // }
+        User lobbyOwen = new User();
+        lobbyOwen.setUserToken("ownerToken");
+        lobbyOwen.setUsername("owner");
+
+        Game lobby = new Game();
+        lobby.setId(1L);
+        lobby.setLobbyOwner("owner");
+
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(lobby));
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(0.0f);      //illegal time limit T=0
+        gamePostDTO.setAmtOfRounds(7);
+        gamePostDTO.setMaxAmtUsers(12);
+
+        GamePostDTO gamePostDTO2 = new GamePostDTO();
+        gamePostDTO2.setTimeLimit(101.0f);      //illegal time limit T=101
+        gamePostDTO2.setAmtOfRounds(7);
+        gamePostDTO2.setMaxAmtUsers(12);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.updateGameSettings(lobby.getId(), gamePostDTO);
+        }, "Time limit must be between 5 seconds and 100 Seconds.");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.updateGameSettings(lobby.getId(), gamePostDTO2);
+        }, "Time limit must be between 5 seconds and 100 Seconds.");
+
+    }
+
+    @Test
+    public void testUpdateGameIllegalArgument_MaxAmtUsers() throws Exception {
+
+        User lobbyOwen = new User();
+        lobbyOwen.setUserToken("ownerToken");
+        lobbyOwen.setUsername("owner");
+
+        Game lobby = new Game();
+        lobby.setId(1L);
+        lobby.setLobbyOwner("owner");
+
+        when(userRepository.findByUserToken("ownerToken")).thenReturn(lobbyOwen);
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(lobby));
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(15.0f);
+        gamePostDTO.setAmtOfRounds(7);
+        gamePostDTO.setMaxAmtUsers(1);      //illegal number of max users = 1
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.updateGameSettings(lobby.getId(), gamePostDTO);
+        }, "There must be at least two players.");
+
+    }
 
     @Test
     public void testJoinGame() throws Exception {
