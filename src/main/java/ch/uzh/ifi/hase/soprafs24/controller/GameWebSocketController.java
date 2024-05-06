@@ -83,11 +83,11 @@ public class GameWebSocketController {
    @ResponseBody
    public Game joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
        if (userToken == null || userToken.isEmpty()) {
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
        }
 
        if(invitationCodes == null || invitationCodes.isEmpty()){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "invitationCodes is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invitationCodes is null or empty");
        }
 
        Game game = gameService.joinLobby(invitationCodes, userToken);
@@ -106,8 +106,8 @@ public class GameWebSocketController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
         }
 
-        if (lobbyId == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
+        if (lobbyId == null || lobbyId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
         }
 
         // Parse the userToken from JSON

@@ -6,24 +6,20 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import java.util.Optional;
-import java.util.List;
 import java.util.Collections;
 import static org.mockito.ArgumentMatchers.anyLong;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,14 +28,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.test.web.servlet.MvcResult;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -843,4 +835,103 @@ public class GameControllerTest {
                 .content(userToken))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void joinLobby_WithUserTokenNullOrEmpty_ShouldReturnBadRequest() throws Exception {
+        String invitationCode = "1234";
+
+        mockMvc.perform(post("/lobby/join/{invitationCode}", invitationCode)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void joinLobby_WithValidParameters_ShouldReturnOk() throws Exception {
+        String invitationCode = "1234";
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/lobby/join/{invitationCode}", invitationCode)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void leaveLobby_WithValidParam_ShouldReturnOk() throws Exception {
+        String userToken = "{\"userToken\":\"valid-token\"}";
+        Long lobbyId = 1L;
+
+        User mockUser = new User();
+        mockUser.setUsername("testUser");
+        mockUser.setUserToken("valid-token");
+
+        when(userService.findByToken("valid-token")).thenReturn(mockUser);
+        when(gameService.leaveLobby(lobbyId, "valid-token")).thenReturn(new Game());
+
+        mockMvc.perform(post("/lobby/leave/{lobbyId}", lobbyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void leaveLobby_WithUserTokenNullOrEmpty_ShouldReturnBadRequest() throws Exception {
+        Long lobbyId = 1L;
+
+        mockMvc.perform(post("/lobby/leave/{lobbyId}", lobbyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void leaveLobby_WhenUserDoesNotExist_ShouldReturnNotFound() throws Exception {
+        Long lobbyId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        when(userService.findByToken("valid-token"))
+            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"))
+                .when(gameService).leaveLobby(lobbyId, "valid-token");
+
+        mockMvc.perform(post("/lobby/leave/{lobbyId}", lobbyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void leaveLobby_WhenGameDoesNotExist_ShouldReturnNotFound() throws Exception {
+        Long lobbyId = 1L;
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        User mockUser = new User();
+        mockUser.setUsername("testUser");
+        mockUser.setUserToken("valid-token");
+
+        when(userService.findByToken("valid-token")).thenReturn(mockUser);
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game does not exist"))
+                .when(gameService).leaveLobby(lobbyId, "valid-token");
+        
+        mockMvc.perform(post("/lobby/leave/{lobbyId}", lobbyId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void leaveLobby_WithLobbyIdNull_ShouldReturnBadRequest() throws Exception {
+        String userToken = "{\"userToken\":\"valid-token\"}";
+
+        mockMvc.perform(post("/lobby/leave/{lobbyId}", 0L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(userToken))
+                .andExpect(status().isBadRequest());
+    }
+
+
 }

@@ -4,7 +4,6 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.SimpleUserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
@@ -19,7 +18,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ResponseStatusException;
-import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
 import java.util.List;

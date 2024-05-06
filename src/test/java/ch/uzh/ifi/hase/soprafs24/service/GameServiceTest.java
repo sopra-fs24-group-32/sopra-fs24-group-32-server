@@ -1408,6 +1408,31 @@ public class GameServiceTest {
     }
 
     @Test
+    public void deleteLobby_WithFindUserByTokenNull_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("invalidToken")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.deleteLobby(gameId, "invalidToken");
+        });
+
+        String expectedMessage = "User with sent userToken does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     public void gameIsFinishedLeaveLobby_WithValidInputs_ShouldReturnNothing() throws Exception {
         User lobbyOwner = new User();
         lobbyOwner.setUserToken("userToken");
@@ -2028,5 +2053,99 @@ public class GameServiceTest {
         gameService.getImageGeneratedByDallE();
         verify(dallE).getImageUrl();
         verifyNoMoreInteractions(dallE);
+    }
+
+    @Test
+    public void leaveLobby_WithValidLobbyIdAndUserToken_ShouldReturnSuccessMessage() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("user");
+        game.addPlayer(user);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+
+        gameService.leaveLobby(gameId, "userToken");
+
+        verify(gameRepository).save(game);
+        verify(userRepository).save(user);
+        assertEquals(0, game.getUsers().size());
+    }
+
+    @Test
+    public void leaveLobby_WithInvalidLobbyId_ShouldThrowException() throws Exception {
+        Long invalidGameId = 22L;
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(gameRepository.findById(invalidGameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby with ID " + invalidGameId + " does not exist"));
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(invalidGameId, "userToken");
+        });
+
+        String expectedMessage = "Lobby with ID " + invalidGameId + " does not exist";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void leaveLobby_WithInvalidUserToken_ShouldThrowException() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("user");
+        game.addPlayer(user);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameId, "userToken");
+        });
+
+        String expectedMessage = "User does not exist";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void leaveLobby_WithLobbyIdNull_ShouldThrowException() throws Exception {
+        Long gameId = 0L;
+        Long gameIdNull = null;
+
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(gameRepository.findById(gameId)).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null"));
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameId, "userToken");
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameIdNull, "userToken");
+        });
+
+        String expectedMessage = "Lobby ID is null";
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+        System.out.println("actualMessage1: " + actualMessage1);
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
     }
 }
