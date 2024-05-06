@@ -203,7 +203,7 @@ public class Game {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started yet");
         }
         if (currentRound >= amtOfRounds) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played. Game is over.");
         }
 
         if (pictureGeneratorQueue.isEmpty()) {

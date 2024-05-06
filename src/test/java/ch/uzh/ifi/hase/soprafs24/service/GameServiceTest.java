@@ -1,13 +1,12 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 import java.util.*;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
@@ -151,6 +150,28 @@ public class GameServiceTest {
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void joinLobby_WithGameNull_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        String userToken = "{\"userToken\":\"userToken\"}";
+
+        when(userRepository.findByUserToken(userToken)).thenReturn(lobbyOwner);
+        when(gameRepository.findByLobbyInvitationCode("1")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.joinLobby("1", userToken);
+        });
+
+        String expectedMessage = "Lobby with invitation code: " + "1";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+
     }
 
     @Test
@@ -529,6 +550,32 @@ public class GameServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
+    @Test
+    public void playerLeaveGame_WithFindUserByTokenNull_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, "userToken2");
+        });
+
+        String expectedMessage = "User with sent userToken does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
     // @Test
     // public void playerLeaveGame_ShouldThrowExceptionWhenUserIsLobbyOwner() throws Exception {
     //     User lobbyOwner = new User();
@@ -670,6 +717,37 @@ public class GameServiceTest {
     }
 
     @Test
+    public void evaluatePlayerGuessWithChatGPT_WithEmptyOrNullOriginalText_ShouldThrowException() throws Exception {
+        String emptyOriginalText = "";
+        String nullOriginalText = null;
+        String playerGuessed = "cat on the ground";
+
+        DallE dallE = mock(DallE.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        when(dallE.getInputPhrase()).thenReturn(emptyOriginalText);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+
+        Exception exceptionEmpty = assertThrows(ResponseStatusException.class, () -> {
+            gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
+        });
+
+        when(dallE.getInputPhrase()).thenReturn(nullOriginalText);
+
+        Exception exceptionNull = assertThrows(ResponseStatusException.class, () -> {
+            gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
+        });
+
+        String expectedMessage = "Image description is null or empty";
+        String actualMessageEmpty = exceptionEmpty.getMessage();
+        String actualMessageNull = exceptionNull.getMessage();
+
+        assertTrue(actualMessageEmpty.contains(expectedMessage));
+        assertTrue(actualMessageNull.contains(expectedMessage));
+    }
+
+    @Test
     public void getNextPictureGenerator_WithInvalidGameId_ShouldThrowException() {
         Long invalidGameId = 22L;
         when(gameRepository.findById(invalidGameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
@@ -755,6 +833,72 @@ public class GameServiceTest {
         });
 
         String expectedMessage = "All rounds have been played";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+        assertNotNull(selectedPlayer1);
+        assertNotNull(selectedPlayer2);
+    }
+
+    @Test
+    public void getNextPictureGenerator_WithGameIdNullorZerro_ShouldThrowException() throws Exception {
+        Long invalidGameId = 0L;
+        when(gameRepository.findById(invalidGameId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.getNextPictureGenerator(null);
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.getNextPictureGenerator(0L);
+        });
+
+        String expectedMessage = "Game ID is null";
+
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
+
+    }
+
+    @Test
+    public void getNextPictureGenerator_WithNextGeneratorNull_ShouldThrowException() throws Exception {
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+
+        User player1 = new User();
+        player1.setUserToken("userToken1");
+        player1.setUsername("player1");
+
+        User player2 = new User();
+        player2.setUserToken("userToken2");
+        player2.setUsername("player2");
+
+        Set<String> remaininPictureGenerators = new HashSet<>();
+        remaininPictureGenerators.add("player1");
+        remaininPictureGenerators.add("player2");
+        game.setRemaininPictureGenerators(remaininPictureGenerators);
+
+        game.setAmtOfRounds(1);
+        game.addPlayer(player2);
+        game.addPlayer(player1);
+        game.setGameStarted(true);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        String selectedPlayer1 = gameService.getNextPictureGenerator(gameId);
+        remaininPictureGenerators.remove(selectedPlayer1);
+        String selectedPlayer2 = gameService.getNextPictureGenerator(gameId);
+        remaininPictureGenerators.remove(selectedPlayer2);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.getNextPictureGenerator(gameId);
+        });
+        String expectedMessage = "All rounds have been played. Game is over.";
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -1059,6 +1203,66 @@ public class GameServiceTest {
 
         assertTrue(actualMessage1.contains(expectedMessage));
         assertTrue(actualMessage2.contains(expectedMessage));
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithFindUserByTokenNull_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(gameId, "userToken", "userToken2");
+        });
+
+        String expectedMessage = "User with sent userToken does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void hostRemovePlayerFromLobby_WithFindHostByTokenNull_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        User player = new User();
+        player.setUserToken("userToken2");
+        player.setUsername("player");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(null);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.hostRemovePlayerFromLobby(gameId, "userToken", "userToken2");
+        });
+
+        String expectedMessage = "Host with sent hostToken does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
@@ -1615,5 +1819,214 @@ public class GameServiceTest {
 
         assertTrue(actualMessage1.contains(expectedMessage));
         assertTrue(actualMessage2.contains(expectedMessage));
+    }
+
+    @Test
+    public void createLobby_WithInvalidTimeLlimits_ShouldThrowExceptions() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(4.0f);
+        gamePostDTO.setAmtOfRounds(10);
+
+        GamePostDTO gamePostDTO2 = new GamePostDTO();
+        gamePostDTO2.setTimeLimit(-1.0f);
+        gamePostDTO2.setAmtOfRounds(10);
+
+        GamePostDTO gamePostDTO3 = new GamePostDTO();
+        gamePostDTO3.setTimeLimit(101.0f);
+        gamePostDTO3.setAmtOfRounds(10);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO);
+        }, "Time limit must be between 5 seconds and 100 Seconds.");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO2);
+        }, "Time limit must be between 5 seconds and 100 Seconds.");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO3);
+        }, "Time limit must be between 5 seconds and 100 Seconds.");
+    }
+
+    @Test
+    public void createLobby_WithInvalidAmtOfRounds_ShouldThrowExceptions() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(10.0f);
+        gamePostDTO.setAmtOfRounds(0);
+
+        GamePostDTO gamePostDTO2 = new GamePostDTO();
+        gamePostDTO2.setTimeLimit(10.0f);
+        gamePostDTO2.setAmtOfRounds(-1);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO);
+        }, "There must be at least one round.");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO2);
+        }, "There must be at least one round.");
+    }
+
+    @Test
+    public void createLobby_WithInvalidMaxOfPlayers_ShouldThrowExceptions() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(10.0f);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(1);
+
+        GamePostDTO gamePostDTO2 = new GamePostDTO();
+        gamePostDTO2.setTimeLimit(10.0f);
+        gamePostDTO2.setAmtOfRounds(10);
+        gamePostDTO2.setMaxAmtUsers(-11);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO);
+        }, "The maximum number of users cannot be less than 2.");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            gameService.createLobby(user.getUserToken(), gamePostDTO2);
+        }, "The maximum number of users cannot be less than 2.");
+    }
+
+    @Test
+    public void createLobby_WithValidInputs_ShouldReturnGame() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(10.0f);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(4);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+
+        Game actualGame = gameService.createLobby(user.getUserToken(), gamePostDTO);
+
+        assertNotNull(actualGame);
+        assertEquals(user.getUsername(), actualGame.getLobbyOwner());
+        assertEquals(10.0f, actualGame.getTimeLimit());
+        assertEquals(10, actualGame.getAmtOfRounds());
+        assertEquals(4, actualGame.getMaxAmtUsers());
+    }
+
+    @Test
+    public void createLobby_WithUserTokenNullOrEmpty_ShouldThrowException() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(10.0f);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(4);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.createLobby("", gamePostDTO);
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.createLobby(null, gamePostDTO);
+        });
+
+        String expectedMessage = "User does not exist";
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
+    }
+
+    @Test
+    public void createLobby_WithFoundUserByTokenNull_ShouldThrowException() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        GamePostDTO gamePostDTO = new GamePostDTO();
+        gamePostDTO.setTimeLimit(10.0f);
+        gamePostDTO.setAmtOfRounds(10);
+        gamePostDTO.setMaxAmtUsers(4);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.createLobby("userToken", gamePostDTO);
+        });
+
+        String expectedMessage = "User does not exist";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+
+    @Test
+    public void resetDallEsImageURL_WhenCalled_ShouldReturnSuccessMessage() {
+        DallE dallE = mock(DallE.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        GameRepository gameRepository = mock(GameRepository.class);
+        UserService userService = mock(UserService.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+
+        gameService.resetDallEsImageURL();
+        verify(dallE).setImageUrl("");
+        verifyNoMoreInteractions(dallE);
+    }
+
+    @Test
+    public void resetDallEsImageURL_WhenExceptionThrown_ShouldThrowException() {
+        DallE dallE = mock(DallE.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        GameRepository gameRepository = mock(GameRepository.class);
+        UserService userService = mock(UserService.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+
+        doThrow(new RuntimeException()).when(dallE).setImageUrl("");
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            gameService.resetDallEsImageURL();
+        });
+
+        assertNotNull(exception);
+    }
+
+    @Test
+    public void getImageGeneratedByDallE_WhenCalled_ShouldReturnImage() {
+        DallE dallE = mock(DallE.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        GameRepository gameRepository = mock(GameRepository.class);
+        UserService userService = mock(UserService.class);
+        ChatGPT chatGPT = mock(ChatGPT.class);
+
+        GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+
+        gameService.getImageGeneratedByDallE();
+        verify(dallE).getImageUrl();
+        verifyNoMoreInteractions(dallE);
     }
 }

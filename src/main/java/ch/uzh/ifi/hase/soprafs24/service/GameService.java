@@ -16,13 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.ChatGPTPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class GameService {
@@ -244,7 +242,7 @@ public class GameService {
    @Transactional
    public String getNextPictureGenerator(Long id){
        if (id == null || id == 0) {
-           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null");
        }
 
        Game game = gameRepository.findById(id)
