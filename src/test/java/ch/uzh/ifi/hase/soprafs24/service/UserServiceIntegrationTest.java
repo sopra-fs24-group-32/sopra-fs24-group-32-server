@@ -156,4 +156,32 @@ public class UserServiceIntegrationTest {
 
     assertEquals(updatedUser.getUsername(), newUserUpdated.getUsername());
   }
+
+  @Test
+  public void logoutUser_WithValidId_ShouldReturnUser() {
+    User testUser = new User();
+    testUser.setUsername("testUsername");
+    testUser.setPassword("testPassword");
+    testUser.setId(1L);
+    testUser.setStatus(UserStatus.ONLINE);
+    testUser.setIsLoggedIn(true);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+    userService.logoutUser(testUser);
+
+    assertEquals(testUser.getStatus(), UserStatus.OFFLINE);
+  }
+
+  @Test
+  public void logoutUser_WithInvalidId_ShouldThrowResponseStatusException() {
+    User testUser = new User();
+    testUser.setUsername("testUsername");
+    testUser.setPassword("testPassword");
+    testUser.setId(1L);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> userService.logoutUser(testUser));
+  }
 }

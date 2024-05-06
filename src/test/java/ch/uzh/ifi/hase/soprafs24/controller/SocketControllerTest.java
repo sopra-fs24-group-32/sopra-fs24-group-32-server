@@ -132,5 +132,20 @@ public class SocketControllerTest {
 
     }
 
+    @Test
+    public void joinGame_WithInvalidUserToken_ShouldThrowResponseStatusException() {
+        String userToken = "invalid-token";
+
+        given(userService.findByToken(userToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found"));
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.joinGame(userToken);
+        });
+
+        assertTrue(exception instanceof ResponseStatusException);
+        assertEquals(HttpStatus.BAD_REQUEST, ((ResponseStatusException)exception).getStatus());
+
+    }
+
 
 }

@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
@@ -431,6 +430,47 @@ public class GameServiceTest {
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void playerLeaveGame_WithUserTokenNullOrEmpty_ShouldThrowException() throws Exception {
+        User lobbyOwner = new User();
+        lobbyOwner.setUserToken("userToken");
+        lobbyOwner.setUsername("lobbyOwner");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+        game.addPlayer(lobbyOwner);
+
+        User player1EmptyToken = new User();
+        player1EmptyToken.setUserToken("");
+        player1EmptyToken.setUsername("player1");
+
+        User player2NullToken = new User();
+        player2NullToken.setUserToken(null);
+        player2NullToken.setUsername("player2");
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+        when(userRepository.findByUserToken("userToken2")).thenReturn(player1EmptyToken);
+        when(userRepository.findByUserToken("userToken3")).thenReturn(player2NullToken);
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, player1EmptyToken.getUserToken());
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.playerLeaveGame(gameId, player2NullToken.getUserToken());
+        });
+
+        String expectedMessage = "UserToken is null or empty";
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
     }
 
     @Test
@@ -2245,5 +2285,36 @@ public class GameServiceTest {
         String expectedMessage = "Lobby not found";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    public void leaveLobby_WithUserTokenNullOrEmpty_ShouldReturnBadRequest() throws Exception {
+        User user = new User();
+        user.setUserToken("userToken");
+        user.setUsername("user");
+
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("user");
+        game.addPlayer(user);
+
+        when(userRepository.findByUserToken("userToken")).thenReturn(user);
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        Exception exception1 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameId, "");
+        });
+
+        Exception exception2 = assertThrows(ResponseStatusException.class, () -> {
+            gameService.leaveLobby(gameId, null);
+        });
+
+        String expectedMessage = "User token is null or empty";
+        String actualMessage1 = exception1.getMessage();
+        String actualMessage2 = exception2.getMessage();
+
+        assertTrue(actualMessage1.contains(expectedMessage));
+        assertTrue(actualMessage2.contains(expectedMessage));
     }
 }
