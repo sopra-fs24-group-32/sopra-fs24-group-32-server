@@ -51,11 +51,14 @@ public class GameService {
     }
 
     public List<Game> getAllGames() {
-        return games;
+        return gameRepository.findAll();
     }
 
 
     public GameGetDTO getGame(Long gameId) {
+        if (gameId == null || gameId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null");
+        }
         return gameRepository.findById(gameId)
             .map(game -> DTOMapper.INSTANCE.convertEntityToGameGetDTO(game))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
@@ -224,7 +227,7 @@ public class GameService {
    // This is just an initial implementation of the startGameLobby method
    public Game startGameLobby(Long id) {
     if (id == null || id == 0) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null");
     }
        
     Game lobby = gameRepository.findById(id)
@@ -354,7 +357,7 @@ public class GameService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
             }
 
-            if (lobbyId == null) {
+            if (lobbyId == null || lobbyId == 0) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
             }
 
@@ -430,7 +433,7 @@ public class GameService {
         }
 
         if (hostToken == null || hostToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "HostToken is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Host Token is null or empty");
         }
 
         if (gameId == null || gameId == 0) {
