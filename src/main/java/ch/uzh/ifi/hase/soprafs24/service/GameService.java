@@ -189,7 +189,7 @@ public class GameService {
    public Game leaveLobby(Long lobbyId, String userToken) throws Exception {
     try {
         if (userToken == null || userToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User token is null or empty");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
         }
     
         if (lobbyId == null) {
@@ -352,11 +352,11 @@ public class GameService {
     public void gameIsFinishedLeaveLobby(Long lobbyId, String userToken) throws Exception {
         try {
             if (userToken == null || userToken.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User token is null or empty");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
             }
 
             if (lobbyId == null || lobbyId == 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
             }
 
             User user = userRepository.findByUserToken(userToken);
@@ -364,8 +364,17 @@ public class GameService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
             }
 
-            Game game = gameRepository.findById(lobbyId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+            Optional<Game> optionalGame = gameRepository.findById(lobbyId);
+            
+
+            if(!optionalGame.isPresent()){
+                user.setGame(null);
+                userRepository.save(user);
+                return;
+            }
+
+            Game game = optionalGame.get();
+
 
             if (!game.getUsers().contains(user)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not in the specified lobby");

@@ -2268,24 +2268,24 @@ public class GameServiceTest {
         assertTrue(actualMessage.contains(expectedMessage));
     }
 
-    @Test
-    public void gameIsFinishedLeaveLobby_WithLobbyNotPresent_ShouldThrowException() throws Exception {
-        Long gameId = 1L;
-        User user = new User();
-        user.setUserToken("userToken");
-        user.setUsername("user");
+    // @Test
+    // public void gameIsFinishedLeaveLobby_WithLobbyNotPresent_ShouldThrowException() throws Exception {
+    //     Long gameId = 1L;
+    //     User user = new User();
+    //     user.setUserToken("userToken");
+    //     user.setUsername("user");
 
-        when(userRepository.findByUserToken("userToken")).thenReturn(user);
-        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+    //     when(userRepository.findByUserToken("userToken")).thenReturn(user);
+    //     when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.gameIsFinishedLeaveLobby(gameId, "userToken");
-        });
+    //     Exception exception = assertThrows(ResponseStatusException.class, () -> {
+    //         gameService.gameIsFinishedLeaveLobby(gameId, "userToken");
+    //     });
 
-        String expectedMessage = "Lobby not found";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
-    }
+    //     String expectedMessage = "Lobby not found";
+    //     String actualMessage = exception.getMessage();
+    //     assertTrue(actualMessage.contains(expectedMessage));
+    // }
 
     @Test
     public void leaveLobby_WithUserTokenNullOrEmpty_ShouldReturnBadRequest() throws Exception {
