@@ -93,6 +93,8 @@ Fix the bug that when a user leaves the lobby he gets deleted entirely, instead 
 Make it possible for a player (except game host) to leave the lobby from the home page. Issue #106
 
 ## Roger
+1. There should be a pop up informing which player has left. #54
+2. Implemented more game service and controller tests.
 
 # Week 01.05 - 08.05
 
@@ -109,3 +111,5 @@ Added that correct description is revealed after each round in the scoreboard. G
 ## Nicolas H.
 
 ## Roger
+1. The host has the ability to remove any player from the lobby during the lobby stage #94
+2. After being kicked, users are unable to rejoin the same lobby without a new invitation from the lobby creator #96
