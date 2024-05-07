@@ -380,7 +380,7 @@ public class GameWebSocketController {
         // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
         if (mappedToken == null || mappedToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
         if (gameId == null || gameId == 0) {
@@ -399,7 +399,7 @@ public class GameWebSocketController {
         // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
         if (mappedToken == null || mappedToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
         if (gameId == null || gameId == 0) {
