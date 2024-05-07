@@ -76,6 +76,9 @@ Implemented game service and controller tests.
 # Week 24.04 - 01.05
 
 ## Eric
+fixed join lobby input field loosing focus after each key stroke #57
+added settings form to lobby create page #30
+added frontend navigating functionalities #2
 
 ## Eduard 
 Points are rewarded after guessing and timelimit reached #74. 
@@ -94,6 +97,8 @@ Make it possible for a player (except game host) to leave the lobby from the hom
 # Week 01.05 - 08.05
 
 ## Eric
+text color correction #20
+fixed logout from homescreen #47
 
 ## Eduard
 Scoreboard Ranking and winning player is highlighted in Gold after every round and animated #40 and #18.
