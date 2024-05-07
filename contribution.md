@@ -91,3 +91,17 @@ Fix the bug that when a user leaves the lobby he gets deleted entirely, instead 
 Make it possible for a player (except game host) to leave the lobby from the home page. Issue #106
 
 ## Roger
+
+# Week 02.05 - 08.05
+
+## Eric
+
+## Eduard
+
+## Nicolas S.
+Added WS for Kickplayer -> Players get notified when someone kicked #49 #50 + ws disconnected when leaving + kicked
+adjusted display for back and Profile Button
+
+## Nicolas H.
+
+## Roger
