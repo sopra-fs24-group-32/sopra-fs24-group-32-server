@@ -7,12 +7,10 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,14 +32,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
 // import simp messaging template
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 
 
 @RestController
-public class GameWebSocketController {
+public class GameController {
 
-    Logger log = LoggerFactory.getLogger(GameWebSocketController.class);
+    Logger log = LoggerFactory.getLogger(GameController.class);
 
     private final GameService gameService;
     private final UserService userService;
@@ -54,12 +48,27 @@ public class GameWebSocketController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    private ObjectMapper mapper;
 
-    GameWebSocketController(GameService gameService, UserService userService, UserRepository userRepository, GameRepository gameRepository) {
+
+    GameController(GameService gameService, UserService userService, UserRepository userRepository, GameRepository gameRepository) {
         this.gameService = gameService;
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
         this.userService = userService;
+        this.mapper = new ObjectMapper();
+    }
+
+    private void assertGameIdNotNull(Long gameId){
+        if(gameId == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Path variable gameId is Null");
+        }
+    }
+
+    private void assertUserTokenNotNull(String userToken){
+        if(userToken == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null");
+        }
     }
 
     @PostMapping("/lobby/create")
@@ -358,6 +367,8 @@ public class GameWebSocketController {
     @ResponseBody
     public void playerLeaveHisCurrentLobby(@RequestBody String jsonUserToken) throws Exception {
 
+        this.assertUserTokenNotNull(jsonUserToken);
+
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> map = objectMapper.readValue(jsonUserToken, Map.class);
         // Extract the userToken from the Map
@@ -374,6 +385,8 @@ public class GameWebSocketController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void playerLeavesLobbyAfterGame(@PathVariable Long gameId, @RequestBody String userToken) throws Exception {
+        this.assertGameIdNotNull(gameId);
+        this.assertUserTokenNotNull(userToken);
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> map = objectMapper.readValue(userToken, Map.class);
@@ -393,6 +406,8 @@ public class GameWebSocketController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void deleteLobbyLobbyAfterGame(@PathVariable Long gameId, @RequestBody String userToken) throws Exception {
+        this.assertGameIdNotNull(gameId);
+        this.assertUserTokenNotNull(userToken);
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> map = objectMapper.readValue(userToken, Map.class);
@@ -420,8 +435,7 @@ public class GameWebSocketController {
     @ResponseBody
     public void hostRemovePlayer(@PathVariable Long gameId, @RequestHeader("userToken") String hostToken, @RequestBody String playerToken) throws Exception {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, String> map = objectMapper.readValue(playerToken, Map.class);
+        Map<String, String> map = this.mapper.readValue(playerToken, Map.class);
         // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
         if (mappedToken == null || mappedToken.isEmpty()) {
