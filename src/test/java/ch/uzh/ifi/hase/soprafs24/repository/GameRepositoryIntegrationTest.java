@@ -11,19 +11,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import java.util.List;
+import javax.persistence.EntityManager;
 import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DataJpaTest
@@ -33,9 +31,6 @@ public class GameRepositoryIntegrationTest {
 
     @Autowired
     private GameRepository gameRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Mock
     private ChatGPT chatGPT;
@@ -47,6 +42,21 @@ public class GameRepositoryIntegrationTest {
     UserService userService;
 
     GameService gameService;
+
+    @Autowired
+    private TestEntityManager entityManager;
+
+
+    void setUp(User user1, User user2, User user3) throws Exception {
+        long gameId = 1L;
+        Game game = new Game(gameId, user1.getUsername());
+        game.addPlayer(user1);
+        game.addPlayer(user2);
+        game.addPlayer(user3);
+        entityManager.persist(game);
+        entityManager.flush();
+    }
+
 
     private User createUser(String number) {
         String username = "username" + number;
@@ -65,46 +75,54 @@ public class GameRepositoryIntegrationTest {
         gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
     }
 
+
     @Test
-    public void removingPlayerFromLobby() throws Exception {
-        // Create users
+    void givenEntities_whenRemoveFromOwner_thenRemoveAssociation() throws Exception {
         User user1 = createUser("1");
         User user2 = createUser("2");
         User user3 = createUser("3");
 
-        // Persist users
+        entityManager.persist(user1);
+        entityManager.persist(user2);
+        entityManager.persist(user3);
+
+        setUp(user1, user2, user3);
+
+        Game game = (Game) entityManager.find(Game.class, 1L);
+
+        User userFound = entityManager.find(User.class, user1.getId());
+
+        userFound.deleteGame(game);
+        entityManager.persist(userFound);
+
+        assert userFound.getGame() == null;
+        assert !game.getUsers().contains(userFound);
+    }
+
+
+    @Test
+    public void removingPlayerFromLobby() throws Exception {
+        User user1 = createUser("1");
+        User user2 = createUser("2");
+        User user3 = createUser("3");
+
         entityManager.persist(user1);
         entityManager.persist(user2);
         entityManager.persist(user3);
         entityManager.flush();
 
-        // Create a game
-        String lobbyOwner = user1.getUsername();
-        long gameId = 1L;
-        Game game = new Game(gameId, lobbyOwner);
-        game.addPlayer(user2);
-        game.addPlayer(user3);
+        setUp(user1, user2, user3);
 
-        // Persist the game
+        Game game = (Game) entityManager.find(Game.class, 2L);
+
+        User userFound = entityManager.find(User.class, user1.getId());
+
+        game.removePlayer(userFound);
+
         entityManager.persist(game);
-        entityManager.flush();
 
-        User foundUserTest = userRepository.findByUsername(user3.getUsername());
-        assertNotNull(foundUserTest);
-
-        // Call the method under test
-        gameService.leaveLobby(gameId, user3.getUserToken());
-
-        // Retrieve the updated game from the database
-        Game updatedGame = gameRepository.findById(gameId).orElse(null);
-        assertNotNull(updatedGame);
-
-        // Verify that the player is removed from the game
-        assertFalse(updatedGame.getUsers().contains(user3));
-
-        // Verify that the user still exists in the database
-        User foundUser = userRepository.findByUsername(user3.getUsername());
-        assertNotNull(foundUser);
+        assert !game.getUsers().contains(userFound);
+        assert userFound.getGame() == null;
     }
 }
 

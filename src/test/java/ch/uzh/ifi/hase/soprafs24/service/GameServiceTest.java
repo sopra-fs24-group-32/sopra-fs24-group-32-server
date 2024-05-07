@@ -2317,4 +2317,25 @@ public class GameServiceTest {
         assertTrue(actualMessage1.contains(expectedMessage));
         assertTrue(actualMessage2.contains(expectedMessage));
     }
+/*
+    //TEST LEAVE LOBBY FUNCTIONALITY
+    @Test
+    public void playerLeaveCurrentLobby() throws Exception {
+        Game game = createGame(3);
+        User userToRemove = game.getUsers().get(1);
+
+        when(userRepository.findByUserToken(userToRemove.getUserToken())).thenReturn(userToRemove);
+        when(gameRepository.findById(game.getId())).thenReturn(Optional.of(game));
+
+        gameService.playerLeaveCurrentLobby(userToRemove.getUserToken());
+
+        assert !game.getUsers().contains(userToRemove);
+        assert userToRemove.getGame() == null;
+        assert userRepository.findByUserToken(userToRemove.getUserToken()) == userToRemove;
+    }
+
+    //ToDo: test  getImageGeneratedByDallE extensively!!
+    //ToDo: create integration tests for repositories?
+
+ */
 }

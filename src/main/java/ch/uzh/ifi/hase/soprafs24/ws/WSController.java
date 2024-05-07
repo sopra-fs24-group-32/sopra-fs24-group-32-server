@@ -1,4 +1,4 @@
-package ch.uzh.ifi.hase.soprafs24.controller;
+package ch.uzh.ifi.hase.soprafs24.ws;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.Game;
@@ -11,7 +11,7 @@ import ch.uzh.ifi.hase.soprafs24.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -20,12 +20,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
-import java.util.List;
-import java.util.*;
-import java.util.stream.Collectors;
-
 @Controller
-public class SocketController {
+public class WSController {
 
     private final GameService gameService;
     private final UserService userService;
@@ -34,16 +30,16 @@ public class SocketController {
 
 
     @Autowired
-    public SocketController(GameService gameService, UserService userService, SimpMessagingTemplate messagingTemplate, GameRepository gameRepository) {
+    public WSController(GameService gameService, UserService userService, SimpMessagingTemplate messagingTemplate, GameRepository gameRepository) {
         this.gameService = gameService;
         this.messagingTemplate = messagingTemplate;
         this.userService = userService;
         this.gameRepository = gameRepository;
     }
 
-    @MessageMapping("/lobby/join")
-    @SendTo("/game/join")
-    public UserGetDTO joinGame(@Payload String userToken) {
+    @MessageMapping("/lobby/join/{gameId}")
+    @SendTo("/game/join/{gameId}")
+    public UserGetDTO joinGame(@DestinationVariable String gameId, @Payload String userToken) {
         //log the userToken
         System.out.println("User joined: " + userToken);
         try {
@@ -57,9 +53,9 @@ public class SocketController {
         }
     }
 
-    @MessageMapping("/continueGame")
-    @SendTo("/game/public")
-    public SimpleUserGetDTO continueGame(@Payload Long id){
+    @MessageMapping("/continueGame/{gameId}")
+    @SendTo("/game/public/{gameId}")
+    public SimpleUserGetDTO continueGame(@DestinationVariable String gameId, @Payload Long id){
         if(id == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
         }
@@ -71,9 +67,9 @@ public class SocketController {
         return DTOMapper.INSTANCE.convertEntityToSimpleUserGetDTO(newUser);
     }
 
-    @MessageMapping("/lobby/startgame")
-    @SendTo("/game/public")
-    public SimpleUserGetDTO startGame(@Payload Long id){
+    @MessageMapping("/lobby/startgame/{gameId}")
+    @SendTo("/game/public/{gameId}")
+    public SimpleUserGetDTO startGame(@DestinationVariable String gameId, @Payload Long id){
 
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
@@ -90,4 +86,6 @@ public class SocketController {
         User newUser = new User(nextPictureGenerator, null);
         return DTOMapper.INSTANCE.convertEntityToSimpleUserGetDTO(newUser);
     }
+
+
 }

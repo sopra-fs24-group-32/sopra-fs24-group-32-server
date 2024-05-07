@@ -7,18 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.junit.jupiter.api.BeforeEach;
+
+import ch.uzh.ifi.hase.soprafs24.ws.WSController;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
@@ -47,20 +43,21 @@ public class SocketControllerTest {
     private SimpMessagingTemplate messagingTemplate;
 
     @InjectMocks
-    private SocketController socketController;
+    private WSController socketController;
 
     
 
     @Test
     public void joinGame_WithValidUserToken_ShouldReturnUserGetDTO() throws Exception {
         String userToken = "valid-token";
+        String gameId = "1";
         User mockUser = new User();
         mockUser.setUsername("validUser");
         mockUser.setUserToken(userToken);
         
         given(userService.findByToken(userToken)).willReturn(mockUser);
         
-        UserGetDTO returnedDTO = socketController.joinGame(userToken);
+        UserGetDTO returnedDTO = socketController.joinGame(gameId, userToken);
         
         verify(userService).findByToken(userToken);
         assertNotNull(returnedDTO);
@@ -69,15 +66,17 @@ public class SocketControllerTest {
 
     @Test
     public void continueGame_WithNullId_ShouldThrowResponseStatusException() {
-        assertThrows(ResponseStatusException.class, () -> socketController.continueGame(null));
+        String gameID = "1";
+        assertThrows(ResponseStatusException.class, () -> socketController.continueGame(gameID, null));
     }
 
     @Test
     public void continueGame_WithValidId_ShouldReturnSimpleUserGetDTO() {
+        String gameIdDestinationVariable = "1";
         Long gameId = 1L;
         when(gameService.getNextPictureGenerator(gameId)).thenReturn("user");
 
-        SimpleUserGetDTO dto = socketController.continueGame(gameId);
+        SimpleUserGetDTO dto = socketController.continueGame(gameIdDestinationVariable, gameId);
 
         assertNotNull(dto);
         verify(gameService).resetDallEsImageURL();
@@ -86,21 +85,23 @@ public class SocketControllerTest {
 
     @Test
     public void startGame_WithValidId_GameNotFound_ShouldThrowResponseStatusException() {
+        String gameIdDestinationVariable = "1";
         Long gameId = 1L;
         when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> socketController.startGame(gameId));
+        assertThrows(ResponseStatusException.class, () -> socketController.startGame(gameIdDestinationVariable, gameId));
     }
 
     @Test
     public void startGame_WithValidId_ShouldReturnSimpleUserGetDTO() {
+        String gameIdDestinationVariable = "1";
         Long gameId = 1L;
         Game mockGame = new Game();
         mockGame.setId(gameId);
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(mockGame));
         when(gameService.getNextPictureGenerator(gameId)).thenReturn("user");
 
-        SimpleUserGetDTO dto = socketController.startGame(gameId);
+        SimpleUserGetDTO dto = socketController.startGame(gameIdDestinationVariable, gameId);
 
         assertNotNull(dto);
         verify(gameService).startGameLobby(gameId);
@@ -108,13 +109,15 @@ public class SocketControllerTest {
 
     @Test
     public void startGame_WithLobbyIdNull_ShouldThrowResponseStatusException() {
+        String gameIdDestinationVariable = "1";
         Long gameId = null;
 
-        assertThrows(ResponseStatusException.class, () -> socketController.startGame(gameId));
+        assertThrows(ResponseStatusException.class, () -> socketController.startGame(gameIdDestinationVariable, gameId));
     }
 
     @Test
     public void startGame_WithNextPictureGeneratorNull_ShouldThrowResponseStatusException() {
+        String gameIdDestinationVariable = "1";
         Long gameId = 1L;
         Game mockGame = new Game();
         mockGame.setId(gameId);
@@ -124,7 +127,7 @@ public class SocketControllerTest {
         gameService.startGameLobby(gameId);
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            socketController.startGame(gameId);
+            socketController.startGame(gameIdDestinationVariable, gameId);
         });
 
         assertTrue(exception instanceof ResponseStatusException);
@@ -134,12 +137,13 @@ public class SocketControllerTest {
 
     @Test
     public void joinGame_WithInvalidUserToken_ShouldThrowResponseStatusException() {
+        String gameIdDestinationVariable = "1";
         String userToken = "invalid-token";
 
         given(userService.findByToken(userToken)).willThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found"));
 
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            socketController.joinGame(userToken);
+            socketController.joinGame(gameIdDestinationVariable, userToken);
         });
 
         assertTrue(exception instanceof ResponseStatusException);
