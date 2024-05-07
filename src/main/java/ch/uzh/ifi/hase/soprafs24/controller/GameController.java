@@ -103,39 +103,40 @@ public class GameController {
 
         return game;
    }
-
-    @PostMapping("/lobby/leave/{lobbyId}")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userTokenJson) throws Exception {
-        System.out.println("user Token:" + userTokenJson);
-        
-        if (userTokenJson == null || userTokenJson.isEmpty()) {
-            System.out.println("User token is null or empty");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
-        }
-
-        if (lobbyId == null || lobbyId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
-        }
-
-        // Parse the userToken from JSON
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(userTokenJson);
-        String userToken = jsonNode.get("userToken").asText();
-
-        System.out.println("User token:" + userToken);
-        User user = userService.findByToken(userToken);
-        
-        // Convert the user who left to a DTO to be sent to the subscribed clients
-        UserGetDTO userLeft = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
-        simpMessagingTemplate.convertAndSend("/game/leave", userLeft);
-
-        System.out.println("Request to leave lobby with id: " + lobbyId + " by user: " + user.getUsername() + " with token: " + userToken);
-        Game game = gameService.leaveLobby(lobbyId, userToken);
-
-        return game;
-    }
+   
+   @PostMapping("/lobby/leave/{lobbyId}")
+   @ResponseStatus(HttpStatus.OK)
+   @ResponseBody
+   public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userTokenJson) throws Exception {
+       System.out.println("user Token:" + userTokenJson);
+       
+       if (userTokenJson == null || userTokenJson.isEmpty()) {
+           System.out.println("User token is null or empty");
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+       }
+   
+       if (lobbyId == null || lobbyId == 0) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
+       }
+   
+       // Parse the userToken from JSON
+       ObjectMapper objectMapper = new ObjectMapper();
+       JsonNode jsonNode = objectMapper.readTree(userTokenJson);
+       String userToken = jsonNode.get("userToken").asText();
+   
+       System.out.println("User token:" + userToken);
+       User user = userService.findByToken(userToken);
+       
+       // Convert the user who left to a DTO to be sent to the subscribed clients
+       UserGetDTO userLeft = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+       simpMessagingTemplate.convertAndSend("/game/leave/" + lobbyId, userLeft);
+   
+       System.out.println("Request to leave lobby with id: " + lobbyId + " by user: " + user.getUsername() + " with token: " + userToken);
+       Game game = gameService.leaveLobby(lobbyId, userToken);
+   
+       return game;
+   }
+   
 
 
     @GetMapping("/lobbies")
@@ -434,34 +435,36 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public void hostRemovePlayer(@PathVariable Long gameId, @RequestHeader("userToken") String hostToken, @RequestBody String playerToken) throws Exception {
-
+    
+        // Reading playerToken JSON to extract the user token
         Map<String, String> map = this.mapper.readValue(playerToken, Map.class);
-        // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
         if (mappedToken == null || mappedToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
         }
-
+    
+        // Reading hostToken JSON to extract the host user token
         ObjectMapper hostObjectMapper = new ObjectMapper();
         Map<String, String> hostMap = hostObjectMapper.readValue(hostToken, Map.class);
-        // Extract the hostToken from the Map
         String hostMappedToken = hostMap.get("userToken");
         if (hostMappedToken == null || hostMappedToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "hostToken is null or empty");
         }
-
+    
         if (gameId == null || gameId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
-
+    
+        // Find user by token and convert to DTO
         User user = userService.findByToken(mappedToken);
-        
-        // Convert the user who left to a DTO to be sent to the subscribed clients
         UserGetDTO userKicked = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
-        simpMessagingTemplate.convertAndSend("/game/kick", userKicked);
-
-
+        
+        // Updating the topic to include the gameId
+        simpMessagingTemplate.convertAndSend("/game/kick/" + gameId, userKicked);
+    
+        // Performing the kick operation
         gameService.hostRemovePlayerFromLobby(gameId, hostMappedToken, mappedToken);
     }
+    
 
 }
