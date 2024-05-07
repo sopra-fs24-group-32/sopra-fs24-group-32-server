@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-@WebMvcTest(GameWebSocketController.class)
+@WebMvcTest(GameController.class)
 public class GameControllerTest {
 
   @Autowired
@@ -67,7 +67,7 @@ public class GameControllerTest {
   private UserController userController;
 
   @InjectMocks
-   private GameWebSocketController gameController;
+   private GameController gameController;
 
    @MockBean
    private SimpMessagingTemplate simpMessagingTemplate;

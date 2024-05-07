@@ -76,9 +76,11 @@ Implemented game service and controller tests.
 # Week 24.04 - 01.05
 
 ## Eric
+fixed join lobby input field loosing focus after each key stroke #57
+added settings form to lobby create page #30
+added frontend navigating functionalities #2
 
-## Eduard
-Scoreboard Ranking and winning player is highlighted in Gold after every round #40. 
+## Eduard 
 Points are rewarded after guessing and timelimit reached #74. 
 Speed is considered for point calculations #73.
 
@@ -91,12 +93,18 @@ Fix the bug that when a user leaves the lobby he gets deleted entirely, instead 
 Make it possible for a player (except game host) to leave the lobby from the home page. Issue #106
 
 ## Roger
+1. There should be a pop up informing which player has left. #54
+2. Implemented more game service and controller tests.
 
-# Week 02.05 - 08.05
+# Week 01.05 - 08.05
 
 ## Eric
+text color correction #20
+fixed logout from homescreen #47
 
 ## Eduard
+Scoreboard Ranking and winning player is highlighted in Gold after every round and animated #40 and #18.
+Added that correct description is revealed after each round in the scoreboard. Guesser see in their waiting screen, who is creating the image in the current turn.
 
 ## Nicolas S.
 Added WS for Kickplayer -> Players get notified when someone kicked #49 #50 + ws disconnected when leaving + kicked
@@ -105,3 +113,5 @@ adjusted display for back and Profile Button
 ## Nicolas H.
 
 ## Roger
+1. The host has the ability to remove any player from the lobby during the lobby stage #94
+2. After being kicked, users are unable to rejoin the same lobby without a new invitation from the lobby creator #96
