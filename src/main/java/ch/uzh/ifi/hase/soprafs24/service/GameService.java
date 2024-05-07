@@ -346,6 +346,10 @@ public class GameService {
 
         Game currentLobby = user.getGame();
 
+        if(currentLobby == null){
+            return;
+        }
+
         this.leaveLobby(currentLobby.getId(), userToken);
     }
 

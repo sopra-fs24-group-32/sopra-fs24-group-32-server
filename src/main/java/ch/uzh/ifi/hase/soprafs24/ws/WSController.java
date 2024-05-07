@@ -37,16 +37,23 @@ public class WSController {
         this.gameRepository = gameRepository;
     }
 
+    private void assertGameIdNotNull(String gameId){
+        if(gameId == null || gameId.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Path Variable 'gameId' is null or empty");
+        }
+    }
+
     @MessageMapping("/lobby/join/{gameId}")
     @SendTo("/game/join/{gameId}")
     public UserGetDTO joinGame(@DestinationVariable String gameId, @Payload String userToken) {
-        //log the userToken
-        System.out.println("User joined: " + userToken);
+
+        this.assertGameIdNotNull(gameId);
+
+        if(userToken == null || userToken.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+        }
         try {
             User user = userService.findByToken(userToken);
-            //log the user
-            System.out.println("User joined: " + user);
-            // Broadcast to all subscribers that a new user has joined
             return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Join failed: " + e.getMessage(), e);
@@ -59,6 +66,8 @@ public class WSController {
         if(id == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
         }
+
+        this.assertGameIdNotNull(gameId);
 
         gameService.resetDallEsImageURL();
 
@@ -74,6 +83,8 @@ public class WSController {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id is null");
         }
+
+        this.assertGameIdNotNull(gameId);
 
         Game game = gameRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
 
