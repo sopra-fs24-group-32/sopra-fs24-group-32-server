@@ -132,6 +132,9 @@ public class UserService {
     if (user.getBirthDay() != null){
       reqUser.setBirthDay(user.getBirthDay());
     }
+    if (user.getEmail() != null) {
+        reqUser.setEmail(user.getEmail());
+      }
     reqUser.setPassword(user.getPassword());
     reqUser.setUserToken(UUID.randomUUID().toString());
     reqUser.setStatus(UserStatus.ONLINE);
