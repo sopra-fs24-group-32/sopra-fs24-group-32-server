@@ -146,16 +146,16 @@ public class Game {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot be null");
         }
         if(users.contains(user)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User already in lobby");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already in lobby");
         }
         if(users.size() == maxAmtUsers){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Maximum amount of users in lobby already reached");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum amount of users in lobby already reached");
         }
         if (gameStarted) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already started");
         }
         if (listOfRemovedPlayers.contains(user.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You have been removed from the lobby by the host. Sorry, you cannot rejoin.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have been removed from the lobby by the host. Sorry, you cannot rejoin.");
         }
 
         user.setScore(0);
@@ -183,10 +183,10 @@ public class Game {
 
     public void startGame() {
         if(users.size() < 2){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not enough players in lobby");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough players in lobby");
         }
         if(gameStarted){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already started");
         }
         gameStarted = true;
 

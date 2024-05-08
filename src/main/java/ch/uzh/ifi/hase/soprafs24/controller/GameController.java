@@ -61,13 +61,13 @@ public class GameController {
 
     private void assertGameIdNotNull(Long gameId){
         if(gameId == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Path variable gameId is Null");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Path variable gameId is Null");
         }
     }
 
     private void assertUserTokenNotNull(String userToken){
         if(userToken == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null");
         }
     }
 
@@ -160,11 +160,11 @@ public class GameController {
    public Game updateGameSettings(@PathVariable Long id, @RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) throws ResponseStatusException, JsonMappingException, JsonProcessingException {
 
        if (userToken == null || userToken.isEmpty()) {
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
        }
 
        if (id == null || id == 0) {
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
        }
 
        User user = userRepository.findByUserToken(userToken);
@@ -232,7 +232,7 @@ public class GameController {
         }
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
@@ -255,7 +255,7 @@ public class GameController {
     public ResponseEntity<String> getPictureGeneratedByDallE(@PathVariable Long gameId) throws Exception {
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
@@ -266,7 +266,7 @@ public class GameController {
         String pictureGenerated =  gameService.getImageGeneratedByDallE();
 
         if (pictureGenerated == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to get image with DALL-E");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to get image with DALL-E");
         }
         return new ResponseEntity<>(pictureGenerated, HttpStatus.OK);
     }
@@ -277,7 +277,7 @@ public class GameController {
     public ResponseEntity<UserGetDTO> evaluateGuessesByChatGPT(@PathVariable Long gameId, @RequestBody ChatGPTPostDTO chatGPTPostDTO, @RequestHeader("userToken") String userToken) throws Exception {
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
@@ -320,7 +320,7 @@ public class GameController {
     @ResponseBody
     public ResponseEntity<String> getLastImageDescription(@PathVariable Long gameId) throws Exception {
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game ID is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
         }
 
         Optional<Game> gameOptional = gameRepository.findById(gameId);
@@ -348,11 +348,11 @@ public class GameController {
         // Extract the userToken from the Map
         String mappedToken = map.get("userToken");
         if (mappedToken == null || mappedToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
         if (gameId == null || gameId == 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "gameId is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
@@ -440,7 +440,7 @@ public class GameController {
         Map<String, String> map = this.mapper.readValue(playerToken, Map.class);
         String mappedToken = map.get("userToken");
         if (mappedToken == null || mappedToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "userToken is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
     
         // Reading hostToken JSON to extract the host user token
@@ -448,7 +448,7 @@ public class GameController {
         Map<String, String> hostMap = hostObjectMapper.readValue(hostToken, Map.class);
         String hostMappedToken = hostMap.get("userToken");
         if (hostMappedToken == null || hostMappedToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "hostToken is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "hostToken is null or empty");
         }
     
         if (gameId == null || gameId == 0) {

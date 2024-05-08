@@ -58,7 +58,7 @@ public class DallE {
         Response response = client.newCall(request).execute();
 
         if (!response.isSuccessful()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to generate image with DALL-E");
         }
 
         String responseBody = response.body().string();

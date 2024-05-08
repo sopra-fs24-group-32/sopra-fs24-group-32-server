@@ -254,7 +254,7 @@ public class GameControllerTest {
    }
 
    @Test
-    public void playerLeaveTheGameWhenUserTokenIsEmptyShouldReturnNotFound() throws Exception {
+    public void playerLeaveTheGameWhenUserTokenIsEmptyShouldThrowExpection() throws Exception {
         Long gameId = 1L;
         String emptyUserToken = "{\"userToken\":\"\"}";
         String nullUserToken = "{\"userToken\":null}";
@@ -262,16 +262,16 @@ public class GameControllerTest {
         mockMvc.perform(post("/game/leave/{gameId}", gameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(emptyUserToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/game/leave/{gameId}", gameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(nullUserToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void playerLeaveTheGame_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+    public void playerLeaveTheGame_WhenGameIdIsInvalid_ShouldThrowExpection() throws Exception {
         Long invalidGameId = 0L;
         Long invalidGameIdNull = null;
         String userToken = "{\"userToken\":\"valid-token\"}";
@@ -279,7 +279,7 @@ public class GameControllerTest {
         mockMvc.perform(post("/game/leave/{invalidGameId}", invalidGameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/game/leave/{invalidGameIdNull}", invalidGameIdNull)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -321,7 +321,7 @@ public class GameControllerTest {
                 .header("userToken", userToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(chatGPTPostDTO)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(put("/game/chatgpt/{invalidGameIdNull}", invalidGameIdNull)
                 .header("userToken", userToken)
@@ -392,7 +392,7 @@ public class GameControllerTest {
     }
 
     @Test
-    public void generatePictureByDallE_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+    public void generatePictureByDallE_WhenGameIdIsInvalid_ShouldReturnBadRequest() throws Exception {
         Long invalidGameId = 0L;
         Long invalidGameIdNull = null;
         String textPrompt = "A picture of a cat";
@@ -400,7 +400,7 @@ public class GameControllerTest {
         mockMvc.perform(post("/game/image/{invalidGameId}", invalidGameId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(textPrompt))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/game/image/{invalidGameIdNull}", invalidGameIdNull)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -468,12 +468,12 @@ public class GameControllerTest {
     }
 
     @Test
-    public void getPictureGeneratedByDallE_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+    public void getPictureGeneratedByDallE_WhenGameIdIsInvalid_ShouldThrowExpection() throws Exception {
         Long invalidGameId = 0L;
         Long invalidGameIdNull = null;
 
         mockMvc.perform(get("/game/image/{invalidGameId}", invalidGameId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(get("/game/image/{invalidGameIdNull}", invalidGameIdNull))
                 .andExpect(status().isNotFound());
@@ -503,7 +503,7 @@ public class GameControllerTest {
     }
 
     @Test
-    public void getPictureGeneratedByDallE_WhenGameFoundButNoImageGenerated_ShouldReturnNotFound() throws Exception {
+    public void getPictureGeneratedByDallE_WhenGameFoundButNoImageGenerated_ShouldReturnBadRequest() throws Exception {
         Long gameId = 1L;
         Game game = new Game(gameId, "owner");
 
@@ -511,7 +511,7 @@ public class GameControllerTest {
         when(gameService.getImageGeneratedByDallE()).thenReturn(null);
 
         mockMvc.perform(get("/game/image/{gameId}", gameId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -673,12 +673,12 @@ public class GameControllerTest {
     }
 
     @Test
-    public void getLastImageDescription_WhenGameIdIsInvalid_ShouldReturnNotFound() throws Exception {
+    public void getLastImageDescription_WhenGameIdIsInvalid_ShouldReturnBadRequest() throws Exception {
         Long invalidGameId = 0L;
         Long invalidGameIdNull = null;
 
         mockMvc.perform(get("/game/lastDescription/{invalidGameId}", invalidGameId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(get("/game/lastDescription/{invalidGameIdNull}", invalidGameIdNull))
                 .andExpect(status().isNotFound());
@@ -914,7 +914,7 @@ public class GameControllerTest {
                 .header("userToken", hostToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -928,13 +928,13 @@ public class GameControllerTest {
                 .header("userToken", emptyHostToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
         
         mockMvc.perform(post("/hostRemovePlayer/{gameId}", gameId)
                 .header("userToken", nullHostToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -1129,7 +1129,7 @@ public void updateGameSettings_WithGameIdNull_ShouldReturnBadRequest() throws Ex
                 .header("userToken", userToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(gamePostDTO)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

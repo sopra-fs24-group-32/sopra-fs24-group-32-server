@@ -147,11 +147,11 @@ public class GameService {
    public Game joinLobby(String invitationCodes, String userToken) throws Exception {
 
        if(invitationCodes == null || invitationCodes.isEmpty()){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby invitation code is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby invitation code is null or empty");
        }
 
        if(userToken == null || userToken.isEmpty()){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "UserToken is null or empty");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserToken is null or empty");
        }
 
        ObjectMapper objectMapper = new ObjectMapper();
@@ -174,7 +174,7 @@ public class GameService {
        }
 
        if(game.isGameStarted()){
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game has already started");
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already started");
        }
 
        game.addPlayer(user);
@@ -189,11 +189,11 @@ public class GameService {
    public Game leaveLobby(Long lobbyId, String userToken) throws Exception {
     try {
         if (userToken == null || userToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User token is null or empty");
         }
     
         if (lobbyId == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
         }
     
         User user = userRepository.findByUserToken(userToken);
@@ -356,11 +356,11 @@ public class GameService {
     public void gameIsFinishedLeaveLobby(Long lobbyId, String userToken) throws Exception {
         try {
             if (userToken == null || userToken.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User token is null or empty");
             }
 
             if (lobbyId == null || lobbyId == 0) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby ID is null");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
             }
 
             User user = userRepository.findByUserToken(userToken);
