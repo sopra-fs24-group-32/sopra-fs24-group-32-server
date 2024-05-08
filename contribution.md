@@ -111,6 +111,13 @@ Added WS for Kickplayer -> Players get notified when someone kicked #49 #50 + ws
 adjusted display for back and Profile Button
 
 ## Nicolas H.
+There was a bug that the imageURL persisted after each round so that players were shown the image of the last round
+-> fixed (issue #60 in client)
+
+After the game is over a home button is displayed under the final scoreboard. If the host clicks on the home button the 
+lobby should be deleted, if a non-host user clicks on it the user should leave the lobby. In both cases after leaving/deleting
+the lobby the user is forwarded to the home screen -> corresponds to issues: #107 #108 and #62 (client) 
+
 
 ## Roger
 1. The host has the ability to remove any player from the lobby during the lobby stage #94
