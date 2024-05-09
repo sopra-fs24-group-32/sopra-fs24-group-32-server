@@ -507,8 +507,7 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
         mockMvc.perform(post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(userPostDTO)))
-                .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
+                .andExpect(status().isNotFound());
     }
 
     @Test

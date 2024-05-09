@@ -93,18 +93,19 @@ public class GameController {
    @PostMapping("/lobby/join/{invitationCodes}")
    @ResponseStatus(HttpStatus.OK)
    @ResponseBody
-   public Game joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
-       if (userToken == null || userToken.isEmpty()) {
-           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
-       }
+   public ResponseEntity<?> joinLobby(@PathVariable String invitationCodes, @RequestBody String userToken) throws Exception{
 
-       if(invitationCodes == null || invitationCodes.isEmpty()){
-           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invitationCodes is null or empty");
-       }
-
-       Game game = gameService.joinLobby(invitationCodes, userToken);
-
-        return game;
+        try {
+            Game game = gameService.joinLobby(invitationCodes, userToken);
+            GameGetDTO gameGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(game);
+            return new ResponseEntity<>(gameGetDTO, HttpStatus.OK);
+        } catch (ResponseStatusException e) {
+            String errorMessage = "Failed to join the lobby. Reason: " + e.getReason();
+            return ResponseEntity.status(e.getStatus()).body(errorMessage);
+        } catch (Exception e) {
+            String errorMessage = "Failed to join the lobby. Reason: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
    }
    
    @PostMapping("/lobby/leave/{lobbyId}")

@@ -84,19 +84,23 @@ public class UserController {
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public User loginUser(@RequestBody UserPostDTO userPostDTO) {
+    public ResponseEntity<?> loginUser(@RequestBody UserPostDTO userPostDTO) {
       User user = userRepository.findByUsername(userPostDTO.getUsername());
-    
-      if (user == null) {
-          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user exists with username: " + userPostDTO.getUsername());
+
+      if (user == null) { 
+        ResponseStatusException error = new ResponseStatusException(HttpStatus.NOT_FOUND, "No user exists with username: " + userPostDTO.getUsername());
+        String errorMessage = "Login failed: " + error.getReason();
+        return ResponseEntity.status(error.getStatus()).body(errorMessage);
       }
   
       if (!Objects.equals(userRepository.findByUsername(userPostDTO.getUsername()).getPassword(), userPostDTO.getPassword())) {
-          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong password or username");
+        ResponseStatusException error = new ResponseStatusException(HttpStatus.NOT_FOUND, "Wrong password or username");
+        String errorMessage = "Login failed: " + error.getReason();
+        return ResponseEntity.status(error.getStatus()).body(errorMessage);
       }
   
       userService.loginUser(user);
-      return user;
+      return new ResponseEntity<>(DTOMapper.INSTANCE.convertEntityToUserGetDTO(user), HttpStatus.OK);
     }
 
   @PostMapping("/users/logout/{id}")
