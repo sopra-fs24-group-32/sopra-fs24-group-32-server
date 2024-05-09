@@ -81,9 +81,12 @@ public class GameController {
         GameGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(createdLobby);
         return new ResponseEntity<>(lobbyGetDTO, HttpStatus.CREATED);
     } catch (ResponseStatusException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        String errorMessage = e.getReason();
+        return ResponseEntity.status(e.getStatus()).body(errorMessage);
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty or " + e.getMessage());
     } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create the lobby. Reason: " + e.getMessage());
+        String errorMessage = "Failed to create the lobby. Reason: " + e.getMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
     }   
 
