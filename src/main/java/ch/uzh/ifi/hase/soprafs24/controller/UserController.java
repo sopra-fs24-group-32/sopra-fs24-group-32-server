@@ -68,14 +68,14 @@ public class UserController {
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
   public ResponseEntity<UserGetDTO> registerUser(@RequestBody UserPostDTO userPostDTO) {
-      try {
-          User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-          User createdUser = userService.registerUser(userInput);
-          UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
-          return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
-      } catch (ResponseStatusException e) {
-          return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+      
+      User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+      User createdUser = userService.registerUser(userInput);
+      if (createdUser == null) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User could not be created");
       }
+      UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+      return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
   }
 
 

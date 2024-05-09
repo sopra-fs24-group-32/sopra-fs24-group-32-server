@@ -83,7 +83,7 @@ public class GameController {
     } catch (ResponseStatusException e) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
     } catch (Exception e) {
-        throw new RuntimeException("Could not create lobby:", e);
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to create the lobby. Reason: " + e.getMessage());
         }
     }   
 
@@ -150,6 +150,9 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Game getLobby(@PathVariable Long id) throws ResponseStatusException{
+        if (id == null || id == 0 || id.toString().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
+        }
         return gameRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
     }
@@ -163,7 +166,7 @@ public class GameController {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
        }
 
-       if (id == null || id == 0) {
+       if (id == null || id == 0 || id.toString().isEmpty()) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
        }
 
@@ -184,7 +187,7 @@ public class GameController {
             Game updatedGame = gameService.updateGameSettings(id, gamePostDTO);
             return updatedGame;
        } catch (Exception e) {
-              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to update lobby. Reason: " + e.getMessage());
        }
     }
 
@@ -197,7 +200,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
-        if (id == null || id == 0) {
+        if (id == null || id == 0 || id.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
         }
 
@@ -231,7 +234,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image prompt provided by the player is null or empty");
         }
 
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
@@ -254,7 +257,7 @@ public class GameController {
     @ResponseBody
     public ResponseEntity<String> getPictureGeneratedByDallE(@PathVariable Long gameId) throws Exception {
 
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
@@ -276,7 +279,7 @@ public class GameController {
     @ResponseBody
     public ResponseEntity<UserGetDTO> evaluateGuessesByChatGPT(@PathVariable Long gameId, @RequestBody ChatGPTPostDTO chatGPTPostDTO, @RequestHeader("userToken") String userToken) throws Exception {
 
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
@@ -319,7 +322,7 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResponseEntity<String> getLastImageDescription(@PathVariable Long gameId) throws Exception {
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
         }
 
@@ -351,7 +354,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
@@ -397,7 +400,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
         gameService.gameIsFinishedLeaveLobby(gameId, mappedToken);
@@ -418,7 +421,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
         }
 
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
         gameService.deleteLobby(gameId, mappedToken);
@@ -451,7 +454,7 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "hostToken is null or empty");
         }
     
-        if (gameId == null || gameId == 0) {
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or zero");
         }
     
