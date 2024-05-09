@@ -70,7 +70,9 @@ public class User implements Serializable {
   @Column(nullable = true)
   private String email;
 
-   private String picture;
+  @Lob
+  private byte[] picture;
+  //  private String picture;
 
   public User() {}
     public User(String username, String password){
@@ -104,11 +106,11 @@ public class User implements Serializable {
     this.email = email;
   }
 
-  public String getPicture() {
+  public byte[] getPicture() {
     return picture;
   }
 
-  public void setPicture(String picture) {
+  public void setPicture(byte[] picture) {
     this.picture = picture;
   }
 

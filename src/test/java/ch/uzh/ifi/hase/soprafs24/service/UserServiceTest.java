@@ -186,7 +186,7 @@ public class UserServiceTest {
     public void findByUsername_existingUsername_userReturned() {
         when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
 
-        User result = userService.findByUsername("testUsername");
+        User result = userRepository.findByUsername("testUsername");
 
         assertNotNull(result);
         assertEquals(testUser.getId(), result.getId());

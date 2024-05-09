@@ -9,7 +9,7 @@ public class UserPostDTO {
   private boolean isLoggedIn;
   private Date birthDay;
   private String email;
-  private String picture;
+  private byte[] picture;
   private String userToken;
   private Integer score=0;
 
@@ -40,11 +40,11 @@ public class UserPostDTO {
     this.email = email;
   }
 
-  public String getPicture() {
+  public byte[] getPicture() {
     return picture;
   }
 
-  public void setPicture(String picture) {
+  public void setPicture(byte[] picture) {
     this.picture = picture;
   }
 

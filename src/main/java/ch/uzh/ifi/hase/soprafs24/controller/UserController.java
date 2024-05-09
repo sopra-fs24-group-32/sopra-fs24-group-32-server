@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
+import org.apache.commons.codec.binary.Base64;
 
 
 import java.util.*;
@@ -142,6 +143,8 @@ public class UserController {
     User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     user.setUsername(userPostDTO.getUsername());
     user.setBirthDay(userPostDTO.getBirthDay());
+    user.setEmail(userPostDTO.getEmail());
+    user.setPicture(userPostDTO.getPicture());
 
     userService.updateUser(id, user);
 

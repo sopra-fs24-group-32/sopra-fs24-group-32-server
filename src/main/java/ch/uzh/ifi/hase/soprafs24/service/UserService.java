@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -114,10 +115,6 @@ public class UserService {
       }
     }
 
-  public User findByUsername(String username) {
-    return userRepository.findByUsername(username);
-  }
-
   public List<User> getAllUsers() {
     return this.userRepository.findAll();
   }
@@ -125,20 +122,21 @@ public class UserService {
   public User updateUser(Long id, User user) throws Exception {
     // User reqUser = this.getUserById(id);
     User reqUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    if (!user.getUsername().isBlank()){
-      checkIfUserExists(user);
+    if (!user.getUsername().isBlank() && !user.getUsername().equals(reqUser.getUsername())) {
+      if (userRepository.findByUsername(user.getUsername()) != null) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username '" + user.getUsername() + "' is already taken. Please choose a different one.");
+      }
       reqUser.setUsername(user.getUsername());
-    }
+  }
     if (user.getBirthDay() != null){
       reqUser.setBirthDay(user.getBirthDay());
     }
     if (user.getEmail() != null) {
         reqUser.setEmail(user.getEmail());
       }
-    reqUser.setPassword(user.getPassword());
-    reqUser.setUserToken(UUID.randomUUID().toString());
-    reqUser.setStatus(UserStatus.ONLINE);
-    reqUser.setIsLoggedIn(true);
+    if (user.getPicture() != null) {
+        reqUser.setPicture(user.getPicture());
+      }
 
     userRepository.save(reqUser);
     userRepository.flush();
@@ -174,11 +172,11 @@ public class UserService {
    * @see User
    */
   private void checkIfUserExists(User userToBeCreated) {
-    User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
-
-    if (userByUsername != null) {
+    User existingUser = userRepository.findByUsername(userToBeCreated.getUsername());
+    if (existingUser != null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
             String.format("Username '%s' is already taken. Please choose a different one.", userToBeCreated.getUsername()));
     }
-  }
+}
+
 }
