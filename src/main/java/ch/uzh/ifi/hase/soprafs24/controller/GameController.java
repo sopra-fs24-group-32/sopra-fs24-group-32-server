@@ -74,16 +74,16 @@ public class GameController {
     @PostMapping("/lobby/create")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public ResponseEntity<GameGetDTO> createGame(@RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) {
+    public ResponseEntity<?> createGame(@RequestBody GamePostDTO gamePostDTO, @RequestHeader("userToken") String userToken) {
     try {
         User user = userRepository.findByUserToken(userToken);
         Game createdLobby = gameService.createLobby(userToken, gamePostDTO);
         GameGetDTO lobbyGetDTO = DTOMapper.INSTANCE.convertEntityToGameGetDTO(createdLobby);
         return new ResponseEntity<>(lobbyGetDTO, HttpStatus.CREATED);
     } catch (ResponseStatusException e) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is null or empty");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     } catch (Exception e) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to create the lobby. Reason: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create the lobby. Reason: " + e.getMessage());
         }
     }   
 
