@@ -464,5 +464,22 @@ public class GameService {
         gameRepository.save(game);
         gameRepository.flush();
     }
+
+    public boolean updateAmtOfGuesses(Long id){
+        if (id == null || id == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null");
+        }
+
+        Game game = gameRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+
+        game.increaseAmtOfPlayersGuessed();
+        boolean allPlayersGuessed = game.allPlayersGuessed();
+
+        gameRepository.save(game);
+        gameRepository.flush();
+
+        return allPlayersGuessed;
+    }
 }
         

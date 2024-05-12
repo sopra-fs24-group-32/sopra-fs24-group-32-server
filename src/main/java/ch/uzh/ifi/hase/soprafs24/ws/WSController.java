@@ -17,8 +17,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
+
+import java.util.Optional;
 
 @Controller
 public class WSController {
@@ -98,5 +101,15 @@ public class WSController {
         return DTOMapper.INSTANCE.convertEntityToSimpleUserGetDTO(newUser);
     }
 
+    @MessageMapping("/guessSubmitted/{gameId}")
+    @SendTo("/game/everybodyGuessed/{gameId}")
+    public boolean generatePictureDallE(@DestinationVariable Long gameId) throws Exception {
+
+        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
+        }
+
+        return gameService.updateAmtOfGuesses(gameId);
+    }
 
 }

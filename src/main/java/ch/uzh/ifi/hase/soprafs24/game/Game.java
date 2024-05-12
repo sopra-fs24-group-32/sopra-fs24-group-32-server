@@ -55,6 +55,9 @@ public class Game {
     @Column
     private int playersInLobby = 0;
 
+    @Column
+    private int amtOfPlayersGuessed = 0;
+
     private static final SecureRandom RANDOMForPlayer = new SecureRandom();
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "game_picture_generator_queue", joinColumns = @JoinColumn(name = "game_id"))
@@ -111,6 +114,7 @@ public class Game {
 
              */
             users.remove(user);
+            playersInLobby -= 1;
             user.deleteGame(this);
             if (remaininPictureGenerators.contains(user.getUsername())) {
                 remaininPictureGenerators.remove(user.getUsername());
@@ -189,6 +193,7 @@ public class Game {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already started");
         }
         gameStarted = true;
+        amtOfPlayersGuessed = 0;
 
         for(User user: users){
             this.remaininPictureGenerators.add(user.getUsername());
@@ -198,6 +203,7 @@ public class Game {
 
     @Transactional
     public String selectPictureGenerator() {
+        amtOfPlayersGuessed = 0;
         removeDuplicateUsers();
         if (!gameStarted) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started yet");
@@ -314,5 +320,14 @@ public class Game {
                 "id:"+id+
                 "id:"+id;
     }
+
+    public void increaseAmtOfPlayersGuessed(){
+        amtOfPlayersGuessed += 1;
+    }
+
+    public boolean allPlayersGuessed(){
+        return amtOfPlayersGuessed == playersInLobby-1;
+    }
+
 }
 
