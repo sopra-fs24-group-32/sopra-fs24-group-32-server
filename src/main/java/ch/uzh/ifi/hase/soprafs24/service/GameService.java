@@ -289,7 +289,7 @@ public class GameService {
         dallE.setImageUrl("");
     }
 
-    public int evaluatePlayerGuessWithChatGPT(String playerGuessed) throws Exception{
+    public void evaluatePlayerGuessWithChatGPT(String userToken, String playerGuessed) throws Exception{
 
         String originalText = dallE.getInputPhrase();
 
@@ -297,13 +297,24 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image description is null or empty");
         }
 
+        if (userToken == null || userToken.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserToken is null or empty");
+        }
+
+        User user = userRepository.findByUserToken(userToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with sent userToken does not exist");
+        }
+
         if (playerGuessed == null || playerGuessed.isEmpty()) {
-            return 0;
+            user.setPointsAwardedFromChatGPT(0);
+            user.setSimilarityScore(0);
+            user.setBonusPoints(0);
+            user.setTotalPoints(0);
         } else {
             float chatGPTResult = chatGPT.rateInputs(originalText, playerGuessed);
-            int pointsAwarded = chatGPT.convertSimilarityScoreToPoints(chatGPTResult);
-            System.out.println("ChatGPT similarity score: " + chatGPTResult);
-            return pointsAwarded;
+            chatGPT.convertSimilarityScoreToPoints(user, chatGPTResult);
+            System.out.println("ChatGPT similarity score: " + user.getSimilarityScore());
         }
     }
 

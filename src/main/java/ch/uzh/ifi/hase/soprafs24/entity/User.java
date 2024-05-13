@@ -70,6 +70,24 @@ public class User implements Serializable {
   @Column(nullable = true)
   private String email;
 
+  @Column(name="playerGuess")
+  private String playerGuess;
+
+  @Column
+  private float similarityScore;
+
+  @Column
+  private int pointsAwardedFromChatGPT;
+
+  @Column
+  private int bonusPoints;
+
+  @Column
+  private int totalPoints;
+
+  @Column
+  private float timeGuessSubmitted;
+
   @Lob
   private byte[] picture;
   //  private String picture;
@@ -180,6 +198,54 @@ public class User implements Serializable {
 
   public void setGame(Game game) {
     this.game = game;
+  }
+
+  public String getPlayerGuess() {
+    return playerGuess;
+  }
+
+  public void setPlayerGuess(String playerGuess) {
+    this.playerGuess = playerGuess;
+  }
+
+  public float getSimilarityScore() {
+    return similarityScore;
+  }
+
+  public void setSimilarityScore(float similarityScore) {
+    this.similarityScore = similarityScore;
+  }
+
+  public int getPointsAwardedFromChatGPT() {
+    return pointsAwardedFromChatGPT;
+  }
+
+  public void setPointsAwardedFromChatGPT(int pointsAwardedFromChatGPT) {
+    this.pointsAwardedFromChatGPT = pointsAwardedFromChatGPT;
+  }
+
+  public int getBonusPoints() {
+    return bonusPoints;
+  }
+
+  public void setBonusPoints(int bonusPoints) {
+    this.bonusPoints = bonusPoints;
+  }
+
+  public int getTotalPoints() {
+    return totalPoints;
+  }
+
+  public void setTotalPoints(int totalPoints) {
+    this.totalPoints = totalPoints;
+  }
+
+  public float getTimeGuessSubmitted() {
+    return timeGuessSubmitted;
+  }
+
+  public void setTimeGuessSubmitted(float timeGuessSubmitted) {
+    this.timeGuessSubmitted = timeGuessSubmitted;
   }
 
   public void deleteGame(Game game){

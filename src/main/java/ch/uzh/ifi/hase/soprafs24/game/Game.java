@@ -12,7 +12,6 @@ import javax.persistence.*;
 import javax.transaction.Transactional;
 
 import java.security.SecureRandom;
-import java.util.List;
 
 @Entity
 @Table(name = "game")
@@ -57,6 +56,9 @@ public class Game {
 
     @Column
     private int amtOfPlayersGuessed = 0;
+
+    @Column
+    private String currrentPictureGenerator;
 
     private static final SecureRandom RANDOMForPlayer = new SecureRandom();
     @ElementCollection(fetch = FetchType.LAZY)
@@ -103,7 +105,6 @@ public class Game {
     public void setMaxAmtUsers(int maxAmtUsers) { this.maxAmtUsers = maxAmtUsers; }
 
     public List<User> getUsers() { return users; }
-
 
     public void removePlayer(User user) {
         if (user != null && users.contains(user)) {
@@ -163,6 +164,12 @@ public class Game {
         }
 
         user.setScore(0);
+        user.setPlayerGuess("");
+        user.setSimilarityScore(0);
+        user.setPointsAwardedFromChatGPT(0);
+        user.setBonusPoints(0);
+        user.setTotalPoints(0);
+        user.setTimeGuessSubmitted(0);
         users.add(user);
         this.playersInLobby += 1;
         user.setGame(this);
@@ -275,14 +282,23 @@ public class Game {
         return gameStarted;
     }
 
-    public int scalePointsByDuration(int pointsFromChatGPT, float timeGuessSubmitted) throws Exception {
+    public void setCurrentPictureGenerator(String currrentPictureGenerator) {
+        this.currrentPictureGenerator = currrentPictureGenerator;
+    }
 
+    public String getCurrentPictureGenerator() {
+        return currrentPictureGenerator;
+    }
+
+    public void scalePointsByDuration(User user, float timeGuessSubmitted) throws Exception {
 
         float timeLeft = timeLimit - timeGuessSubmitted;
         float bonusPoints = 0;
+        int pointsFromChatGPT = user.getPointsAwardedFromChatGPT();
+        user.setTimeGuessSubmitted(timeGuessSubmitted);
         
         if (timeLeft <= 0) {
-            return 0;
+            return ;
         } else {
             float percentageOfTimeLeft = timeLeft / timeLimit;
             if (percentageOfTimeLeft >= 0.75) {
@@ -291,8 +307,11 @@ public class Game {
                 bonusPoints = 0.10f;
             }
 
-            int finalPointsAwarded = (int) Math.round(pointsFromChatGPT + (pointsFromChatGPT * bonusPoints));
-            return finalPointsAwarded;
+            int bonusPointsAwarded = (int) Math.round(pointsFromChatGPT * bonusPoints);
+            user.setBonusPoints(bonusPointsAwarded);
+
+            int finalPointsAwarded = pointsFromChatGPT + bonusPointsAwarded;
+            user.setTotalPoints(finalPointsAwarded);
         }
     }
 

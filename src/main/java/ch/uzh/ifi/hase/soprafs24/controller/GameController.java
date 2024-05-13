@@ -232,20 +232,30 @@ public class GameController {
     @PostMapping("/game/image/{gameId}")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public ResponseEntity<String> generatePictureDallE(@PathVariable Long gameId, @RequestBody String text_prompt) throws Exception {
+    public ResponseEntity<String> generatePictureDallE(@PathVariable Long gameId, @RequestBody String text_prompt, @RequestHeader("userToken") String userToken) throws Exception {
 
         if (text_prompt == null || text_prompt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Image prompt provided by the player is null or empty");
         }
 
-        if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(userToken, Map.class);
+        // Extract the userToken from the Map
+        String mappedToken = map.get("userToken");
+
+        User user = userRepository.findByUserToken(mappedToken);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
         }
 
         Optional<Game> lobby = gameRepository.findById(gameId);
         if (!lobby.isPresent()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
         }
+
+        lobby.get().setCurrentPictureGenerator(user.getUsername());
+        gameRepository.save(lobby.get());
+        gameRepository.flush();
 
         String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
 
@@ -307,18 +317,17 @@ public class GameController {
         // Point awarded for correct guess (with ChatGPT evaluation)
         String playerGuessed = chatGPTPostDTO.getPlayerGuessed();
         float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
-        int score =  gameService.evaluatePlayerGuessWithChatGPT(playerGuessed);
-
+        gameService.evaluatePlayerGuessWithChatGPT(mappedToken, playerGuessed);
+        user.setPlayerGuess(playerGuessed);
+        
         // Scale the score based on the time taken to submit the guess
-        int scaledScore = lobby.get().scalePointsByDuration(score, timeGuessSubmitted);
+        lobby.get().scalePointsByDuration(user, timeGuessSubmitted);
 
-        // Update the user's score
-        // user.setScore(user.getScore() + scaledScore);
-        user.updatedScore(scaledScore);
+        user.updatedScore(user.getTotalPoints());
         userRepository.save(user);
         userRepository.flush();
 
-        System.out.print("Player name: " + user.getUsername() + " Time taken to submit guess: " + timeGuessSubmitted + " Guess: " + playerGuessed + " ChatGPT Score: " + score + " Scaled score: " + scaledScore);
+        System.out.print("Player name: " + user.getUsername() + " Time taken to submit guess: " + timeGuessSubmitted + " Guess: " + playerGuessed + " ChatGPT Score: " + user.getPointsAwardedFromChatGPT() + " Scaled score: " + user.getTotalPoints() + " bonus point: " + user.getBonusPoints() + "\n");
 
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
