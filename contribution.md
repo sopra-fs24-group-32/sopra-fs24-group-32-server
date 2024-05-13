@@ -122,3 +122,18 @@ the lobby the user is forwarded to the home screen -> corresponds to issues: #10
 ## Roger
 1. The host has the ability to remove any player from the lobby during the lobby stage #94
 2. After being kicked, users are unable to rejoin the same lobby without a new invitation from the lobby creator #96
+
+# Week 08.05 - 15.05
+
+## Eric
+
+## Eduard
+Player creating an image sees a timer for providing an input #67
+If player provides empty input all players are navigated to the scoreboard #68
+For invalid input for image generation the player gets another chance to provide a description and timer is reset #69
+
+## Nicolas S.
+
+## Nicolas H.
+
+## Roger
