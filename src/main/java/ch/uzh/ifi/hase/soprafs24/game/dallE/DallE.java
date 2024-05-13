@@ -20,7 +20,7 @@ public class DallE {
     private static final MediaType JSON = MediaType.parse("application/json");
     private final OkHttpClient client;
     private String inputPhrase;
-    private String imageUrl;
+    private String imageUrl = "";
 
     public DallE() {
         this.client = new OkHttpClient().newBuilder()
