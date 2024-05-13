@@ -106,7 +106,7 @@ Have a look here: https://www.baeldung.com/spring-boot-testing
 
 ## Authors and Acknowledgment
 ### Authors
-This game was brought to life by the dedicated efforts of students who designed and implemented it as part of the Software Engineering Lab course at the University of Zurich during the spring semester of 2024.
+This game was brought to life by a group of five dedicated students who designed and implemented it as part of the Software Engineering Lab course at the University of Zurich during the spring semester of 2024.
 
 - Roger Jeasy Bavibidila- [rogerjeasy](https://github.com/rogerjeasy)
 - Eduard Gash - [eduard54](https://github.com/eduard54)

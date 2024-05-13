@@ -123,9 +123,7 @@ public class UserService {
     // User reqUser = this.getUserById(id);
     User reqUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     if (!user.getUsername().isBlank() && !user.getUsername().equals(reqUser.getUsername())) {
-      if (userRepository.findByUsername(user.getUsername()) != null) {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username '" + user.getUsername() + "' is already taken. Please choose a different one.");
-      }
+      checkIfUserExists(user);
       reqUser.setUsername(user.getUsername());
   }
     if (user.getBirthDay() != null){
@@ -174,8 +172,9 @@ public class UserService {
   private void checkIfUserExists(User userToBeCreated) {
     User existingUser = userRepository.findByUsername(userToBeCreated.getUsername());
     if (existingUser != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-            String.format("Username '%s' is already taken. Please choose a different one.", userToBeCreated.getUsername()));
+      System.out.println("*************************************user exists in the database: " + existingUser.getUsername() + "*************************************");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        String.format("Username '%s' is already taken. Please choose a different one.", userToBeCreated.getUsername()));
     }
 }
 
