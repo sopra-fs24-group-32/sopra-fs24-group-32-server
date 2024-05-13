@@ -481,5 +481,14 @@ public class GameService {
 
         return allPlayersGuessed;
     }
+
+    public void skipRound(Long gameId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"));
+        if (!game.isGameStarted()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started");
+        }
+        // Additional logic if needed to handle the round skipping, e.g., setting up the next round or resetting timers
+    }
 }
         

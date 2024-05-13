@@ -112,4 +112,15 @@ public class WSController {
         return gameService.updateAmtOfGuesses(gameId);
     }
 
+    @MessageMapping("/skipRound/{gameId}")
+    @SendTo("/game/skipRound/{gameId}")
+    public boolean handleSkipRound(@DestinationVariable Long gameId) {
+        try {
+            gameService.skipRound(gameId);
+            return true; // Notify all clients that the round has been skipped
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to skip round: " + e.getMessage(), e);
+        }
+    }
+
 }
