@@ -253,7 +253,9 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
         }
 
-        return new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
+        ResponseEntity<String> generatedPicture = new ResponseEntity<>(pictureGenerated, HttpStatus.CREATED);
+        simpMessagingTemplate.convertAndSend("/game/receiveGeneratedPicture/" + gameId, generatedPicture);
+        return generatedPicture;
     }
 
     @GetMapping("/game/image/{gameId}")
