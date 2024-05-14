@@ -137,3 +137,5 @@ For invalid input for image generation the player gets another chance to provide
 ## Nicolas H.
 
 ## Roger
+1. Button to upload a profile picture #53
+2. On the profile editing page, players can enter or modify their name, email, and upload a new picture to personalize their profile #22
