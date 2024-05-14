@@ -319,7 +319,6 @@ public class GameController {
         float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
         gameService.evaluatePlayerGuessWithChatGPT(mappedToken, playerGuessed);
         user.setPlayerGuess(playerGuessed);
-        
         // Scale the score based on the time taken to submit the guess
         lobby.get().scalePointsByDuration(user, timeGuessSubmitted);
 
@@ -484,5 +483,4 @@ public class GameController {
         gameService.hostRemovePlayerFromLobby(gameId, hostMappedToken, mappedToken);
     }
     
-
 }
