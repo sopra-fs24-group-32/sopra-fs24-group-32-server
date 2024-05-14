@@ -1,10 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -149,6 +146,33 @@ public class SocketControllerTest {
         assertTrue(exception instanceof ResponseStatusException);
         assertEquals(HttpStatus.BAD_REQUEST, ((ResponseStatusException)exception).getStatus());
 
+    }
+
+    @Test
+    public void playerGuessedInvalideGameId(){
+        Long gameId = null;
+
+        assertThrows(ResponseStatusException.class, () -> socketController.playerGuessed(gameId));
+    }
+
+    @Test
+    public void playerGuessedPlayerWasLastPlayerThatHadToGuess() throws Exception {
+        Long gameId = 1L;
+
+        when(gameService.updateAmtOfGuesses(gameId)).thenReturn(true);
+
+        boolean allPlayersGuessed = socketController.playerGuessed(gameId);
+        assertTrue(allPlayersGuessed);
+    }
+
+    @Test
+    public void playerGuessedPlayerNotAllPlayersHaveGuessed() throws Exception {
+        Long gameId = 1L;
+
+        when(gameService.updateAmtOfGuesses(gameId)).thenReturn(false);
+
+        boolean allPlayersGuessed = socketController.playerGuessed(gameId);
+        assertFalse(allPlayersGuessed);
     }
 
 

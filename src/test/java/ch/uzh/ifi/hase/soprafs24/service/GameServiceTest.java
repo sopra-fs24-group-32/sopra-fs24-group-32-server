@@ -22,6 +22,7 @@ import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -2382,4 +2383,51 @@ public class GameServiceTest {
     //ToDo: create integration tests for repositories?
 
  */
+
+    @Test
+    void updateAmtOfGuessesInvalideId(){
+        Long id = 0L;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.updateAmtOfGuesses(id);
+        });
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    }
+
+    @Test
+    void updateAmtOfGuessesLobbyDoesNotExists() throws Exception{
+        Long id = 1L;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            gameService.updateAmtOfGuesses(id);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+
+    }
+
+    @Test
+    void updateAmtOfGuessesAllPlayersHaveGuessed(){
+        Game game = Mockito.mock(Game.class);
+        Long id = 1L;
+
+        when(gameRepository.findById(id)).thenReturn(Optional.of(game));
+        when(game.allPlayersGuessed()).thenReturn(true);
+
+        boolean allPlayersGuessed = gameService.updateAmtOfGuesses(id);
+        assertTrue(allPlayersGuessed);
+    }
+
+    @Test
+    void updateAmtOfGuessesNotAllPlayersHaveGuessed(){
+        Game game = Mockito.mock(Game.class);
+        Long id = 1L;
+
+        when(gameRepository.findById(id)).thenReturn(Optional.of(game));
+        when(game.allPlayersGuessed()).thenReturn(false);
+
+        boolean allPlayersGuessed = gameService.updateAmtOfGuesses(id);
+        assertFalse(allPlayersGuessed);
+    }
 }

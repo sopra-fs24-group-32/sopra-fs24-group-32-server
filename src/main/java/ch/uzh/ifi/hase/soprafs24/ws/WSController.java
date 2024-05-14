@@ -103,12 +103,13 @@ public class WSController {
 
     @MessageMapping("/guessSubmitted/{gameId}")
     @SendTo("/game/everybodyGuessed/{gameId}")
-    public boolean generatePictureDallE(@DestinationVariable Long gameId) throws Exception {
+    public boolean playerGuessed(@DestinationVariable Long gameId) throws Exception {
 
         if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
         }
 
+        //returns true if all players have submitted their guess, false otherwise
         return gameService.updateAmtOfGuesses(gameId);
     }
 

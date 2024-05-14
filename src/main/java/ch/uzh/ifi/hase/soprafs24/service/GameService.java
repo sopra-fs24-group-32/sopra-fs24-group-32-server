@@ -363,6 +363,24 @@ public class GameService {
 
         this.leaveLobby(currentLobby.getId(), userToken);
     }
+    public boolean playerLeaveCurrentLobbyPossible(String userToken) throws Exception {
+        User user = userRepository.findByUserToken(userToken);
+
+        System.out.println("UserToken:");
+        System.out.println(userToken);
+
+        if(user == null){
+            return false;
+        }
+
+        Game currentLobby = user.getGame();
+
+        if(currentLobby == null){
+            return false;
+        }
+
+        return true;
+    }
 
     public void gameIsFinishedLeaveLobby(Long lobbyId, String userToken) throws Exception {
         try {
