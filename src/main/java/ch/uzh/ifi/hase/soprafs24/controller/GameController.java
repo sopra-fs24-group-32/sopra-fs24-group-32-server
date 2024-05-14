@@ -399,6 +399,23 @@ public class GameController {
 
         gameService.playerLeaveCurrentLobby(userToken);
     }
+    @PostMapping("/lobby/showLeaveCurrentLobby")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public boolean leaveCurrentLobbyPossible(@RequestBody String jsonUserToken) throws Exception {
+
+        if (jsonUserToken == null) {
+            return false;
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> map = objectMapper.readValue(jsonUserToken, Map.class);
+        // Extract the userToken from the Map
+        String userToken = map.get("userToken");
+
+
+        return gameService.playerLeaveCurrentLobbyPossible(userToken);
+    }
 
     @PostMapping("/finishedGame/leave/{gameId}")
     @ResponseStatus(HttpStatus.OK)
