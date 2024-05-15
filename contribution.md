@@ -126,6 +126,13 @@ the lobby the user is forwarded to the home screen -> corresponds to issues: #10
 # Week 08.05 - 15.05
 
 ## Eric
+fixed header #64
+Copied invitation code button for usability #71
+change user appearance #72
+deactivate leave current lobby button if player is in no lobby #73
+error message and set deactivated after leaving #73
+fixed created At date #74
+limited image generate and image guess input characters #75
 
 ## Eduard
 Player creating an image sees a timer for providing an input #67
