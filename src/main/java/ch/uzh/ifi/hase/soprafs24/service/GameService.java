@@ -16,8 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -32,6 +35,9 @@ public class GameService {
     private final ChatGPT chatGPT;
     private long nextId=1;   
     private final List<Game> games = new ArrayList<>();
+    
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
     public GameService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository,
@@ -360,6 +366,10 @@ public class GameService {
         if(currentLobby == null){
             return;
         }
+        
+        // Convert the user who left to a DTO to be sent to the subscribed clients
+        UserGetDTO userLeft = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        simpMessagingTemplate.convertAndSend("/game/leave/" + currentLobby.getId(), userLeft);
 
         this.leaveLobby(currentLobby.getId(), userToken);
     }
