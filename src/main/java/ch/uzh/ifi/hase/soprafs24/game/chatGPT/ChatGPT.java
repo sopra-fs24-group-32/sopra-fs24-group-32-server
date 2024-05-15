@@ -44,7 +44,39 @@ public class ChatGPT {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // String prompt = String.format("Only provide the similarity score value, nothing else. Take into account synonyms and if there are common words in both sentences. How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
-        String prompt = String.format("Only provide the similarity score, nothing else. how much similar are the two sentences on a scale from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
+        // String prompt = String.format("Only provide the similarity score, nothing else. how much similar are the two sentences on a scale from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
+        
+        String promptInstructions = """
+            How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\" related to an online multiplayer drawing and guessing game. Only provide the similarity score value, nothing else.
+            The first sentence provides a description that was used to generate an image via an AI-driven art tool (DALL-E), and the second sentence is a player's guess of that description. 
+            **Scoring Guidelines**:
+            - **1.0**: The guess perfectly matches the description.
+            - **0.7-0.9**: The guess is very close to the description, capturing the main elements but possibly missing minor details.
+            - **0.4-0.6**: The guess is partially accurate, sharing some key elements with the description but missing significant aspects or including incorrect details.
+            - **0.1-0.3**: The guess has minimal relation to the description, with only slight overlaps in content.
+            - **0.0**: The guess is completely unrelated to the description, with no overlapping elements.
+            
+            **Examples**:
+            1. **Image Description**: "cat on the floor"
+            **Guess**: "dog on the floor"
+            **Score**: 0.0 (Unrelated animal, incorrect guess)
+            
+            2. **Image Description**: "professor explaining the course"
+            **Guess**: "professor"
+            **Score**: 0.7 (Correct identification of the subject but missing the action)
+            
+            3. **Image Description**: "cat"
+            **Guess**: "cat"
+            **Score**: 1.0 (Exact match)
+            
+            This method should ensure a clear and precise assessment of how closely a player's guess aligns with the initial image description, helping maintain fairness and engagement in gameplay.
+            **Your Response Guidelines**:
+            - Again, provide only the similarity score value, nothing else. 
+            - Do not include any additional information or context in your response.
+            - Do not provide a range or interval of the similarity score, only a single value between 0 and 1.
+            - Do not provide response values like 0.7-0.9 or 0.4-0.6, only a single value like 0.8 or 0.5.
+        """;
+        String prompt = String.format(promptInstructions, originalText, playerGuessed);
         
         // Create the request payload as a Map and serialize it to JSON
         Map<String, Object> payload = new HashMap<>();
@@ -71,7 +103,12 @@ public class ChatGPT {
         JSONObject textResponseObject = textResponse.getJSONObject(0);
         String similarityRating = textResponseObject.getString("text");
 
-        return  Float.parseFloat(similarityRating);
+        // check if Float.parseFloat(similarityRating) is of type float else throw exception
+        try {
+            return Float.parseFloat(similarityRating);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Input string is not a valid float: " + similarityRating);
+        }
     }
 
     public void convertSimilarityScoreToPoints(User user, float similarityScore) throws Exception {
