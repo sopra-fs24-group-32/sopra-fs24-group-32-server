@@ -15,6 +15,8 @@ import okhttp3.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -59,15 +61,18 @@ public class ChatGPT {
             **Examples**:
             1. **Image Description**: "cat on the floor"
             **Guess**: "dog on the floor"
-            **Score**: 0.0 (Unrelated animal, incorrect guess)
+            **Score**: 0.0 
+            **Reason**: Unrelated animal, incorrect guess
             
             2. **Image Description**: "professor explaining the course"
             **Guess**: "professor"
-            **Score**: 0.7 (Correct identification of the subject but missing the action)
+            **Score**: 0.7 
+            **Reason**: Correct identification of the subject but missing the action
             
             3. **Image Description**: "cat"
             **Guess**: "cat"
-            **Score**: 1.0 (Exact match)
+            **Score**: 1.0
+            **Reason**: Exact match
             
             This method should ensure a clear and precise assessment of how closely a player's guess aligns with the initial image description, helping maintain fairness and engagement in gameplay.
             **Your Response Guidelines**:
@@ -103,12 +108,18 @@ public class ChatGPT {
         JSONObject textResponseObject = textResponse.getJSONObject(0);
         String similarityRating = textResponseObject.getString("text");
 
-        // check if Float.parseFloat(similarityRating) is of type float else throw exception
-        try {
-            return Float.parseFloat(similarityRating);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Input string is not a valid float: " + similarityRating);
+        Pattern pattern = Pattern.compile("\\b\\d+(\\.\\d+)?\\b");
+        Matcher matcher = pattern.matcher(similarityRating);
+        
+        if (matcher.find()) {
+            // Convert the first match to a float
+            float similarityScore = Float.parseFloat(matcher.group());
+            return similarityScore;
+        } else {
+            System.out.println("No float found in the string.");
+            return 0.5f;
         }
+
     }
 
     public void convertSimilarityScoreToPoints(User user, float similarityScore) throws Exception {

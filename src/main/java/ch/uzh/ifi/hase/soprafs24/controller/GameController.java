@@ -293,7 +293,7 @@ public class GameController {
     @PutMapping("/game/chatgpt/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public ResponseEntity<?> evaluateGuessesByChatGPT(@PathVariable Long gameId, @RequestBody ChatGPTPostDTO chatGPTPostDTO, @RequestHeader("userToken") String userToken) throws Exception {
+    public ResponseEntity<UserGetDTO> evaluateGuessesByChatGPT(@PathVariable Long gameId, @RequestBody ChatGPTPostDTO chatGPTPostDTO, @RequestHeader("userToken") String userToken) throws Exception {
 
         if (gameId == null || gameId == 0 || gameId.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "gameId is null or empty");
@@ -317,28 +317,19 @@ public class GameController {
         // Point awarded for correct guess (with ChatGPT evaluation)
         String playerGuessed = chatGPTPostDTO.getPlayerGuessed();
         float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
-        try {
-            gameService.evaluatePlayerGuessWithChatGPT(mappedToken, playerGuessed);
-            user.setPlayerGuess(playerGuessed);
-            // Scale the score based on the time taken to submit the guess
-            lobby.get().scalePointsByDuration(user, timeGuessSubmitted);
+        gameService.evaluatePlayerGuessWithChatGPT(mappedToken, playerGuessed);
+        user.setPlayerGuess(playerGuessed);
+        // Scale the score based on the time taken to submit the guess
+        lobby.get().scalePointsByDuration(user, timeGuessSubmitted);
 
-            user.updatedScore(user.getTotalPoints());
-            userRepository.save(user);
-            userRepository.flush();
+        user.updatedScore(user.getTotalPoints());
+        userRepository.save(user);
+        userRepository.flush();
 
-            System.out.print("Player name: " + user.getUsername() + " Time taken to submit guess: " + timeGuessSubmitted + " Guess: " + playerGuessed + " ChatGPT Score: " + user.getPointsAwardedFromChatGPT() + " Scaled score: " + user.getTotalPoints() + " bonus point: " + user.getBonusPoints() + "\n");
+        System.out.print("Player name: " + user.getUsername() + " Time taken to submit guess: " + timeGuessSubmitted + " Guess: " + playerGuessed + " ChatGPT Score: " + user.getPointsAwardedFromChatGPT() + " Scaled score: " + user.getTotalPoints() + " bonus point: " + user.getBonusPoints() + "\n");
 
-            UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
-            return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
-        } catch (ResponseStatusException e) {
-            String errorMessage = e.getReason();
-            return ResponseEntity.status(e.getStatus()).body(errorMessage);
-            // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to evaluate guess with ChatGPT. Reason: " + e.getMessage());
-        } catch (NumberFormatException e) {
-            String errorMessage = e.getMessage();
-            return ResponseEntity.status(null).body(errorMessage);
-        }
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        return new ResponseEntity<>(userGetDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/game/lastDescription/{gameId}")

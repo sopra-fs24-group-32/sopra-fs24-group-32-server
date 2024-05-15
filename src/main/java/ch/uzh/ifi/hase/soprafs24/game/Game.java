@@ -239,11 +239,13 @@ public class Game {
         countNumPlayed++;
         if (countNumPlayed % users.size() == 0) {
             currentRound++;
-            System.out.println("-----------------Current round: " + currentRound + " / " + amtOfRounds + "Total number of played so far: " + countNumPlayed );
             if (currentRound < amtOfRounds) {
                 pictureGeneratorQueue.addAll(remaininPictureGenerators);
             }
         }
+        
+        System.out.println("\n-----------------Current round: " + currentRound + "/" + amtOfRounds + " Total number of played so far: " + countNumPlayed + " Number of players: " + users.size() + "\n");
+        
 
         return selectedGenerator;
     }
