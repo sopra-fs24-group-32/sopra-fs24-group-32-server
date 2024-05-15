@@ -104,7 +104,7 @@ fixed logout from homescreen #47
 
 ## Eduard
 Scoreboard Ranking and winning player is highlighted in Gold after every round and animated #40 and #18.
-Added that correct description is revealed after each round in the scoreboard. Guesser see in their waiting screen, who is creating the image in the current turn.
+Added that correct description is revealed after each round in the scoreboard. Guesser see in their waiting screen, who is creating the image in the current turn #65 #66.
 
 ## Nicolas S.
 Added WS for Kickplayer -> Players get notified when someone kicked #49 #50 + ws disconnected when leaving + kicked
