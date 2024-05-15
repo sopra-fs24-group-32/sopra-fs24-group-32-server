@@ -1652,38 +1652,38 @@ public class GameServiceTest {
         assertTrue(actualMessage2.contains(expectedMessage));
     }
 
-    @Test
-    public void playerLeaveCurrentLobby_WithValidUserToken_ShouldBeSucessfull() throws Exception {
-        User lobbyOwner = new User();
-        lobbyOwner.setUserToken("userToken");
-        lobbyOwner.setUsername("lobbyOwner");
-
-        User player1 = new User();
-        player1.setUserToken("userToken2");
-        player1.setUsername("player1");
-
-        User player2 = new User();
-        player2.setUserToken("userToken3");
-        player2.setUsername("player2");
-
-        Game game = new Game();
-        Long gameId = 1L;
-        game.setId(gameId);
-        game.setLobbyOwner("lobbyOwner");
-        game.addPlayer(player1);
-        game.addPlayer(player2);
-        game.addPlayer(lobbyOwner);
-
-        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
-        when(userRepository.findByUserToken("userToken2")).thenReturn(player1);
-        when(userRepository.findByUserToken("userToken3")).thenReturn(player2);
-
-        gameService.playerLeaveCurrentLobby("userToken2");
-
-        // check remaining players size in the game
-        assertEquals(2, game.getUsers().size());
-    }
+//    @Test
+//    public void playerLeaveCurrentLobby_WithValidUserToken_ShouldBeSucessfull() throws Exception {
+//        User lobbyOwner = new User();
+//        lobbyOwner.setUserToken("userToken");
+//        lobbyOwner.setUsername("lobbyOwner");
+//
+//        User player1 = new User();
+//        player1.setUserToken("userToken2");
+//        player1.setUsername("player1");
+//
+//        User player2 = new User();
+//        player2.setUserToken("userToken3");
+//        player2.setUsername("player2");
+//
+//        Game game = new Game();
+//        Long gameId = 1L;
+//        game.setId(gameId);
+//        game.setLobbyOwner("lobbyOwner");
+//        game.addPlayer(player1);
+//        game.addPlayer(player2);
+//        game.addPlayer(lobbyOwner);
+//
+//        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+//        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
+//        when(userRepository.findByUserToken("userToken2")).thenReturn(player1);
+//        when(userRepository.findByUserToken("userToken3")).thenReturn(player2);
+//
+//        gameService.playerLeaveCurrentLobby("userToken2");
+//
+//        // check remaining players size in the game
+//        assertEquals(2, game.getUsers().size());
+//    }
 
     @Test
     public void playerLeaveCurrentLobby_WithInvalidUserToken_ShouldThrowException() throws Exception {

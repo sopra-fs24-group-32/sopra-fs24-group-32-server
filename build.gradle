@@ -48,6 +48,12 @@ dependencies {
    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 //    implementation 'com.google.code.gson:gson:2.8.6'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+    testImplementation 'org.mockito:mockito-inline:4.0.0'
 
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

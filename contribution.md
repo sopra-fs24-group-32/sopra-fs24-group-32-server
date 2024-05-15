@@ -104,7 +104,7 @@ fixed logout from homescreen #47
 
 ## Eduard
 Scoreboard Ranking and winning player is highlighted in Gold after every round and animated #40 and #18.
-Added that correct description is revealed after each round in the scoreboard. Guesser see in their waiting screen, who is creating the image in the current turn.
+Added that correct description is revealed after each round in the scoreboard. Guesser see in their waiting screen, who is creating the image in the current turn #65 #66.
 
 ## Nicolas S.
 Added WS for Kickplayer -> Players get notified when someone kicked #49 #50 + ws disconnected when leaving + kicked
@@ -126,6 +126,13 @@ the lobby the user is forwarded to the home screen -> corresponds to issues: #10
 # Week 08.05 - 15.05
 
 ## Eric
+fixed header #64
+Copied invitation code button for usability #71
+change user appearance #72
+deactivate leave current lobby button if player is in no lobby #73
+error message and set deactivated after leaving #73
+fixed created At date #74
+limited image generate and image guess input characters #75
 
 ## Eduard
 Player creating an image sees a timer for providing an input #67
@@ -133,6 +140,9 @@ If player provides empty input all players are navigated to the scoreboard #68
 For invalid input for image generation the player gets another chance to provide a description and timer is reset #69
 
 ## Nicolas S.
+Added Tests so we exceed required 75%
+Added Button to explain rules of the game at home, host and joined
+small bug fixed kick websocket (not multiple times anymore)
 
 ## Nicolas H.
 Adjust the gameplay so that if all players have already guessed the game continues and does not let the timer run out 
