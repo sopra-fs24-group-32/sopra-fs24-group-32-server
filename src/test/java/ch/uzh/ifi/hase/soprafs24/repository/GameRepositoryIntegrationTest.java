@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs24.game.chatGPT.ChatGPT;
 import ch.uzh.ifi.hase.soprafs24.game.dallE.DallE;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,14 +48,16 @@ public class GameRepositoryIntegrationTest {
     private TestEntityManager entityManager;
 
 
-    void setUp(User user1, User user2, User user3) throws Exception {
+    Long setUp(User user1, User user2, User user3) throws Exception {
         long gameId = 1L;
         Game game = new Game(gameId, user1.getUsername());
         game.addPlayer(user1);
         game.addPlayer(user2);
         game.addPlayer(user3);
         entityManager.persist(game);
+        long id = game.getId();
         entityManager.flush();
+        return id;
     }
 
 
@@ -71,8 +74,13 @@ public class GameRepositoryIntegrationTest {
     }
 
     @BeforeEach
-    public void setup() {
+    public void setupState() {
         gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
+    }
+
+    @AfterEach
+    public void cleanUp(){
+        entityManager.clear();
     }
 
 
@@ -86,9 +94,9 @@ public class GameRepositoryIntegrationTest {
         entityManager.persist(user2);
         entityManager.persist(user3);
 
-        setUp(user1, user2, user3);
+        Long gameId = setUp(user1, user2, user3);
 
-        Game game = (Game) entityManager.find(Game.class, 1L);
+        Game game = (Game) entityManager.find(Game.class, gameId);
 
         User userFound = entityManager.find(User.class, user1.getId());
 
@@ -111,9 +119,9 @@ public class GameRepositoryIntegrationTest {
         entityManager.persist(user3);
         entityManager.flush();
 
-        setUp(user1, user2, user3);
+        Long gameId = setUp(user1, user2, user3);
 
-        Game game = (Game) entityManager.find(Game.class, 2L);
+        Game game = (Game) entityManager.find(Game.class, gameId);
 
         User userFound = entityManager.find(User.class, user1.getId());
 

@@ -135,6 +135,10 @@ For invalid input for image generation the player gets another chance to provide
 ## Nicolas S.
 
 ## Nicolas H.
+Adjust the gameplay so that if all players have already guessed the game continues and does not let the timer run out 
+-> issue #110 (and issue #70 on client).
+Adjust websockets so that clients subscribe only to a specific lobby and not to a general endpoint ->
+was a problem if two players create a lobby, the second to create it joined the first lobby -> issue #109 (#63 on client).
 
 ## Roger
 1. Button to upload a profile picture #53
