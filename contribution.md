@@ -134,7 +134,7 @@ For invalid input for image generation the player gets another chance to provide
 
 ## Nicolas S.
 Added Tests so we exceed required 75%
-Added Button to explain rules of the game
+Added Button to explain rules of the game at home, host and joined
 
 ## Nicolas H.
 Adjust the gameplay so that if all players have already guessed the game continues and does not let the timer run out 
