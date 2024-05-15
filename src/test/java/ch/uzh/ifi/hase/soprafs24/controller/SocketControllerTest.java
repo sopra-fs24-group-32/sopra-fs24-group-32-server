@@ -175,5 +175,112 @@ public class SocketControllerTest {
         assertFalse(allPlayersGuessed);
     }
 
+    @Test
+    public void handleSkipRound_WithValidGameId_ShouldReturnTrue() {
+        Long gameId = 1L;
+
+        doNothing().when(gameService).skipRound(gameId);
+
+        boolean result = socketController.handleSkipRound(gameId);
+        assertTrue(result);
+    }
+
+    @Test
+    public void handleSkipRound_WithInvalidGameId_ShouldThrowException() {
+        Long gameId = 1L;
+
+        doThrow(new RuntimeException("Error skipping round")).when(gameService).skipRound(gameId);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.handleSkipRound(gameId);
+        });
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, exception.getStatus());
+        assertTrue(exception.getReason().contains("Error skipping round"));
+    }
+
+    @Test
+    public void joinGame_WithNullUserToken_ShouldThrowResponseStatusException() {
+        String gameId = "1";
+        String userToken = null;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.joinGame(gameId, userToken);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("userToken is null or empty", exception.getReason());
+    }
+
+    @Test
+    public void continueGame_WithNullGameId_ShouldThrowResponseStatusException() {
+        String gameId = null;
+        Long id = 1L;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.continueGame(gameId, id);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Path Variable 'gameId' is null or empty", exception.getReason());
+    }
+
+    @Test
+    public void startGame_WithNullGameId_ShouldThrowResponseStatusException() {
+        String gameId = null;
+        Long id = 1L;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.startGame(gameId, id);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Path Variable 'gameId' is null or empty", exception.getReason());
+    }
+
+    @Test
+    public void playerGuessed_WithNullGameId_ShouldThrowResponseStatusException() {
+        Long gameId = null;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.playerGuessed(gameId);
+        });
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("gameId is null or empty", exception.getReason());
+    }
+
+    @Test
+    public void playerGuessed_WithEmptyGameId_ShouldThrowResponseStatusException() {
+        Long gameId = 0L;
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            socketController.playerGuessed(gameId);
+        });
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("gameId is null or empty", exception.getReason());
+    }
+
+    @Test
+    public void playerGuessed_WithValidGameId_ShouldReturnTrueIfAllPlayersGuessed() throws Exception {
+        Long gameId = 1L;
+
+        when(gameService.updateAmtOfGuesses(gameId)).thenReturn(true);
+
+        boolean result = socketController.playerGuessed(gameId);
+        assertTrue(result);
+    }
+
+    @Test
+    public void playerGuessed_WithValidGameId_ShouldReturnFalseIfNotAllPlayersGuessed() throws Exception {
+        Long gameId = 1L;
+
+        when(gameService.updateAmtOfGuesses(gameId)).thenReturn(false);
+
+        boolean result = socketController.playerGuessed(gameId);
+        assertFalse(result);
+    }
+
 
 }

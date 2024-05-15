@@ -289,6 +289,19 @@ public class GameControllerTest {
     }
 
     @Test
+    public void leaveCurrentLobbyPossible_WithValidToken_ShouldReturnTrue() throws Exception {
+      String userToken = "{\"userToken\":\"valid-token\"}";
+  
+      when(gameService.playerLeaveCurrentLobbyPossible("valid-token")).thenReturn(true);
+  
+      mockMvc.perform(post("/lobby/showLeaveCurrentLobby")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(userToken))
+              .andExpect(status().isOk())
+              .andExpect(content().string("true"));
+    }
+
+    @Test
     public void playerLeaveTheGame_WhenGameNotFound_ShouldReturnNotFound() throws Exception {
         Long gameId = 1L;
         String userToken = "{\"userToken\":\"valid-token\"}";
@@ -308,6 +321,35 @@ public class GameControllerTest {
         } catch (Exception e) {
         throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void hostRemovePlayer_WithValidParams_ShouldReturnOk() throws Exception {
+      Long gameId = 1L;
+      String userToken = "{\"userToken\":\"valid-token\"}";
+      String hostToken = "{\"userToken\":\"host-token\"}";
+  
+      User user = new User();
+      user.setUsername("player");
+      user.setUserToken("valid-token");
+  
+      User host = new User();
+      host.setUsername("host");
+      host.setUserToken("host-token");
+  
+      Game game = new Game(gameId, "host");
+  
+      when(userRepository.findByUserToken("valid-token")).thenReturn(user);
+      when(userRepository.findByUserToken("host-token")).thenReturn(host);
+      when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+  
+      doNothing().when(gameService).hostRemovePlayerFromLobby(gameId, "host-token", "valid-token");
+  
+      mockMvc.perform(post("/hostRemovePlayer/{gameId}", gameId)
+              .header("userToken", hostToken)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(userToken))
+              .andExpect(status().isOk());
     }
 
     @Test
@@ -510,6 +552,29 @@ public class GameControllerTest {
 
         mockMvc.perform(get("/game/image/{gameId}", gameId))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getPictureGeneratedByDallE_WhenGameFoundAndImageGenerated_ShouldReturnImageUrl() throws Exception {
+      Long gameId = 1L;
+      String imageUrl = "https://example.com/cat.jpg";
+      Game game = new Game(gameId, "owner");
+  
+      when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+      when(gameService.getImageGeneratedByDallE()).thenReturn(imageUrl);
+  
+      mockMvc.perform(get("/game/image/{gameId}", gameId))
+              .andExpect(status().isOk())
+              .andExpect(content().string(imageUrl));
+    }
+
+    @Test
+    public void resetImageURL_ShouldReturnOk() throws Exception {
+      doNothing().when(gameService).resetDallEsImageURL();
+  
+      mockMvc.perform(post("/resetImageURL")
+              .contentType(MediaType.APPLICATION_JSON))
+              .andExpect(status().isOk());
     }
 
     @Test

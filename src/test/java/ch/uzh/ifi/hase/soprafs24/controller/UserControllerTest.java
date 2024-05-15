@@ -534,4 +534,64 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
           String.format("The request body could not be created.%s", e.toString()));
     }
   }
+  @Test
+  public void loginUser_WithWrongPassword_ShouldReturnNotFound() throws Exception {
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setUsername("validUsername");
+    userPostDTO.setPassword("wrongPassword");
+
+    User mockUser = new User();
+    mockUser.setUsername("validUsername");
+    mockUser.setPassword("validPassword");
+
+    when(userRepository.findByUsername("validUsername")).thenReturn(mockUser);
+
+    mockMvc.perform(post("/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void updateUser_WithNullUserId_ShouldReturnBadRequest() throws Exception {
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setUsername("newUsername");
+
+    mockMvc.perform(put("/users/update/{id}", 0L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void updateUser_WithInvalidUserId_ShouldReturnNotFound() throws Exception {
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setUsername("newUsername");
+
+    when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+    mockMvc.perform(put("/users/update/{id}", 999L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void updateUser_WithValidData_ShouldUpdateUser() throws Exception {
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("oldUsername");
+
+    UserPostDTO userPostDTO = new UserPostDTO();
+    userPostDTO.setUsername("newUsername");
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+    mockMvc.perform(put("/users/update/{id}", 1L)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(userPostDTO)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.username", is("newUsername")));
+  }
+  
 }
