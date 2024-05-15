@@ -133,6 +133,8 @@ If player provides empty input all players are navigated to the scoreboard #68
 For invalid input for image generation the player gets another chance to provide a description and timer is reset #69
 
 ## Nicolas S.
+Added Tests so we exceed required 75%
+Added Button to explain rules of the game
 
 ## Nicolas H.
 Adjust the gameplay so that if all players have already guessed the game continues and does not let the timer run out 
