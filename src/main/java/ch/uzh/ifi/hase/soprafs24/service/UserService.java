@@ -120,12 +120,16 @@ public class UserService {
   }
 
   public User updateUser(Long id, User user) throws Exception {
-    // User reqUser = this.getUserById(id);
     User reqUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    if (!user.getUsername().isBlank() && !user.getUsername().equals(reqUser.getUsername())) {
-      checkIfUserExists(user);
-      reqUser.setUsername(user.getUsername());
-  }
+
+    String username = user.getUsername();
+
+    if(username != null && !username.isEmpty()){
+        checkIfUserExists(user);
+    }
+
+    reqUser.setUsername(username);
+
     if (user.getBirthDay() != null){
       reqUser.setBirthDay(user.getBirthDay());
     }
@@ -176,6 +180,11 @@ public class UserService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
         String.format("Username '%s' is already taken. Please choose a different one.", userToBeCreated.getUsername()));
     }
-}
+  }
+
+  private void checkIfUsernameUnique(String username){
+      User existingUser = userRepository.findByUsername(username);
+
+  }
 
 }

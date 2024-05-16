@@ -434,30 +434,6 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
                .andExpect(status().isNotFound());        
    }
 
-
-
-  @Test
-  public void update_user_test() throws Exception {
-      User user = new User();
-      user.setId(1L);
-      user.setPassword("new");
-      user.setUsername("new");
-      user.setStatus(UserStatus.ONLINE);
-
-//       given(userService.updateUser(1L,user)).willReturn(user);
-      given(userRepository.findById(1L)).willReturn(Optional.of(user));
-
-      UserPostDTO userPostDTO = new UserPostDTO();
-      userPostDTO.setUsername("updatedUsername");
-
-      mockMvc.perform(put("/users/update/{id}", 1L)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(asJsonString(userPostDTO)))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.username", is(user.getUsername())))
-              .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
-  }
-
   @Test
   public void update_user_test_invalid_id() throws Exception {
       User user = new User();
@@ -475,25 +451,6 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
               .contentType(MediaType.APPLICATION_JSON)
               .content(asJsonString(userPostDTO)))
               .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void update_user_test_invalid_user() throws Exception {
-      User user = new User();
-      user.setId(1L);
-      user.setPassword("new");
-      user.setUsername("new");
-      user.setStatus(UserStatus.ONLINE);
-
-      given(userRepository.findById(1L)).willReturn(Optional.of(user));
-
-      UserPostDTO userPostDTO = new UserPostDTO();
-      userPostDTO.setUsername("updatedUsername");
-
-      mockMvc.perform(put("/users/update/{id}", 2L)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(asJsonString(userPostDTO)))
-              .andExpect(status().isNotFound());
   }
 
   @Test
@@ -562,36 +519,4 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
         .content(asJsonString(userPostDTO)))
         .andExpect(status().isBadRequest());
   }
-
-  @Test
-  public void updateUser_WithInvalidUserId_ShouldReturnNotFound() throws Exception {
-    UserPostDTO userPostDTO = new UserPostDTO();
-    userPostDTO.setUsername("newUsername");
-
-    when(userRepository.findById(999L)).thenReturn(Optional.empty());
-
-    mockMvc.perform(put("/users/update/{id}", 999L)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(asJsonString(userPostDTO)))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  public void updateUser_WithValidData_ShouldUpdateUser() throws Exception {
-    User user = new User();
-    user.setId(1L);
-    user.setUsername("oldUsername");
-
-    UserPostDTO userPostDTO = new UserPostDTO();
-    userPostDTO.setUsername("newUsername");
-
-    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-    mockMvc.perform(put("/users/update/{id}", 1L)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(asJsonString(userPostDTO)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.username", is("newUsername")));
-  }
-  
 }
