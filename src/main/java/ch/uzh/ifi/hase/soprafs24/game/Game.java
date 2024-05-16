@@ -67,6 +67,7 @@ public class Game {
     private List<String> pictureGeneratorQueue = new ArrayList<>();
     @Column
     private int currentRound = 0;
+    @Column
     private int countNumPlayed = 0;
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "list_of_removed_players", joinColumns = @JoinColumn(name = "game_id"))
@@ -207,6 +208,8 @@ public class Game {
         }
 
     }
+
+    //ToDo: Test for this
 
     @Transactional
     public String selectPictureGenerator() {
