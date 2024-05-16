@@ -126,9 +126,9 @@ public class UserService {
 
     if(username != null && !username.isEmpty()){
         checkIfUserExists(user);
+        reqUser.setUsername(username);
     }
 
-    reqUser.setUsername(username);
 
     if (user.getBirthDay() != null){
       reqUser.setBirthDay(user.getBirthDay());

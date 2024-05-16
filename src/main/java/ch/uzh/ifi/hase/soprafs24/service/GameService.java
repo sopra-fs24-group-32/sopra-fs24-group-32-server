@@ -295,6 +295,10 @@ public class GameService {
         dallE.setImageUrl("");
     }
 
+    public void resetDallEsInputPhrase(){
+        dallE.setInputPhrase("");
+    }
+
     public void evaluatePlayerGuessWithChatGPT(String userToken, String playerGuessed) throws Exception{
 
         String originalText = dallE.getInputPhrase();

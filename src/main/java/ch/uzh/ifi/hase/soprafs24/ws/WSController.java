@@ -73,6 +73,7 @@ public class WSController {
         this.assertGameIdNotNull(gameId);
 
         gameService.resetDallEsImageURL();
+        gameService.resetDallEsInputPhrase();
 
         String nextPictureGenerator = gameService.getNextPictureGenerator(id);
         User newUser = new User(nextPictureGenerator, null);
