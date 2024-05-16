@@ -504,7 +504,7 @@ public class GameService {
         gameRepository.flush();
     }
 
-    public boolean updateAmtOfGuesses(Long id){
+    public synchronized boolean updateAmtOfGuesses(Long id){
         if (id == null || id == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null");
         }
