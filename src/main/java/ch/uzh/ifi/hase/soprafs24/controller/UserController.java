@@ -140,15 +140,12 @@ public class UserController {
     if (id == null || id == 0) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID cannot be null");
     }
-    User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    user.setUsername(userPostDTO.getUsername());
-    user.setBirthDay(userPostDTO.getBirthDay());
-    user.setEmail(userPostDTO.getEmail());
-    user.setPicture(userPostDTO.getPicture());
 
-    userService.updateUser(id, user);
+    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
-    UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    User updatedUser = userService.updateUser(id, userInput);
+
+    UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(updatedUser);
     return new ResponseEntity<>(userGetDTO, HttpStatus.OK);
 
   }

@@ -71,6 +71,7 @@ public class Game {
 
     @Column
     private int currentRound = 0;
+    @Column
     private int countNumPlayed = 0;
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -216,6 +217,8 @@ public class Game {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No players available for picture generation");
         }
     }
+
+    //ToDo: Test for this
 
     @Transactional
     public String selectPictureGenerator() {
