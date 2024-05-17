@@ -11,12 +11,14 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 
+import org.checkerframework.checker.units.qual.s;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,38 +110,56 @@ public class GameController {
         }
    }
    
-   @PostMapping("/lobby/leave/{lobbyId}")
-   @ResponseStatus(HttpStatus.OK)
-   @ResponseBody
-   public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userTokenJson) throws Exception {
-       System.out.println("user Token:" + userTokenJson);
-       
-       if (userTokenJson == null || userTokenJson.isEmpty()) {
-           System.out.println("User token is null or empty");
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
-       }
-   
-       if (lobbyId == null || lobbyId == 0) {
-           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
-       }
-   
-       // Parse the userToken from JSON
-       ObjectMapper objectMapper = new ObjectMapper();
-       JsonNode jsonNode = objectMapper.readTree(userTokenJson);
-       String userToken = jsonNode.get("userToken").asText();
-   
-       System.out.println("User token:" + userToken);
-       User user = userService.findByToken(userToken);
-       
-       // Convert the user who left to a DTO to be sent to the subscribed clients
-       UserGetDTO userLeft = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
-       simpMessagingTemplate.convertAndSend("/game/leave/" + lobbyId, userLeft);
-   
-       System.out.println("Request to leave lobby with id: " + lobbyId + " by user: " + user.getUsername() + " with token: " + userToken);
-       Game game = gameService.leaveLobby(lobbyId, userToken);
-   
-       return game;
-   }
+@PostMapping("/lobby/leave/{lobbyId}")
+@ResponseStatus(HttpStatus.OK)
+@ResponseBody
+public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userTokenJson) throws Exception {
+    System.out.println("user Token:" + userTokenJson);
+    
+    if (userTokenJson == null || userTokenJson.isEmpty()) {
+        System.out.println("User token is null or empty");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User token is null or empty");
+    }
+
+    if (lobbyId == null || lobbyId == 0) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lobby ID is null");
+    }
+
+    // Parse the userToken from JSON
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode jsonNode = objectMapper.readTree(userTokenJson);
+    String userToken = jsonNode.get("userToken").asText();
+
+    System.out.println("User token:" + userToken);
+    User user = userService.findByToken(userToken);
+    
+    // Convert the user who left to a DTO to be sent to the subscribed clients
+    UserGetDTO userLeft = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+
+    System.out.println("Request to leave lobby with id: " + lobbyId + " by user: " + user.getUsername() + " with token: " + userToken);
+    Game game = gameService.leaveLobby(lobbyId, userToken);
+
+    // Check if the user leaving is the lobby owner
+    String lobbyOwner = game.getLobbyOwner();
+    String lobbyOwnerToken = userRepository.findByUsername(lobbyOwner).getUserToken();
+    System.out.println("Lobby Owner Token: " + lobbyOwnerToken);
+    boolean isLobbyOwner = userToken.equals(lobbyOwnerToken);
+    
+    if (isLobbyOwner) {
+        System.out.println("LobbyOwner Leaving Lobby -> Deleting Lobby");
+        gameService.deleteLobby(lobbyId, userToken);
+    }
+    
+    // Create a message object containing userLeft and the isLobbyOwner flag
+    Map<String, Object> message = new HashMap<>();
+    message.put("user", userLeft);
+    message.put("isLobbyOwner", isLobbyOwner);
+    
+    simpMessagingTemplate.convertAndSend("/game/leave/" + lobbyId, message);
+
+    return game;
+}
+
    
 
 
