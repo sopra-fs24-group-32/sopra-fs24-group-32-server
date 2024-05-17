@@ -61,13 +61,18 @@ public class Game {
     private String currrentPictureGenerator;
 
     private static final SecureRandom RANDOMForPlayer = new SecureRandom();
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "game_picture_generator_queue", joinColumns = @JoinColumn(name = "game_id"))
-    @Column(name = "picture_generator")
+    // @ElementCollection(fetch = FetchType.EAGER)
+    // @CollectionTable(name = "game_picture_generator_queue", joinColumns = @JoinColumn(name = "game_id"))
+    // @Column(name = "picture_generator")
+    // @OneToMany(fetch = FetchType.EAGER, mappedBy = "game_id")
+    // private List<List<String>> pictureGeneratorQueue = new ArrayList<>();
+    @Transient
     private List<String> pictureGeneratorQueue = new ArrayList<>();
+
     @Column
     private int currentRound = 0;
     private int countNumPlayed = 0;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "list_of_removed_players", joinColumns = @JoinColumn(name = "game_id"))
     @Column(name = "remove_player")
@@ -201,11 +206,15 @@ public class Game {
         }
         gameStarted = true;
         amtOfPlayersGuessed = 0;
-
-        for(User user: users){
-            this.remaininPictureGenerators.add(user.getUsername());
+        playersInLobby = users.size();
+        this.remaininPictureGenerators.clear(); // Clear previous game data if any
+        for (User user : users) {
+            this.remaininPictureGenerators.add(user.getUsername()); // Ensuring users are added here
         }
-
+        
+        if (this.remaininPictureGenerators.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No players available for picture generation");
+        }
     }
 
     @Transactional
@@ -215,9 +224,9 @@ public class Game {
         if (!gameStarted) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started yet");
         }
-        if (currentRound >= amtOfRounds) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played. Game is over.");
-        }
+        // if (currentRound >= amtOfRounds) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played. Game is over.");
+        // }
 
         if (pictureGeneratorQueue.isEmpty()) {
             if (remaininPictureGenerators.isEmpty()) {
@@ -239,9 +248,9 @@ public class Game {
         countNumPlayed++;
         if (countNumPlayed % users.size() == 0) {
             currentRound++;
-            if (currentRound < amtOfRounds) {
-                pictureGeneratorQueue.addAll(remaininPictureGenerators);
-            }
+            // if (currentRound < amtOfRounds) {
+            //     pictureGeneratorQueue.addAll(remaininPictureGenerators);
+            // }
         }
         
         System.out.println("\n-----------------Current round: " + currentRound + "/" + amtOfRounds + " Total number of played so far: " + countNumPlayed + " Number of players: " + users.size() + "\n");
@@ -249,6 +258,36 @@ public class Game {
 
         return selectedGenerator;
     }
+
+    // @Transactional
+    // public String selectPictureGenerator() {
+    //     // Ensure the game has started
+    //     if (!gameStarted) {
+    //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has not started yet");
+    //     }
+
+    //     if (pictureGeneratorQueue.isEmpty()) {
+    //         // Refill the queue from remaining generators
+    //         pictureGeneratorQueue.addAll(remaininPictureGenerators);
+    //     }
+
+    //     System.out.println("-------------------------------Current round: " + currentRound + " Picture generator queue: " + pictureGeneratorQueue);
+    //     int index = RANDOMForPlayer.nextInt(pictureGeneratorQueue.size());
+    //     if (!pictureGeneratorQueue.isEmpty()) {
+    //         String selectedGenerator = pictureGeneratorQueue.remove(index);
+    //         countNumPlayed++;
+    //         return selectedGenerator;
+    //     } else {
+    //         currentRound++;
+    //         if (currentRound > amtOfRounds) {
+    //             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played. Game is over.");
+    //         }
+    //     }
+
+    //     System.out.println("\n-----------------Current round: " + currentRound + "/" + amtOfRounds + " Total number of played so far: " + countNumPlayed + " Number of players: " + users.size() + "\n");
+    //     return null;
+    // }
+
 
     public int getPlayersInLobby(){
         return this.playersInLobby;
