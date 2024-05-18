@@ -136,18 +136,22 @@ public class UserController {
   @PutMapping("/users/update/{id}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public ResponseEntity<UserGetDTO> updateUser(@PathVariable Long id, @RequestBody UserPostDTO userPostDTO) throws Exception {
-    if (id == null || id == 0) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID cannot be null");
+  public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserPostDTO userPostDTO) throws Exception {
+    try {
+        if (id == null || id == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID cannot be null");
+        }
+
+        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+        User updatedUser = userService.updateUser(id, userInput);
+
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(updatedUser);
+        return new ResponseEntity<>(userGetDTO, HttpStatus.OK);
+    }catch (ResponseStatusException e){
+        String errorMessage = e.getReason();
+        return ResponseEntity.status(e.getStatus()).body(errorMessage);
     }
-
-    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-
-    User updatedUser = userService.updateUser(id, userInput);
-
-    UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(updatedUser);
-    return new ResponseEntity<>(userGetDTO, HttpStatus.OK);
-
   }
 
 
