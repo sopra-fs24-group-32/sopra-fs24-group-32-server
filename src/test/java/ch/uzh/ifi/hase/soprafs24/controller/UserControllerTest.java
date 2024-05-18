@@ -47,8 +47,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * UserControllerTest
@@ -519,4 +518,45 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
         .content(asJsonString(userPostDTO)))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  public void updateUserSuccessfully() throws Exception {
+      UserPostDTO userPostDTO = new UserPostDTO();
+      userPostDTO.setUsername("validUsername");
+      userPostDTO.setPassword("Password");
+
+      User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+      Long gameId = 1L;
+
+      when(userService.updateUser(gameId, userInput)).thenReturn(userInput);
+
+      mockMvc.perform(put("/users/update/{id}", gameId, userPostDTO)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(asJsonString(userInput)))
+              .andExpect(status().isOk());
+
+  }
+
+    @Test
+    public void updateUserInvalidUpdate() throws Exception {
+        UserPostDTO userPostDTO = new UserPostDTO();
+        userPostDTO.setUsername("validUsername");
+        userPostDTO.setPassword("Password");
+
+        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+        Long gameId = 1L;
+
+        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username 'testUser' is already taken. Please choose a different one.")).when(userService).updateUser(gameId, userInput);
+
+        String errorMessage = "Username 'testUser' is already taken. Please choose a different one.";
+
+        mockMvc.perform(put("/users/update/{id}", gameId, userPostDTO)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userInput)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(errorMessage));
+
+    }
 }
