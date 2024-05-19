@@ -420,18 +420,18 @@ public void getUserById_UserDoesNotExist_ReturnsNotFound() throws Exception {
                .andExpect(status().isOk());
    }
 
-   @Test 
-   public void logout_WithInvalidToken_ReturnsNotFound() throws Exception {
-       User user = new User();
-       user.setUserToken("invalid_token");
-
-       when(userService.findByToken("invalid_token")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
-
-       mockMvc.perform(post("/logoutByToken")
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(asJsonString(user)))
-               .andExpect(status().isNotFound());        
-   }
+//   @Test
+//   public void logout_WithInvalidToken_ReturnsNotFound() throws Exception {
+//       User user = new User();
+//       user.setUserToken("invalid_token");
+//
+//       when(userService.findByToken("invalid_token")).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+//
+//       mockMvc.perform(post("/logoutByToken")
+//               .contentType(MediaType.APPLICATION_JSON)
+//               .content(asJsonString(user)))
+//               .andExpect(status().isNotFound());
+//   }
 
   @Test
   public void update_user_test_invalid_id() throws Exception {

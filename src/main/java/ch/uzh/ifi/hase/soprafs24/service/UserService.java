@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -125,7 +126,7 @@ public class UserService {
     String username = user.getUsername();
 
     if(username != null && !username.isEmpty()){
-        checkIfUserExists(user);
+        checkIfUserExistsForUserUpdate(user, id);
         reqUser.setUsername(username);
     }
 
@@ -178,6 +179,15 @@ public class UserService {
     if (existingUser != null) {
       System.out.println("*************************************user exists in the database: " + existingUser.getUsername() + "*************************************");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        String.format("Username '%s' is already taken. Please choose a different one.", userToBeCreated.getUsername()));
+    }
+  }
+
+  private void checkIfUserExistsForUserUpdate(User userToBeCreated, Long id) {
+    User existingUser = userRepository.findByUsername(userToBeCreated.getUsername());
+    if (existingUser != null && !Objects.equals(id, existingUser.getId())) {
+      System.out.println("*************************************user exists in the database: " + existingUser.getUsername() + "*************************************");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
         String.format("Username '%s' is already taken. Please choose a different one.", userToBeCreated.getUsername()));
     }
   }

@@ -129,7 +129,8 @@ public class UserController {
         } else {
             // Optionally handle the case where the user is not found
             System.out.println("No user found with the provided token.");
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found with the provided token.");
+            // WE CAN'T THROW AN ERROR HERE OR ELSE THE APP CRASHES IF A LOUGOUT WITH A USERTOKEN THAT NO LONGER EXISTS IS ATTEMPTED
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found with the provided token.");
         }
     }
 
