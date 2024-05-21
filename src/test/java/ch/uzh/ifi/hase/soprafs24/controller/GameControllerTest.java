@@ -1081,21 +1081,24 @@ public class GameControllerTest {
 
     @Test
     public void leaveLobby_WithValidParam_ShouldReturnOk() throws Exception {
-        String userToken = "{\"userToken\":\"valid-token\"}";
+        String userTokenJson = "{\"userToken\":\"valid-token\"}";
         Long lobbyId = 1L;
 
         User mockUser = new User();
         mockUser.setUsername("testUser");
         mockUser.setUserToken("valid-token");
 
+        Game mockGame = new Game();
+        mockGame.setLobbyOwner("testUser");
+
         when(userService.findByToken("valid-token")).thenReturn(mockUser);
-        when(gameService.leaveLobby(lobbyId, "valid-token")).thenReturn(new Game());
+        when(gameService.leaveLobby(lobbyId, "valid-token")).thenReturn(mockGame);
+        when(userRepository.findByUsername("testUser")).thenReturn(mockUser);
 
         mockMvc.perform(post("/lobby/leave/{lobbyId}", lobbyId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(userToken))
+                .content(userTokenJson))
                 .andExpect(status().isOk());
-
     }
 
     @Test
