@@ -45,6 +45,9 @@ public class Game {
     @Column(nullable = false)
     private int amtOfRounds;
 
+    @Column
+    private int turnsLeftToPlay;
+
     @Column(nullable = false)
     private float timeLimit;
 
@@ -202,6 +205,7 @@ public class Game {
         }
         gameStarted = true;
         amtOfPlayersGuessed = 0;
+        turnsLeftToPlay = playersInLobby * amtOfRounds;
 
         for(User user: users){
             this.remaininPictureGenerators.add(user.getUsername());
@@ -239,6 +243,7 @@ public class Game {
         String selectedGenerator = pictureGeneratorQueue.remove(index);
 
         // Increment played count and check for round completion
+        turnsLeftToPlay -= 1;
         countNumPlayed++;
         if (countNumPlayed % users.size() == 0) {
             currentRound++;
@@ -351,6 +356,14 @@ public class Game {
 
     public boolean allPlayersGuessed(){
         return amtOfPlayersGuessed == playersInLobby-1;
+    }
+
+    public int getTurnsLeftToPlay(){
+        return this.turnsLeftToPlay;
+    }
+
+    public void setTurnsLeftToPlay(int turnsLeftToPlay){
+        this.turnsLeftToPlay = turnsLeftToPlay;
     }
 
 }

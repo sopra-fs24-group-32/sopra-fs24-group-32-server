@@ -183,8 +183,9 @@ public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken
         if (id == null || id == 0 || id.toString().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game ID is null or empty");
         }
-        return gameRepository.findById(id)
+         Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lobby not found"));
+        return game;
     }
 
    @PutMapping("/lobby/update/{id}")
