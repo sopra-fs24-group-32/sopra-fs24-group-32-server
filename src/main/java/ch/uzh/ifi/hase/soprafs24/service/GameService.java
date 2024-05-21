@@ -259,7 +259,6 @@ public class GameService {
        if (nextPictureGenerator == null) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All rounds have been played. Game is over.");
        }
-
        gameRepository.save(game);
        gameRepository.flush();
 
