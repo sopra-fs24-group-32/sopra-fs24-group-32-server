@@ -182,3 +182,5 @@ Fix bug that lobby owner should not be able to adjust the max amount of players 
 (issue #83 on client).
 
 ## Roger
+- Added information about the game rules and how to play the game on the home page, point attribution.
+- Added more tests for the User Service.

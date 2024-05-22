@@ -13,8 +13,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -156,6 +161,138 @@ public class UserServiceIntegrationTest {
 
     assertEquals(updatedUser.getUsername(), newUserUpdated.getUsername());
   }
+
+  @Test
+    void updateUser_UserNotFound_ThrowsException() {
+        // Arrange
+        Long nonExistentId = 999L;
+        User dummyUser = new User();
+        when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResponseStatusException.class, () -> userService.updateUser(nonExistentId, dummyUser),
+        "User not found");
+    }
+
+  @Test
+    void updateUser_SuccessfullyUpdatesUser() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        User existingUser = new User();
+        existingUser.setId(userId);
+        existingUser.setUsername("oldUsername");
+        existingUser.setEmail("old@example.com");
+
+        User updatedUser = new User();
+        updatedUser.setUsername("newUsername");
+        updatedUser.setEmail("new@example.com");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser); // Mock saving user
+
+        // Act
+        User result = userService.updateUser(userId, updatedUser);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("newUsername", result.getUsername());
+        assertEquals("new@example.com", result.getEmail());
+        verify(userRepository).save(any(User.class)); // Ensure save was called
+    }
+
+  @Test
+  public void updateUser_ValidBirthDate() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        User existingUser = new User();
+        LocalDate localDate = LocalDate.of(2000, 11, 4); // java.time.LocalDate uses 1-based month indexing
+        Date validBirthDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    
+        User updatedUser = new User();
+        updatedUser.setBirthDay(validBirthDate);
+    
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+    
+        // Act
+        User result = userService.updateUser(userId, updatedUser);
+    
+        // Assert
+        assertEquals(validBirthDate, result.getBirthDay());
+        verify(userRepository).save(any(User.class));
+    }
+
+  @Test
+  public void updateUser_EmptyOrNullFields_DoNotOverwrite() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        User existingUser = new User();
+        existingUser.setUsername("existingUsername");
+        existingUser.setEmail("existing@example.com");
+    
+        User updatedUser = new User();
+        updatedUser.setUsername("");  // Attempt to overwrite with empty username
+        updatedUser.setEmail(null);   // Attempt to overwrite with null email
+    
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+    
+        // Act
+        User result = userService.updateUser(userId, updatedUser);
+    
+        // Assert
+        assertEquals("existingUsername", result.getUsername());
+        assertEquals("existing@example.com", result.getEmail());
+        verify(userRepository).save(any(User.class));
+    }
+  
+  @Test
+  public void updateUser_InvalidEmailFormat_ThrowsException() {
+      // Arrange
+      Long userId = 1L;
+      User updatedUser = new User();
+      updatedUser.setEmail("bademail");
+
+      when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+
+      // Act & Assert
+      assertThrows(ResponseStatusException.class, () -> userService.updateUser(userId, updatedUser));
+  }
+
+  @Test
+  public void updateUser_InvalidBirthDate_ThrowsException() {
+    // Arrange
+    Long userId = 1L;
+    User updatedUser = new User();
+    updatedUser.setBirthDay(Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+
+    // Act & Assert
+    assertThrows(ResponseStatusException.class, () -> userService.updateUser(userId, updatedUser));
+  }
+
+  @Test
+  public void updateUser_UsernameAlreadyExists_ThrowsException() {
+    // Arrange
+    Long userId = 1L;
+    User existingUser = new User();
+    existingUser.setId(2L); // Different user
+    existingUser.setUsername("newUsername");
+
+    User updateUser = new User();
+    updateUser.setUsername("newUsername");
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
+    when(userRepository.findByUsername("newUsername")).thenReturn(existingUser);
+
+    // Act & Assert
+    assertThrows(ResponseStatusException.class, () -> userService.updateUser(userId, updateUser));
+  }
+
+
+
+    
 
   @Test
   public void logoutUser_WithValidId_ShouldReturnUser() {
