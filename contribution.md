@@ -169,6 +169,12 @@ Character count is implemented and displayed below the input field for the playe
 
 
 ## Nicolas H.
-
+Fix the bug that when a user edits the user profile and chooses an already existing username an internal error gets thrown
+(issue #112)
+Fix the race condition when two users try to notify the server at the same time that they have guessed during the game (issue #113)
+Fix bug that image description of previous round is displayed if player does not provide an input to dallE (issue #114)
+Fix bug that updated lobby settings do not get shown to other players (issue #82 client)
+Fix bug that lobby owner should not be able to adjust the max amount of players in lobby to less players that are already in lobby
+(issue #83 on client).
 
 ## Roger
