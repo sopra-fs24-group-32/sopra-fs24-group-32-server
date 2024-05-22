@@ -160,6 +160,11 @@ was a problem if two players create a lobby, the second to create it joined the 
 # Week 15.05 - 24.05
 
 ## Eric
+work on lobby ui #72
+improve change lobby ui #79
+fixed timer starting before image fully loaded in game guess #81
+update header after profile img upload #84
+fixed frontend views being too high #80
 
 
 ## Eduard
