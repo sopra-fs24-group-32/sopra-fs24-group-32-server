@@ -170,6 +170,7 @@ Character count is implemented and displayed below the input field for the playe
 ## Nicolas S.
 Add leave button for host -> If the host leaves the lobby, the lobby gets deleted and all joined players get redirected to the home screen (Issue #115)
 Fixed that when user leaves a lobby from home others get notified and user list updated (Issue #116)
+Error messages mail + Birthdate and display mail in User Profile (Issue #88)
 
 ## Nicolas H.
 Fix the bug that when a user edits the user profile and chooses an already existing username an internal error gets thrown
