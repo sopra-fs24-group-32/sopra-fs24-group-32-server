@@ -153,3 +153,22 @@ was a problem if two players create a lobby, the second to create it joined the 
 ## Roger
 1. Button to upload a profile picture #53
 2. On the profile editing page, players can enter or modify their name, email, and upload a new picture to personalize their profile #22
+
+
+# Week 15.05 - 24.05
+
+## Eric
+
+
+## Eduard
+Game Settings input is handled correctly in game creation view #76 
+and in the update game settings view in the lobby #77
+Character count is implemented and displayed below the input field for the player to know how many character can be written in the input field #78
+
+## Nicolas S.
+
+
+## Nicolas H.
+
+
+## Roger
