@@ -77,6 +77,9 @@ public class Game {
     @Column(name = "remove_player")
     private List<String> listOfRemovedPlayers = new ArrayList<>();
 
+    @Column
+    private String imageDescription;
+
     // Constructors
     public Game() {}
 
@@ -364,6 +367,14 @@ public class Game {
 
     public void setTurnsLeftToPlay(int turnsLeftToPlay){
         this.turnsLeftToPlay = turnsLeftToPlay;
+    }
+
+    public void setImageDescription(String imageDescription){
+        this.imageDescription = imageDescription;
+    }
+
+    public String getImageDescription(){
+        return imageDescription;
     }
 
 }

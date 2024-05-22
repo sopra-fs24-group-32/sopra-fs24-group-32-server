@@ -648,12 +648,18 @@ public class GameServiceTest {
         String inputPhrase =  "{\"description\":\"A picture of a cat\"}";
         String expectedUrl = "https://example.com/cat.jpg";
 
+        Game dummyGame = new Game();
+        User dummyUser = new User();
+        dummyUser.setUsername("owner");
+        Long dummyGameId = 1L;
+
         DallE dallE = mock(DallE.class);
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT); 
 
+        when(gameRepository.findById(dummyGameId)).thenReturn(Optional.of(dummyGame));
         when(dallE.generatePicture("A picture of a cat")).thenReturn(expectedUrl);
 
-        String imageUrl = gameService.generatePictureDallE(inputPhrase);
+        String imageUrl = gameService.generatePictureDallE(inputPhrase, dummyUser, dummyGameId);
 
         assertNotNull(imageUrl);
         assertEquals(expectedUrl, imageUrl);
@@ -662,9 +668,17 @@ public class GameServiceTest {
 
     @Test
     public void generatePictureWithDallE_WithEmptyPrompt_ShouldThrowException() throws Exception {
+        Game dummyGame = new Game();
+        User dummyUser = new User();
+        dummyUser.setUsername("owner");
+        Long dummyGameId = 1L;
+
         String emptyPrompt =  "{\"description\":\"\"}";
+
+        when(gameRepository.findById(dummyGameId)).thenReturn(Optional.of(dummyGame));
+
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.generatePictureDallE(emptyPrompt);
+            gameService.generatePictureDallE(emptyPrompt, dummyUser, dummyGameId);
         });
 
         String expectedMessage = "Text prompt provided by the player is null or empty";
@@ -675,9 +689,17 @@ public class GameServiceTest {
 
     @Test
     public void generatePictureWithDallE_WithNullPrompt_ShouldThrowException() throws Exception {
+        Game dummyGame = new Game();
+        User dummyUser = new User();
+        dummyUser.setUsername("owner");
+        Long dummyGameId = 1L;
+
         String nullPrompt =  "{\"description\":null}";
+
+        when(gameRepository.findById(dummyGameId)).thenReturn(Optional.of(dummyGame));
+
         Exception exception = assertThrows(ResponseStatusException.class, () -> {
-            gameService.generatePictureDallE(nullPrompt);
+            gameService.generatePictureDallE(nullPrompt, dummyUser, dummyGameId);
         });
 
         String expectedMessage = "Text prompt provided by the player is null or empty";
@@ -717,6 +739,8 @@ public class GameServiceTest {
         float chatGPTResult = 0.45f;
         int expectedPoints = 0;
         String userToken = "userToken";
+        Game dummyLobby = new Game();
+        dummyLobby.setImageDescription(originalText);
 
         User user = new User();
         user.setUserToken(userToken);
@@ -725,13 +749,12 @@ public class GameServiceTest {
         DallE dallE = mock(DallE.class);
         ChatGPT chatGPT = mock(ChatGPT.class);
 
-        when(dallE.getInputPhrase()).thenReturn(originalText);
         when(userRepository.findByUserToken(userToken)).thenReturn(user);
         when(chatGPT.rateInputs(originalText, playerGuessed)).thenReturn(chatGPTResult);
         chatGPT.convertSimilarityScoreToPoints(user, chatGPTResult);
 
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
-        gameService.evaluatePlayerGuessWithChatGPT(userToken, playerGuessed);
+        gameService.evaluatePlayerGuessWithChatGPT(userToken, playerGuessed, dummyLobby);
         assertEquals(expectedPoints, user.getScore());
     }
 
@@ -777,19 +800,21 @@ public class GameServiceTest {
         user2.setUserToken(userToken2);
         user2.setUsername("username2");
 
+        Game dummyLobby = new Game();
+        dummyLobby.setImageDescription(originalText);
+
         int expectedNullPoints = 0;
         int expectedEmptyPoints = 0;
 
         DallE dallE = mock(DallE.class);
 
-        when(dallE.getInputPhrase()).thenReturn(originalText);
         when(userRepository.findByUserToken(userToken)).thenReturn(user);
         when(userRepository.findByUserToken(userToken2)).thenReturn(user2);
 
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
-        gameService.evaluatePlayerGuessWithChatGPT(userToken, emptyPlayerGuessed);
-        gameService.evaluatePlayerGuessWithChatGPT(userToken2, nullPlayerGuessed);
+        gameService.evaluatePlayerGuessWithChatGPT(userToken, emptyPlayerGuessed, dummyLobby);
+        gameService.evaluatePlayerGuessWithChatGPT(userToken2, nullPlayerGuessed, dummyLobby);
 
         assertEquals(expectedEmptyPoints, user.getScore());
         assertEquals(expectedNullPoints, user2.getScore());
@@ -812,23 +837,25 @@ public class GameServiceTest {
         user2.setUserToken(userToken2);
         user2.setUsername("username2");
 
+        Game dummyLobby = new Game();
+        dummyLobby.setImageDescription(emptyOriginalText);
+
         DallE dallE = mock(DallE.class);
         ChatGPT chatGPT = mock(ChatGPT.class);
 
-        when(dallE.getInputPhrase()).thenReturn(emptyOriginalText);
         when(userRepository.findByUserToken(userToken)).thenReturn(user);
         when(userRepository.findByUserToken(userToken2)).thenReturn(user2);
 
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
         Exception exceptionEmpty = assertThrows(ResponseStatusException.class, () -> {
-            gameService.evaluatePlayerGuessWithChatGPT(userToken, playerGuessed);
+            gameService.evaluatePlayerGuessWithChatGPT(userToken, playerGuessed, dummyLobby);
         });
 
         when(dallE.getInputPhrase()).thenReturn(nullOriginalText);
 
         Exception exceptionNull = assertThrows(ResponseStatusException.class, () -> {
-            gameService.evaluatePlayerGuessWithChatGPT(userToken2, playerGuessed);
+            gameService.evaluatePlayerGuessWithChatGPT(userToken2, playerGuessed, dummyLobby);
         });
 
         String expectedMessage = "Image description is null or empty";
@@ -888,6 +915,41 @@ public class GameServiceTest {
         verify(gameRepository).findById(gameId);
         verify(gameRepository).save(game);
         verify(gameRepository).flush();
+    }
+
+    @Test
+    public void getNextPictureGeneratorResetsImageDescription() throws Exception {
+        Game game = new Game();
+        Long gameId = 1L;
+        game.setId(gameId);
+        game.setLobbyOwner("lobbyOwner");
+
+        User player1 = new User();
+        player1.setUserToken("userToken1");
+        player1.setUsername("player1");
+
+        User player2 = new User();
+        player2.setUserToken("userToken2");
+        player2.setUsername("player2");
+
+        game.addPlayer(player1);
+        game.addPlayer(player2);
+        game.setImageDescription("someImageDescription");
+
+        Set<String> remaininPictureGenerators = new HashSet<>();
+        remaininPictureGenerators.add("player1");
+        remaininPictureGenerators.add("player2");
+        game.setRemaininPictureGenerators(remaininPictureGenerators);
+        game.setGameStarted(true);
+        game.setAmtOfRounds(3);
+
+        // game.s
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+
+        String selectedPlayer = gameService.getNextPictureGenerator(gameId);
+
+        String imageDescription = game.getImageDescription();
+        assertEquals("", imageDescription);
     }
 
     @Test
@@ -1719,8 +1781,9 @@ public class GameServiceTest {
     @Test
     public void testGetLastImageDescription_WhenDescriptionIsSet_ShouldReturnDescription() {
         String expectedDescription = "A beautiful sunset over the ocean";
+        Game dummyLobby = new Game();
+        dummyLobby.setImageDescription(expectedDescription);
         DallE dallE = mock(DallE.class);
-        when(dallE.getInputPhrase()).thenReturn(expectedDescription);
 
         UserRepository userRepository = mock(UserRepository.class);
         GameRepository gameRepository = mock(GameRepository.class);
@@ -1729,7 +1792,7 @@ public class GameServiceTest {
 
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
-        String actualDescription = gameService.getLastImageDescription();
+        String actualDescription = gameService.getLastImageDescription(dummyLobby);
 
         assertEquals(expectedDescription, actualDescription, "The returned image description should match the expected value.");
     }
@@ -1737,8 +1800,9 @@ public class GameServiceTest {
     @Test
     public void testGetLastImageDescription_WhenDescriptionIsNotSet_ShouldReturnEmptyString() {
         String expectedDescription = "";
+        Game dummyLobby = new Game();
+        dummyLobby.setImageDescription(expectedDescription);
         DallE dallE = mock(DallE.class);
-        when(dallE.getInputPhrase()).thenReturn(expectedDescription);
 
         UserRepository userRepository = mock(UserRepository.class);
         GameRepository gameRepository = mock(GameRepository.class);
@@ -1747,7 +1811,7 @@ public class GameServiceTest {
 
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
-        String actualDescription = gameService.getLastImageDescription();
+        String actualDescription = gameService.getLastImageDescription(dummyLobby);
 
         assertEquals(expectedDescription, actualDescription, "The returned image description should match the expected value.");
     }
@@ -2140,11 +2204,14 @@ public class GameServiceTest {
         UserService userService = mock(UserService.class);
         ChatGPT chatGPT = mock(ChatGPT.class);
 
+        Game dummyLobby = new Game();
+        String actualImageDescription = "image description";
+        dummyLobby.setImageDescription(actualImageDescription);
+
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
-        gameService.getImageGeneratedByDallE();
-        verify(dallE).getImageUrl();
-        verifyNoMoreInteractions(dallE);
+        String imageDescription = gameService.getImageGeneratedByDallE(dummyLobby);
+        assertEquals(actualImageDescription, imageDescription);
     }
 
     @Test
