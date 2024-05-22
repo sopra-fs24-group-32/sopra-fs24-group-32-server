@@ -367,3 +367,9 @@ public class Game {
     }
 
 }
+
+    public void setTurnsLeftToPlay(int turnsLeftToPlay){
+        this.turnsLeftToPlay = turnsLeftToPlay;
+    }
+
+}

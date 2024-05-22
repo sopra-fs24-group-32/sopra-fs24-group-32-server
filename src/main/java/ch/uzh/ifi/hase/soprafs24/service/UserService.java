@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 
 /**
  * User Service
@@ -131,10 +134,14 @@ public class UserService {
     }
 
 
-    if (user.getBirthDay() != null){
+    if (user.getBirthDay() != null) {
+      checkIfBirthDateIsValid(user.getBirthDay());
       reqUser.setBirthDay(user.getBirthDay());
     }
-    if (user.getEmail() != null) {
+    if (user.getEmail() != "" && user.getEmail() != null){
+        if (!user.getEmail().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email format. Please use a valid email.");
+        }
         reqUser.setEmail(user.getEmail());
       }
     if (user.getPicture() != null) {
@@ -192,6 +199,26 @@ public class UserService {
     }
   }
 
+  private void checkIfBirthDateIsValid(Date date) {
+    try {
+        LocalDate birthDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        // Check if the date is in the future
+        if (birthDate.isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birthdate is in the future.");
+        }
+        //check if the user is at least 5 years old
+        if (birthDate.plusYears(5).isAfter(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User must be at least 5 years old.");
+        }
+        //check if user isnt older than 120 years
+        if (birthDate.plusYears(120).isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User must be younger than 120 years.");
+        }
+    } catch (DateTimeParseException | NullPointerException e) {
+        // Handle invalid date format or null date
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date format. Please use a valid date.");
+    }
+}
   private void checkIfUsernameUnique(String username){
       User existingUser = userRepository.findByUsername(username);
 
