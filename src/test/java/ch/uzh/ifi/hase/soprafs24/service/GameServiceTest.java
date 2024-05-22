@@ -2210,8 +2210,9 @@ public class GameServiceTest {
 
         GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
 
-        String imageDescription = gameService.getImageGeneratedByDallE(dummyLobby);
-        assertEquals(actualImageDescription, imageDescription);
+        gameService.getImageGeneratedByDallE(dummyLobby);
+        verify(dallE).getImageUrl();
+        verifyNoMoreInteractions(dallE);
     }
 
     @Test

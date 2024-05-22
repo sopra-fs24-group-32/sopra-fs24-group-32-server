@@ -301,7 +301,7 @@ public class GameService {
     }
 
     public String getImageGeneratedByDallE(Game lobby) {
-        return lobby.getImageDescription();
+        return dallE.getImageUrl();
     }
 
     //gets triggered after each round so that players don't fetch the old picture
