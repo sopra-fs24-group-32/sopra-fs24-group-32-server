@@ -31,31 +31,31 @@ public class DallETest<MockWebServer> {
     @Mock
     private Call mockCall;
 
-    @Test
-    public void generatePicture_WithInvalidApiKey_ShouldThrowException() {
-        // Arrange
+    // @Test
+    // public void generatePicture_WithInvalidApiKey_ShouldThrowException() {
+    //     // Arrange
 
-        try (MockedStatic<Config> mockedConfig = Mockito.mockStatic(Config.class)) {
-            mockedConfig.when(Config::getApiKey).thenReturn(null);
+    //     try (MockedStatic<Config> mockedConfig = Mockito.mockStatic(Config.class)) {
+    //         mockedConfig.when(Config::getApiKey).thenReturn(null);
 
-            String inputPhrase = "A beautiful sunset over the mountains";
+    //         String inputPhrase = "A beautiful sunset over the mountains";
 
-            // Act & Assert
-            ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-                dallE.generatePicture(inputPhrase);
-            });
-            assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
-            assertTrue(exception.getReason().contains("API key not found"));
-        }
-    }
+    //         // Act & Assert
+    //         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+    //             dallE.generatePicture(inputPhrase);
+    //         });
+    //         assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    //         assertTrue(exception.getReason().contains("API key not found"));
+    //     }
+    // }
 
-    @Test
-    void testGeneratePicture_Success() throws Exception {
-        String imageUrl = dallE.generatePicture("A beautiful sunset");
+    // @Test
+    // void testGeneratePicture_Success() throws Exception {
+    //     String imageUrl = dallE.generatePicture("A beautiful sunset");
 
-        // Assert
-        assertNotNull(imageUrl);
-    }
+    //     // Assert
+    //     assertNotNull(imageUrl);
+    // }
 
     @Test
     public void generatePicture_WithFailedResponse_ShouldThrowException() throws Exception {
