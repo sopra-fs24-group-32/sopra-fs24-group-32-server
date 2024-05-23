@@ -2,6 +2,17 @@
     <img alt="GPTuessr" src="https://github.com/sopra-fs24-group-32/sopra-fs24-group-32-server/blob/main/src/ReadMePics/gptuessr.png" width="300" height="300"/> <br/>
 </p>
 
+<p align="center">
+	<img src="https://img.shields.io/github/issues-raw/sopra-fs24-group-32/sopra-fs24-group-32-server"/>
+	<img src="https://img.shields.io/github/milestones/progress/sopra-fs24-group-32/sopra-fs24-group-32-server/1"/>
+	<img src="https://img.shields.io/github/milestones/progress/sopra-fs24-group-32/sopra-fs24-group-32-server/2"/>
+	<img src="https://sonarcloud.io/api/project_badges/measure?project=sopra-fs24-group-32_sopra-fs24-group-32-server&metric=coverage"/>
+	<img src="https://sonarcloud.io/api/project_badges/measure?project=sopra-fs24-group-32_sopra-fs24-group-32-server&metric=bugs"/>
+	<img src="https://sonarcloud.io/api/project_badges/measure?project=sopra-fs24-group-32_sopra-fs24-group-32-server&metric=vulnerabilities"/>
+	<img src="https://sonarcloud.io/api/project_badges/measure?project=sopra-fs24-group-32_sopra-fs24-group-32-server&metric=code_smells"/>
+	<img src="https://img.shields.io/github/license/sopra-fs24-group-32/sopra-fs24-group-32-server"/>
+</p>
+
 # SoPra FS24 - GPTuessr
 
 ## Introduction
