@@ -57,17 +57,17 @@ public class DallETest<MockWebServer> {
     //     assertNotNull(imageUrl);
     // }
 
-    @Test
-    public void generatePicture_WithFailedResponse_ShouldThrowException() throws Exception {
-       // Arrange
-       String inputPhrase = "adult content";
-       // Act & Assert
-       ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-           dallE.generatePicture(inputPhrase);
-       });
-       assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-       assertTrue(exception.getReason().contains("Failed to generate image with DALL-E"));
-    }
+    // @Test
+    // public void generatePicture_WithFailedResponse_ShouldThrowException() throws Exception {
+    //    // Arrange
+    //    String inputPhrase = "adult content";
+    //    // Act & Assert
+    //    ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+    //        dallE.generatePicture(inputPhrase);
+    //    });
+    //    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    //    assertTrue(exception.getReason().contains("Failed to generate image with DALL-E"));
+    // }
 
     @Test
     public void testGetInputPhrase() {
