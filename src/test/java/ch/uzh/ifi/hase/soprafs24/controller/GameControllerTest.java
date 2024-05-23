@@ -499,7 +499,7 @@ public class GameControllerTest {
         Game game = new Game(gameId, "owner");
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.generatePictureDallE(textPrompt)).thenReturn(imageUrl);
+        when(gameService.generatePictureDallE(textPrompt, user, gameId)).thenReturn(imageUrl);
         when(userRepository.findByUserToken("valid-token")).thenReturn(user);
 
         mockMvc.perform(post("/game/image/{gameId}", gameId)
@@ -522,7 +522,7 @@ public class GameControllerTest {
 
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.generatePictureDallE(textPrompt)).thenReturn(null);
+        when(gameService.generatePictureDallE(textPrompt, user, gameId)).thenReturn(null);
         when(userRepository.findByUserToken("valid-token")).thenReturn(user);
 
         mockMvc.perform(post("/game/image/{gameId}", gameId)
@@ -561,7 +561,7 @@ public class GameControllerTest {
       Game game = new Game(gameId, "owner");
   
       when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-      when(gameService.getImageGeneratedByDallE()).thenReturn(imageUrl);
+      when(gameService.getImageGeneratedByDallE(game)).thenReturn(imageUrl);
   
       mockMvc.perform(get("/game/image/{gameId}", gameId))
               .andExpect(status().isOk())
@@ -584,7 +584,7 @@ public class GameControllerTest {
         Game game = new Game(gameId, "owner");
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.getImageGeneratedByDallE()).thenReturn(imageUrl);
+        when(gameService.getImageGeneratedByDallE(game)).thenReturn(imageUrl);
 
         mockMvc.perform(get("/game/image/{gameId}", gameId))
                 .andExpect(status().isOk());
@@ -596,7 +596,7 @@ public class GameControllerTest {
         Game game = new Game(gameId, "owner");
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.getImageGeneratedByDallE()).thenReturn(null);
+        when(gameService.getImageGeneratedByDallE(game)).thenReturn(null);
 
         mockMvc.perform(get("/game/image/{gameId}", gameId))
                 .andExpect(status().isBadRequest());
@@ -742,7 +742,7 @@ public class GameControllerTest {
         Game game = new Game(gameId, "owner");
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.getLastImageDescription()).thenReturn("");
+        when(gameService.getLastImageDescription(game)).thenReturn("");
 
         mockMvc.perform(get("/game/lastDescription/{gameId}", gameId))
                 .andExpect(status().isNoContent());
@@ -755,7 +755,7 @@ public class GameControllerTest {
         String expectedDescription = "A scenic mountain landscape";
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-        when(gameService.getLastImageDescription()).thenReturn(expectedDescription);
+        when(gameService.getLastImageDescription(game)).thenReturn(expectedDescription);
 
         mockMvc.perform(get("/game/lastDescription/{gameId}", gameId))
                 .andExpect(status().isOk())

@@ -276,16 +276,14 @@ public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist");
         }
 
-        Optional<Game> lobby = gameRepository.findById(gameId);
-        if (!lobby.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
+        String pictureGenerated;
+
+        try{
+            pictureGenerated = gameService.generatePictureDallE(text_prompt, user, gameId);
+        }catch (ResponseStatusException e){
+            String errorMessage = e.getReason();
+            return ResponseEntity.status(e.getStatus()).body(errorMessage);
         }
-
-        lobby.get().setCurrentPictureGenerator(user.getUsername());
-        gameRepository.save(lobby.get());
-        gameRepository.flush();
-
-        String pictureGenerated =  gameService.generatePictureDallE(text_prompt);
 
         if (pictureGenerated == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to generate image with DALL-E");
@@ -310,7 +308,7 @@ public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found");
         }
 
-        String pictureGenerated =  gameService.getImageGeneratedByDallE();
+        String pictureGenerated =  gameService.getImageGeneratedByDallE(lobby.get());
 
         if (pictureGenerated == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to get image with DALL-E");
@@ -345,7 +343,7 @@ public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken
         // Point awarded for correct guess (with ChatGPT evaluation)
         String playerGuessed = chatGPTPostDTO.getPlayerGuessed();
         float timeGuessSubmitted = chatGPTPostDTO.getTimeGuessSubmitted();
-        gameService.evaluatePlayerGuessWithChatGPT(mappedToken, playerGuessed);
+        gameService.evaluatePlayerGuessWithChatGPT(mappedToken, playerGuessed, lobby.get());
         user.setPlayerGuess(playerGuessed);
         // Scale the score based on the time taken to submit the guess
         lobby.get().scalePointsByDuration(user, timeGuessSubmitted);
@@ -374,7 +372,7 @@ public Game leaveLobby(@PathVariable Long lobbyId, @RequestBody String userToken
         }
 
         Game game = gameOptional.get();
-        String lastDescription = gameService.getLastImageDescription();
+        String lastDescription = gameService.getLastImageDescription(game);
 
         if (lastDescription == null || lastDescription.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
