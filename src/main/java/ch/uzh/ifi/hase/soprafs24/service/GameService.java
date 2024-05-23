@@ -394,9 +394,6 @@ public class GameService {
     public boolean playerLeaveCurrentLobbyPossible(String userToken) throws Exception {
         User user = userRepository.findByUserToken(userToken);
 
-        System.out.println("UserToken:");
-        System.out.println(userToken);
-
         if(user == null){
             return false;
         }

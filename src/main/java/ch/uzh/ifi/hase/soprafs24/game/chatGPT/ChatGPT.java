@@ -13,7 +13,6 @@ import okhttp3.Response;
 import okhttp3.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,9 +43,6 @@ public class ChatGPT {
         OkHttpClient client = new OkHttpClient();
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         ObjectMapper objectMapper = new ObjectMapper();
-
-        // String prompt = String.format("Only provide the similarity score value, nothing else. Take into account synonyms and if there are common words in both sentences. How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
-        // String prompt = String.format("Only provide the similarity score, nothing else. how much similar are the two sentences on a scale from 0 to 1: \"%s\" and \"%s\".", originalText, playerGuessed);
         
         String promptInstructions = """
             How much similar are these two sentences from 0 to 1: \"%s\" and \"%s\" related to an online multiplayer drawing and guessing game. Only provide the similarity score value, nothing else.

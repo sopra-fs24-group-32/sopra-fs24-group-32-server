@@ -133,12 +133,11 @@ public class UserService {
         reqUser.setUsername(username);
     }
 
-
     if (user.getBirthDay() != null) {
       checkIfBirthDateIsValid(user.getBirthDay());
       reqUser.setBirthDay(user.getBirthDay());
     }
-    if (user.getEmail() != "" && user.getEmail() != null){
+    if (user.getEmail() != null && !user.getEmail().isEmpty()){
         if (!user.getEmail().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email format. Please use a valid email.");
         }
@@ -219,9 +218,4 @@ public class UserService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date format. Please use a valid date.");
     }
 }
-  private void checkIfUsernameUnique(String username){
-      User existingUser = userRepository.findByUsername(username);
-
-  }
-
 }

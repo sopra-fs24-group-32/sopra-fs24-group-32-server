@@ -1,8 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -21,9 +24,12 @@ import org.mockito.Mock;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -37,6 +43,9 @@ public class GameServiceTest {
     private ChatGPT chatGPT;
     @Mock
     private DallE dallE;
+
+    @Mock
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @BeforeEach
     public void setup() {
@@ -765,6 +774,8 @@ public class GameServiceTest {
     //     float chatGPTResult = 0.70f;
     //     int expectedPoints = 4;
     //     String userToken = "userToken";
+    //     Game dummyLobby = new Game();
+    //     dummyLobby.setImageDescription(originalText);
 
     //     User user = new User();
     //     user.setUserToken(userToken);
@@ -779,7 +790,7 @@ public class GameServiceTest {
     //     chatGPT.convertSimilarityScoreToPoints(user, chatGPTResult);
 
     //     GameService gameService = new GameService(userRepository, gameRepository, userService, dallE, chatGPT);
-    //     gameService.evaluatePlayerGuessWithChatGPT(userToken, playerGuessed);
+    //     gameService.evaluatePlayerGuessWithChatGPT(userToken, playerGuessed, dummyLobby);
     //     assertEquals(expectedPoints, user.getScore());
     // }
 
@@ -1719,15 +1730,15 @@ public class GameServiceTest {
 //        User lobbyOwner = new User();
 //        lobbyOwner.setUserToken("userToken");
 //        lobbyOwner.setUsername("lobbyOwner");
-//
+
 //        User player1 = new User();
 //        player1.setUserToken("userToken2");
 //        player1.setUsername("player1");
-//
+
 //        User player2 = new User();
 //        player2.setUserToken("userToken3");
 //        player2.setUsername("player2");
-//
+
 //        Game game = new Game();
 //        Long gameId = 1L;
 //        game.setId(gameId);
@@ -1735,14 +1746,14 @@ public class GameServiceTest {
 //        game.addPlayer(player1);
 //        game.addPlayer(player2);
 //        game.addPlayer(lobbyOwner);
-//
+
 //        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
 //        when(userRepository.findByUserToken("userToken")).thenReturn(lobbyOwner);
 //        when(userRepository.findByUserToken("userToken2")).thenReturn(player1);
 //        when(userRepository.findByUserToken("userToken3")).thenReturn(player2);
-//
+
 //        gameService.playerLeaveCurrentLobby("userToken2");
-//
+
 //        // check remaining players size in the game
 //        assertEquals(2, game.getUsers().size());
 //    }
@@ -2498,4 +2509,62 @@ public class GameServiceTest {
         boolean allPlayersGuessed = gameService.updateAmtOfGuesses(id);
         assertFalse(allPlayersGuessed);
     }
+
+    @Test
+    void playerLeaveCurrentLobbyPossible_UserNotFound_ReturnsFalse() throws Exception {
+        // Arrange
+        when(userRepository.findByUserToken("invalidToken")).thenReturn(null);
+
+        // Act
+        boolean result = gameService.playerLeaveCurrentLobbyPossible("invalidToken");
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void playerLeaveCurrentLobbyPossible_NoCurrentGame_ReturnsFalse() throws Exception {
+        // Arrange
+        User user = new User();
+        when(userRepository.findByUserToken("validToken")).thenReturn(user);
+
+        // Act
+        boolean result = gameService.playerLeaveCurrentLobbyPossible("validToken");
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void playerLeaveCurrentLobbyPossible_UserCanLeave_ReturnsTrue() throws Exception {
+        // Arrange
+        User user = new User();
+        Game game = new Game(1L, "owner");
+        user.setGame(game);
+        when(userRepository.findByUserToken("validToken")).thenReturn(user);
+
+        // Act
+        boolean result = gameService.playerLeaveCurrentLobbyPossible("validToken");
+
+        // Assert
+        assertTrue(result);
+    }
+
+    @Test
+    void playerLeaveCurrentLobby_NoCurrentGame_ReturnsEarly() {
+        User user = new User();
+        when(userRepository.findByUserToken("validToken")).thenReturn(user);
+
+        assertDoesNotThrow(() -> gameService.playerLeaveCurrentLobby("validToken"));
+    }
+
+    @Test
+    void playerLeaveCurrentLobby_UserNotFound_ThrowsException() {
+        when(userRepository.findByUserToken("invalidToken")).thenReturn(null);
+
+        Exception exception = assertThrows(ResponseStatusException.class, () -> gameService.playerLeaveCurrentLobby("invalidToken"));
+        assertEquals("400 BAD_REQUEST \"User with userToken has not been found\"", exception.getMessage());
+    }
+
+    
 }

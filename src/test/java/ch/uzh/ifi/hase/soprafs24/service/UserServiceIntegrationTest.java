@@ -290,9 +290,35 @@ public class UserServiceIntegrationTest {
     assertThrows(ResponseStatusException.class, () -> userService.updateUser(userId, updateUser));
   }
 
+  @Test
+  public  void updateUser_WithBirthDateLessThan5Years_ShouldThrowException() {
+        // Arrange
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testUser");
+        user.setBirthDay(Date.from(LocalDate.now().minusYears(3).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
 
-    
+        // Act & Assert
+        Exception exception = assertThrows(ResponseStatusException.class, () -> userService.updateUser(user.getId(), user));
+        assertTrue(exception.getMessage().contains("User must be at least 5 years old."));
+  }
+
+  @Test
+  public  void updateUser_WithBirthDateGreaterThan120Years_ShouldThrowException() {
+        // Arrange
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testUser");
+        user.setBirthDay(Date.from(LocalDate.now().minusYears(125).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        Exception exception = assertThrows(ResponseStatusException.class, () -> userService.updateUser(user.getId(), user));
+        assertTrue(exception.getMessage().contains("User must be younger than 120 years."));
+  }
 
   @Test
   public void logoutUser_WithValidId_ShouldReturnUser() {

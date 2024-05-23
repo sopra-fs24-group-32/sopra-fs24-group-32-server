@@ -2,23 +2,16 @@ package ch.uzh.ifi.hase.soprafs24.game.dallE;
 
 import ch.uzh.ifi.hase.soprafs24.config.Config;
 import okhttp3.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DallETest {
+public class DallETest<MockWebServer> {
 
     @Mock
     private OkHttpClient client;
@@ -29,79 +22,52 @@ public class DallETest {
     @InjectMocks
     private DallE dallE;
 
-    private MockedStatic<Config> mockedConfig;
+    @Mock
+    private Response mockResponse;
 
-    @BeforeEach
-    public void setUp() {
-        mockedConfig = mockStatic(Config.class);
-        mockedConfig.when(Config::getApiKey).thenReturn("valid-api-key");
-    }
+    @Mock
+    private OkHttpClient mockClient;
 
-    @AfterEach
-    public void tearDown() {
-        mockedConfig.close();
-    }
-
-    //@Test
-    //public void generatePicture_WithValidInput_ShouldReturnImageUrl() throws Exception {
-    //    // Arrange
-    //    String inputPhrase = "A beautiful sunset over the mountains";
-    //    String expectedResponseBody = "{\"data\": [{\"url\": \"http://example.com/image.png\"}]}";
-    //    Response response = new Response.Builder()
-    //            .request(new Request.Builder().url("http://localhost/").build())
-    //            .protocol(Protocol.HTTP_1_1)
-    //            .code(200)
-    //            .message("OK")
-    //            .body(ResponseBody.create(expectedResponseBody, MediaType.parse("application/json")))
-    //            .build();
-//
-    //    when(client.newCall(any(Request.class))).thenReturn(call);
-    //    when(call.execute()).thenReturn(response);
-//
-    //    // Act
-    //    String imageUrl = dallE.generatePicture(inputPhrase);
-//
-    //    // Assert
-    //    assertEquals("http://example.com/image.png", imageUrl);
-    //}
+    @Mock
+    private Call mockCall;
 
     @Test
     public void generatePicture_WithInvalidApiKey_ShouldThrowException() {
         // Arrange
-        mockedConfig.when(Config::getApiKey).thenReturn(null); // Invalidate the API key
 
-        String inputPhrase = "A beautiful sunset over the mountains";
+        try (MockedStatic<Config> mockedConfig = Mockito.mockStatic(Config.class)) {
+            mockedConfig.when(Config::getApiKey).thenReturn(null);
 
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            dallE.generatePicture(inputPhrase);
-        });
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
-        assertTrue(exception.getReason().contains("API key not found"));
+            String inputPhrase = "A beautiful sunset over the mountains";
+
+            // Act & Assert
+            ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+                dallE.generatePicture(inputPhrase);
+            });
+            assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+            assertTrue(exception.getReason().contains("API key not found"));
+        }
     }
 
-    //@Test
-    //public void generatePicture_WithFailedResponse_ShouldThrowException() throws Exception {
-    //    // Arrange
-    //    String inputPhrase = "A beautiful sunset over the mountains";
-    //    Response response = new Response.Builder()
-    //            .request(new Request.Builder().url("http://localhost/").build())
-    //            .protocol(Protocol.HTTP_1_1)
-    //            .code(400)
-    //            .message("Bad Request")
-    //            .body(ResponseBody.create("Failed to generate image with DALL-E", MediaType.parse("application/json")))
-    //            .build();
-//
-    //    when(client.newCall(any(Request.class))).thenReturn(call);
-    //    when(call.execute()).thenReturn(response);
-//
-    //    // Act & Assert
-    //    ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-    //        dallE.generatePicture(inputPhrase);
-    //    });
-    //    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    //    assertTrue(exception.getReason().contains("Failed to generate image with DALL-E"));
-    //}
+    @Test
+    void testGeneratePicture_Success() throws Exception {
+        String imageUrl = dallE.generatePicture("A beautiful sunset");
+
+        // Assert
+        assertNotNull(imageUrl);
+    }
+
+    @Test
+    public void generatePicture_WithFailedResponse_ShouldThrowException() throws Exception {
+       // Arrange
+       String inputPhrase = "adult content";
+       // Act & Assert
+       ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+           dallE.generatePicture(inputPhrase);
+       });
+       assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+       assertTrue(exception.getReason().contains("Failed to generate image with DALL-E"));
+    }
 
     @Test
     public void testGetInputPhrase() {
